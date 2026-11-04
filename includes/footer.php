@@ -11,7 +11,7 @@
         <a href="/rc2000/public/inquiry.php">Inquiries</a>
         <a href="/rc2000/public/home.php#announcements">Announcements</a>
       </nav>
-      <a class="footer-facebook" href="https://www.facebook.com/share/1CnmU87GzQ/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Reading Club 2000 on Facebook">
+      <a class="footer-facebook" href="<?= e(facebook_page_url() ?: 'https://www.facebook.com/share/1CnmU87GzQ/?mibextid=wwXIfr') ?>" target="_blank" rel="noopener noreferrer" aria-label="Reading Club 2000 on Facebook">
         <img src="<?= e(app_url('public/assets/images/icons/homefb_icon.png')) ?>" alt="" width="24" height="24">
         <span>Facebook</span>
       </a>
