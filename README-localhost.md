@@ -37,3 +37,7 @@ The PHP installation used by Apache must have the `pdo_pgsql` extension enabled.
 Open `http://localhost/rc2000/public/test.php`. It reports whether `pdo_pgsql` is loaded and whether PHP can query the `content` table. The public pages show sample fallback cards even when the database is not connected; the test page checks the actual connection.
 
 Set `RC2000_BASE_PATH` only if the folder is mounted at a URL other than `/rc2000`.
+
+## Show Facebook Page posts on the homepage
+
+Set the `RC2000_FB_PAGE_URL` environment variable to the public Facebook Page URL (for example, `https://www.facebook.com/YourPageName`). The homepage then displays the Page timeline, so posts published to Facebook appear there automatically. The existing footer link will also point to that Page. The Facebook share link currently in the footer is not a Page URL and cannot be used for the timeline embed. Facebook may require the Page to be public and its embedding settings to allow the Page Plugin.

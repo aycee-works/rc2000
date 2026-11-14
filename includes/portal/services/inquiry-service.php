@@ -18,8 +18,7 @@
  * Nothing is ever deleted: responses, notes and the original message are kept
  * through every status change.
  *
- * Email: saving a response does NOT send an email. Responses are stored with
- * email_status 'not_configured' until a mail sender is added; the admin is told so.
+ * Email: when SMTP is enabled, a saved response is sent to the inquiry submitter.
  */
 
 const INQUIRY_PER_PAGE = 10;
@@ -140,6 +139,45 @@ function inquiry_email_label(string $emailStatus): string
     ][$emailStatus] ?? 'Saved only.';
 }
 
+/** Send a saved inquiry response using the local SMTP configuration. */
+function send_inquiry_response_email(array $inquiry, string $body): bool
+{
+    $config = $GLOBALS['APP_CONFIG'] ?? [];
+    $autoload = dirname(__DIR__, 3) . '/vendor/autoload.php';
+    if (!MAIL_ENABLED || !is_file($autoload)) {
+        return false;
+    }
+
+    require_once $autoload;
+    if (!class_exists(\PHPMailer\PHPMailer\PHPMailer::class)) {
+        throw new RuntimeException('PHPMailer is not installed.');
+    }
+
+    $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+    $mail->isSMTP();
+    $mail->Host = (string) ($config['mail_host'] ?? 'smtp.gmail.com');
+    $mail->SMTPAuth = true;
+    $mail->Username = (string) ($config['mail_username'] ?? '');
+    $mail->Password = (string) ($config['mail_password'] ?? '');
+    $mail->Port = (int) ($config['mail_port'] ?? 587);
+    $mail->SMTPSecure = ($config['mail_encryption'] ?? 'tls') === 'ssl'
+        ? \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS
+        : \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->CharSet = 'UTF-8';
+    $mail->setFrom(
+        (string) ($config['mail_from_email'] ?? $mail->Username),
+        (string) ($config['mail_from_name'] ?? 'Reading Club 2000')
+    );
+    $mail->addAddress((string) $inquiry['email'], (string) $inquiry['name']);
+    $mail->Subject = 'Re: ' . (string) $inquiry['subject'] . ' [' . (string) $inquiry['reference_no'] . ']';
+    $mail->isHTML(false);
+    $mail->Body = "Hello " . (string) $inquiry['name'] . ",\n\n"
+        . $body . "\n\n"
+        . "This is a response to your Reading Club 2000 inquiry " . (string) $inquiry['reference_no'] . ".";
+    $mail->send();
+    return true;
+}
+
 /**
  * Apply one admin action. $input keys: status, notes, response, version.
  * Returns ['ok'=>bool, 'message'=>string, 'code'=>int, 'changed'=>bool, 'record'=>?array]
@@ -221,12 +259,14 @@ function apply_inquiry_action(PDO $pdo, int $id, int $adminId, string $action, a
 
         // Save a typed response (with the inquiry id, so it always belongs to the right inquiry)
         $responseSaved = false;
+        $responseId = null;
         if ($response !== '') {
             $ins = $pdo->prepare(
                 "INSERT INTO inquiry_responses (inquiry_id, admin_id, body, email_status)
-                 VALUES (?, ?, ?, 'not_configured')"
+                 VALUES (?, ?, ?, ?) RETURNING id"
             );
-            $ins->execute([$id, $adminId, $response]);
+            $ins->execute([$id, $adminId, $response, MAIL_ENABLED ? 'pending' : 'not_configured']);
+            $responseId = (int) $ins->fetchColumn();
             $responseSaved = true;
         }
 
@@ -289,7 +329,20 @@ function apply_inquiry_action(PDO $pdo, int $id, int $adminId, string $action, a
     } else {
         $message = "Inquiry $ref updated.";
     }
-    if ($responseSaved) {
+    if ($responseSaved && MAIL_ENABLED && $responseId !== null) {
+        try {
+            $sent = send_inquiry_response_email($row, $response);
+            $emailStatus = $sent ? 'sent' : 'failed';
+        } catch (Throwable $mailError) {
+            error_log('Inquiry response email failed: ' . $mailError->getMessage());
+            $emailStatus = 'failed';
+        }
+        $emailUpdate = $pdo->prepare('UPDATE inquiry_responses SET email_status = ? WHERE id = ?');
+        $emailUpdate->execute([$emailStatus, $responseId]);
+        $message .= $emailStatus === 'sent'
+            ? ' Email sent to the submitter.'
+            : ' The reply was saved, but email sending failed. Check the SMTP settings and PHP error log.';
+    } elseif ($responseSaved) {
         $message .= ' Email delivery is not configured, so the response was saved but NOT emailed to the submitter.';
     }
 

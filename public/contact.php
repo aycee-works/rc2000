@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../config/portal/app.php';
 require_once __DIR__ . '/../includes/functions.php';
 
 $errors = [];
@@ -46,9 +47,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
             $row = $stmt->fetch();
             $ticket = ticket_number((int) $row['inquiry_id'], (string) $row['created_at']);
-            flash_set('success', 'Message sent. If you need to follow up, your ticket number is ' . $ticket . '.');
+            $emailSent = false;
+            $config = $GLOBALS['APP_CONFIG'] ?? [];
+            // Default to the authenticated Gmail account so existing SMTP
+            // setups receive notifications without extra configuration.
+            $adminEmail = trim((string) ($config['mail_admin_email'] ?? $config['mail_username'] ?? ''));
+            if (MAIL_ENABLED && filter_var($adminEmail, FILTER_VALIDATE_EMAIL)) {
+                try {
+                    $autoload = dirname(__DIR__) . '/vendor/autoload.php';
+                    if (!is_file($autoload)) {
+                        throw new RuntimeException('PHPMailer autoloader is missing.');
+                    }
+                    require_once $autoload;
+                    $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+                    $mail->isSMTP();
+                    $mail->Host = (string) ($config['mail_host'] ?? 'smtp.gmail.com');
+                    $mail->SMTPAuth = true;
+                    $mail->Username = (string) ($config['mail_username'] ?? '');
+                    $mail->Password = (string) ($config['mail_password'] ?? '');
+                    $mail->Port = (int) ($config['mail_port'] ?? 587);
+                    $mail->SMTPSecure = ($config['mail_encryption'] ?? 'tls') === 'ssl'
+                        ? PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS
+                        : PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+                    $mail->CharSet = 'UTF-8';
+                    $fromEmail = trim((string) ($config['mail_from_email'] ?? ''));
+                    $mail->setFrom(
+                        $fromEmail !== '' ? $fromEmail : (string) ($config['mail_username'] ?? ''),
+                        (string) ($config['mail_from_name'] ?? 'Reading Club 2000')
+                    );
+                    $mail->addAddress($adminEmail);
+                    $mail->addReplyTo($old['sender_email'], $old['sender_name']);
+                    $mail->Subject = 'New contact inquiry [' . $ticket . ']: '
+                        . ($old['subject'] !== '' ? $old['subject'] : 'Contact message');
+                    $mail->isHTML(false);
+                    $mail->Body = "A new contact inquiry was submitted.\n\n"
+                        . "Ticket: {$ticket}\n"
+                        . "Name: {$old['sender_name']}\n"
+                        . "Email: {$old['sender_email']}\n"
+                        . "Subject: " . ($old['subject'] !== '' ? $old['subject'] : 'Contact message') . "\n\n"
+                        . "Message:\n{$old['message']}";
+                    $mail->send();
+                    $emailSent = true;
+                } catch (Throwable $mailError) {
+                    error_log('Contact inquiry email failed for ' . $ticket . ': ' . $mailError->getMessage());
+                }
+            }
+            $notice = $emailSent
+                ? 'Message received and emailed to our team. Your ticket number is ' . $ticket . '.'
+                : 'Your inquiry was saved, but email notification could not be sent. Your ticket number is ' . $ticket . '.';
+            flash_set('success', $notice);
             redirect('/public/contact.php');
         } catch (Throwable $error) {
+            error_log('Contact inquiry save failed: ' . $error->getMessage());
             $errors[] = 'We could not send your message yet. Please try again when the database is available.';
         }
     }

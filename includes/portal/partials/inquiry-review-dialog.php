@@ -91,7 +91,7 @@ $isClosed = $status === 'closed';
                     <?php if ($isClosed): ?>
                         This inquiry is closed. Change the status to Open and save to reopen it.
                     <?php else: ?>
-                        Saving a response stores it here. Email delivery is not configured yet, so nothing is emailed to the submitter.
+                        Saving a response stores it here<?= MAIL_ENABLED ? ' and emails it to the submitter' : '. Email delivery is not configured yet, so nothing is emailed to the submitter' ?>.
                         An inquiry can only be marked resolved after a response has been saved.
                     <?php endif; ?>
                 </p>

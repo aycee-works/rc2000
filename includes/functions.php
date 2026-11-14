@@ -64,6 +64,22 @@ function app_url(string $path = ''): string
     return $base . ($path === '' ? '/' : '/' . ltrim($path, '/'));
 }
 
+function facebook_page_url(): string
+{
+    $url = trim((string) (getenv('RC2000_FB_PAGE_URL') ?: 'https://www.facebook.com/ReadingClub2000'));
+    if ($url === '') {
+        return '';
+    }
+
+    $host = strtolower((string) parse_url($url, PHP_URL_HOST));
+    if (!in_array($host, ['facebook.com', 'www.facebook.com', 'm.facebook.com'], true)
+        || parse_url($url, PHP_URL_SCHEME) !== 'https') {
+        return '';
+    }
+
+    return $url;
+}
+
 function excerpt(string $body, int $length = 140): string
 {
     $plain = trim(preg_replace('/\s+/', ' ', $body) ?? $body);
