@@ -34,6 +34,6 @@
     </div>
   </div>
 </footer>
-<script src="/rc2000/public/assets/js/site.js?v=2"></script>
+<script src="<?= e(app_url('public/assets/js/site.js?v=2')) ?>"></script>
 </body>
 </html>
