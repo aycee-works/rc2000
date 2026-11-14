@@ -12,7 +12,7 @@ page_start('About');
     <div class="narrow">
       <h1>History of Reading Club 2000</h1>
       <p>Reading Club 2000 is an informal library set up by Hernando Guanlao outside his ancestral home in central Makati, Philippines. Hernando Guanlao, known by his nickname Nanie, wanted to encourage his local community to share his joy of reading.</p>
-      <a class="button button-gold" href="/rc2000/public/about.php#founder">Read More</a>
+      <a class="button button-gold" href="<?= e(app_url('public/about.php#founder')) ?>">Read More</a>
     </div>
   </section>
 
@@ -46,7 +46,7 @@ The collection has grown through donors, some of whom stay anonymous, and now ho
           </blockquote>
         <?php endif; ?>
       </div>
-      <a class="see-all" href="/rc2000/public/explore.php">See all →</a>
+      <a class="see-all" href="<?= e(app_url('public/explore.php')) ?>">See all →</a>
     </div>
   </section>
 

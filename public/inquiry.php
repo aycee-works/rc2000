@@ -172,8 +172,8 @@ page_start('Inquiry');
   </div>
 
   <div class="subnav">
-    <a href="/rc2000/public/inquiry.php?view=submit" class="<?= $view === 'submit' ? 'is-active' : '' ?>">Submit an inquiry</a>
-    <a href="/rc2000/public/inquiry.php?view=status" class="<?= $view === 'status' ? 'is-active' : '' ?>">Check inquiry status</a>
+    <a href="<?= e(app_url('public/inquiry.php?view=submit')) ?>" class="<?= $view === 'submit' ? 'is-active' : '' ?>">Submit an inquiry</a>
+    <a href="<?= e(app_url('public/inquiry.php?view=status')) ?>" class="<?= $view === 'status' ? 'is-active' : '' ?>">Check inquiry status</a>
   </div>
 
   <?php render_alerts($errors); ?>

@@ -41,6 +41,12 @@ if (is_file($localFile)) {
     }
 }
 
+// The deployed site is served from the domain root, while local XAMPP uses /rc2000.
+$basePath = getenv('RC2000_BASE_PATH');
+if ($basePath !== false) {
+    $config['base_url'] = rtrim((string) $basePath, '/');
+}
+
 define('APP_ENV', $config['app_env']);
 define('BASE_URL', rtrim($config['base_url'], '/'));
 define('MAIL_ENABLED', (bool) $config['mail_enabled']);

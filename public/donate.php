@@ -224,8 +224,8 @@ page_start('Donate');
 <main class="donate-layout">
   <aside class="donate-side">
     <p class="eyebrow">Donate by</p>
-    <a class="<?= $tab === 'book' ? 'is-active' : '' ?>" href="/rc2000/public/donate.php?tab=book">Book Donation</a>
-    <a class="<?= $tab === 'money' ? 'is-active' : '' ?>" href="/rc2000/public/donate.php?tab=money">Monetary Donation</a>
+    <a class="<?= $tab === 'book' ? 'is-active' : '' ?>" href="<?= e(app_url('public/donate.php?tab=book')) ?>">Book Donation</a>
+    <a class="<?= $tab === 'money' ? 'is-active' : '' ?>" href="<?= e(app_url('public/donate.php?tab=money')) ?>">Monetary Donation</a>
   </aside>
 
   <div class="donate-main">
