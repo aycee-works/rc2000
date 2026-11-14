@@ -1,4 +1,24 @@
 (() => {
+  const themeToggle = document.querySelector('[data-theme-toggle]');
+  if (themeToggle) {
+    const themeIcon = themeToggle.querySelector('[data-theme-icon]');
+    const themeLabel = themeToggle.querySelector('[data-theme-label]');
+    const updateThemeButton = () => {
+      const dark = document.documentElement.dataset.theme === 'dark';
+      themeToggle.setAttribute('aria-pressed', String(dark));
+      themeToggle.setAttribute('aria-label', `Switch to ${dark ? 'light' : 'dark'} mode`);
+      themeIcon.textContent = dark ? '☀' : '☾';
+      themeLabel.textContent = dark ? 'Light mode' : 'Dark mode';
+    };
+    updateThemeButton();
+    themeToggle.addEventListener('click', () => {
+      const dark = document.documentElement.dataset.theme !== 'dark';
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      try { localStorage.setItem('rc2000-theme', dark ? 'dark' : 'light'); } catch (e) {}
+      updateThemeButton();
+    });
+  }
+
   const revealItems = document.querySelectorAll('[data-reveal]');
   if (revealItems.length && 'IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.documentElement.classList.add('reveal-ready');
