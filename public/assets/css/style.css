@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
-@import url('pages/home.css');
+@import url('pages/home.css?v=2');
 @import url('pages/explore.css');
 @import url('pages/donate.css');
 @import url('pages/inquiry.css');
@@ -639,6 +639,66 @@ textarea { resize: vertical; }
 .footer-terms summary { color: #fffaf0; cursor: pointer; }
 .footer-terms ol { padding-left: 18px; color: #cbd8dd; font-size: .75rem; line-height: 1.6; }
 .footer-terms ol a { color: #f0cc77; }
+/* Theme switcher and dark theme for the public site. */
+.nav-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 11px;
+  border: 1px solid #cfd6d4;
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--ink);
+  font: 600 12px 'DM Sans', Arial, sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.theme-toggle:hover { border-color: var(--blue); }
+.theme-toggle:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+html[data-theme="dark"] {
+  --cream: #111a20;
+  --paper: #18242c;
+  --ink: #e5edf0;
+  --blue: #6f9bb3;
+  --navy: #192b37;
+  --red: #a84b59;
+  --red-deep: #8c3745;
+  --muted: #b1c0c8;
+  --line: #34444d;
+  color-scheme: dark;
+}
+html[data-theme="dark"] body { background: var(--cream); color: var(--ink); }
+html[data-theme="dark"] .site-header { background: rgba(17, 26, 32, .97); border-color: var(--line); }
+html[data-theme="dark"] .site-search,
+html[data-theme="dark"] .theme-toggle { background: #202e36; border-color: #43545e; color: var(--ink); }
+html[data-theme="dark"] .site-search input,
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select { color: var(--ink); background: #202e36; border-color: #43545e; }
+html[data-theme="dark"] .article-card,
+html[data-theme="dark"] .testimonial,
+html[data-theme="dark"] .trivia-card,
+html[data-theme="dark"] .form-card,
+html[data-theme="dark"] .article-tile { background-color: #1c2a32; color: var(--ink); }
+html[data-theme="dark"] .tinted,
+html[data-theme="dark"] .history-panel,
+html[data-theme="dark"] .visit-card,
+html[data-theme="dark"] .contact-grid .visit-card,
+html[data-theme="dark"] .portrait-placeholder { background: #202e36; color: var(--ink); }
+html[data-theme="dark"] .howto { background: #332e25; }
+html[data-theme="dark"] .upload-box,
+html[data-theme="dark"] .qr-placeholder,
+html[data-theme="dark"] .status-result { background: #202e36; color: var(--muted); }
+html[data-theme="dark"] .hero.has-photo { background-color: #17242c; color: var(--ink); }
+html[data-theme="dark"] .hero.has-photo::before { background: linear-gradient(90deg, rgba(12,20,25,.84), rgba(12,20,25,.68) 42%, rgba(12,20,25,.28)); }
+html[data-theme="dark"] .hero.has-photo .hero-copy p { color: var(--ink); }
+html[data-theme="dark"] .hero:not(.has-photo) { background: linear-gradient(110deg, #203847, #18242c 65%, #343128); color: var(--ink); }
+html[data-theme="dark"] .hero:not(.has-photo) p { color: var(--muted); }
+html[data-theme="dark"] .contact-grid .visit-card p,
+html[data-theme="dark"] .testimonial p { color: var(--ink); }
 .facebook-embed { width: min(100%, 500px); margin: 0 auto; overflow: hidden; border-radius: 12px; background: #fff; }
 .facebook-embed iframe { display: block; width: 100%; max-width: 500px; }
 
@@ -646,12 +706,14 @@ textarea { resize: vertical; }
 @media (max-width: 900px) {
   .site-header { gap: 10px; }
   .main-nav { order: 3; width: 100%; justify-content: center; }
-  .site-search { margin-left: auto; }
+  .nav-actions { margin-left: auto; }
   .hero { min-height: 360px; }
   .footer-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 560px) {
   .site-header { padding: 8px 14px; }
+  .nav-actions { gap: 6px; }
+  .theme-toggle { min-height: 34px; padding: 5px 8px; font-size: 11px; }
   .brand-name { font-size: 12px; }
   .main-nav { gap: 8px 13px; }
   .main-nav a { font-size: 11px; }
