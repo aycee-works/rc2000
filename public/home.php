@@ -19,6 +19,7 @@ if (empty($stories)) {
 // Retrieve published articles and announcements.
 $articles = published_content('article', 4);
 $announcements = published_content('announcement', 6);
+$facebookPageUrl = facebook_page_url();
 
 /*
 |--------------------------------------------------------------------------
@@ -436,6 +437,32 @@ page_start('Home');
         </div>
 
     </section>
+
+    <?php if ($facebookPageUrl !== ''): ?>
+    <section class="section facebook-updates" id="facebook-updates" data-reveal>
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">From our Facebook page</span>
+                <h2>Community Updates</h2>
+            </div>
+            <a href="<?= e($facebookPageUrl) ?>" target="_blank" rel="noopener noreferrer">Visit our Facebook page →</a>
+        </div>
+        <div class="facebook-embed">
+            <iframe
+                title="Reading Club 2000 Facebook posts"
+                src="https://www.facebook.com/plugins/page.php?href=<?= rawurlencode($facebookPageUrl) ?>&tabs=timeline&width=500&height=650&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false"
+                width="500"
+                height="650"
+                style="border:none;overflow:hidden"
+                scrolling="no"
+                frameborder="0"
+                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                loading="lazy"
+                referrerpolicy="strict-origin-when-cross-origin"
+            ></iframe>
+        </div>
+    </section>
+    <?php endif; ?>
 
 </main>
 

@@ -597,6 +597,8 @@ textarea { resize: vertical; }
 .footer-terms summary { color: #fffaf0; cursor: pointer; }
 .footer-terms ol { padding-left: 18px; color: #cbd8dd; font-size: .75rem; line-height: 1.6; }
 .footer-terms ol a { color: #f0cc77; }
+.facebook-embed { width: min(100%, 500px); margin: 0 auto; overflow: hidden; border-radius: 12px; background: #fff; }
+.facebook-embed iframe { display: block; width: 100%; max-width: 500px; }
 
 @media (max-width: 900px) {
   .site-header { gap: 10px; }

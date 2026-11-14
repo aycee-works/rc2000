@@ -22,6 +22,15 @@ $config = [
     // Email: leave false until SMTP is configured. Inquiry responses are
     // saved either way; the UI says so when email is not configured.
     'mail_enabled' => false,
+    'mail_host' => 'smtp.gmail.com',
+    'mail_port' => 587,
+    'mail_encryption' => 'tls',
+    'mail_username' => '',
+    'mail_password' => '',
+    'mail_from_email' => '',
+    'mail_from_name' => 'Reading Club 2000',
+    // Inbox that receives new public contact form submissions.
+    'mail_admin_email' => '',
 ];
 
 $localFile = __DIR__ . '/local.php';
