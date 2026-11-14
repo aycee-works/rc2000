@@ -597,6 +597,7 @@ textarea { resize: vertical; }
 .footer-terms summary { color: #fffaf0; cursor: pointer; }
 .footer-terms ol { padding-left: 18px; color: #cbd8dd; font-size: .75rem; line-height: 1.6; }
 .footer-terms ol a { color: #f0cc77; }
+<<<<<<< HEAD
 /* Theme switcher and dark theme for the public site. */
 .nav-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
 .theme-toggle {
@@ -657,6 +658,10 @@ html[data-theme="dark"] .hero:not(.has-photo) { background: linear-gradient(110d
 html[data-theme="dark"] .hero:not(.has-photo) p { color: var(--muted); }
 html[data-theme="dark"] .contact-grid .visit-card p,
 html[data-theme="dark"] .testimonial p { color: var(--ink); }
+=======
+.facebook-embed { width: min(100%, 500px); margin: 0 auto; overflow: hidden; border-radius: 12px; background: #fff; }
+.facebook-embed iframe { display: block; width: 100%; max-width: 500px; }
+>>>>>>> 9f784a269180f81fb483eb482143fd8de6090f1b
 
 @media (max-width: 900px) {
   .site-header { gap: 10px; }
