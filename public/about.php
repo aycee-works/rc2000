@@ -12,7 +12,7 @@ page_start('About');
     <div class="narrow">
       <h1>History of Reading Club 2000</h1>
       <p>Reading Club 2000 is an informal library set up by Hernando Guanlao outside his ancestral home in central Makati, Philippines. Hernando Guanlao, known by his nickname Nanie, wanted to encourage his local community to share his joy of reading.</p>
-      <a class="button button-gold" href="/rc2000/public/about.php#founder">Read More</a>
+      <a class="button button-gold" href="<?= e(app_url('public/about.php#founder')) ?>">Read More</a>
     </div>
   </section>
 
@@ -24,7 +24,10 @@ page_start('About');
     <?php endif; ?>
     <div>
       <h2>Hernando “Mang Nanie” Guanlao</h2>
-      <p>Founder of the original community library movement. Mang Nanie inspired the model this club follows — free books, open doors, no library card required.</p>
+      <p>Mang Nanie is a former tax accountant, ice cream salesman and government employee. He placed about 100 books outside his door to see if anyone would borrow them. Many people did, and they donated other books in return, which grew the collection. (Reuters reports the starting collection as 50 books.)
+His main purpose was to honor his parents, who passed on their habit of reading. He says his mission is to give away used and donated books at no cost and to promote education through literature.
+The collection has grown through donors, some of whom stay anonymous, and now holds thousands of books. He also does "book walking," giving storybooks to street children, and his eldest daughter is now his partner in the project. Dwell also reports a "book bike" service that delivers reading material to the poorest communities in Manila. As of a February 2025 feature, he has kept the library going for nearly 25 years.
+</p>
     </div>
   </section>
 
@@ -43,7 +46,7 @@ page_start('About');
           </blockquote>
         <?php endif; ?>
       </div>
-      <a class="see-all" href="/rc2000/public/explore.php">See all →</a>
+      <a class="see-all" href="<?= e(app_url('public/explore.php')) ?>">See all →</a>
     </div>
   </section>
 
