@@ -22,16 +22,17 @@ $config = [
     'db_tz'      => 'Asia/Manila',          // PostgreSQL time zone name; must match 'timezone'
     // Email: leave false until SMTP is configured. Inquiry responses are
     // saved either way; the UI says so when email is not configured.
-    'mail_enabled' => $mailEnabledEnv === false ? false : filter_var($mailEnabledEnv, FILTER_VALIDATE_BOOLEAN),
-    'mail_host' => getenv('RC2000_MAIL_HOST') ?: 'smtp.gmail.com',
-    'mail_port' => (int) (getenv('RC2000_MAIL_PORT') ?: 587),
-    'mail_encryption' => getenv('RC2000_MAIL_ENCRYPTION') ?: 'tls',
-    'mail_username' => getenv('RC2000_MAIL_USERNAME') ?: '',
-    'mail_password' => getenv('RC2000_MAIL_PASSWORD') ?: '',
-    'mail_from_email' => getenv('RC2000_MAIL_FROM_EMAIL') ?: '',
-    'mail_from_name' => getenv('RC2000_MAIL_FROM_NAME') ?: 'Reading Club 2000',
-    // Inbox that receives new public contact form submissions.
-    'mail_admin_email' => '',
+   'mail_enabled' => $mailEnabledEnv === false
+    ? false
+    : filter_var($mailEnabledEnv, FILTER_VALIDATE_BOOLEAN),
+'mail_host' => getenv('RC2000_MAIL_HOST') ?: 'smtp.gmail.com',
+'mail_port' => (int) (getenv('RC2000_MAIL_PORT') ?: 587),
+'mail_encryption' => getenv('RC2000_MAIL_ENCRYPTION') ?: 'tls',
+'mail_username' => getenv('RC2000_MAIL_USERNAME') ?: '',
+'mail_password' => getenv('RC2000_MAIL_PASSWORD') ?: '',
+'mail_from_email' => getenv('RC2000_MAIL_FROM_EMAIL') ?: '',
+'mail_from_name' => getenv('RC2000_MAIL_FROM_NAME') ?: 'Reading Club 2000',
+'mail_admin_email' => getenv('RC2000_MAIL_ADMIN_EMAIL') ?: '',
 ];
 
 $localFile = __DIR__ . '/local.php';
