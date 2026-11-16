@@ -29,6 +29,7 @@ if (!headers_sent()) { header('Cache-Control: no-store'); }
     <link rel="stylesheet" href="<?= e(asset('css/base.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('css/layout.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('css/components.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset('css/notifications.css')) ?>">
 <?php foreach ($extraCss as $css): ?>
     <link rel="stylesheet" href="<?= e(asset('css/' . $css)) ?>">
 <?php endforeach; ?>
@@ -37,4 +38,5 @@ if (!headers_sent()) { header('Cache-Control: no-store'); }
 <div class="admin-shell">
     <?php require __DIR__ . '/admin-sidebar.php'; ?>
     <main class="admin-main">
+        <?php require __DIR__ . '/notification-center.php'; ?>
         <?php render_flash_messages(); ?>
