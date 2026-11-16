@@ -7,6 +7,9 @@ $notificationEndpoint = $notificationIsSuper
 $notificationPanelId = $notificationIsSuper ? 'superadmin-notification-panel' : 'admin-notification-panel';
 ?>
 <div class="portal-toolbar">
+    <button class="admin-theme-toggle" type="button" data-admin-theme-toggle aria-pressed="false" aria-label="Switch to dark mode">
+        <span data-admin-theme-icon aria-hidden="true">☾</span><span data-admin-theme-label>Dark mode</span>
+    </button>
     <div class="notification-center"
          data-notifications
          data-endpoint="<?= e($notificationEndpoint) ?>"

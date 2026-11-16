@@ -17,6 +17,7 @@ if (!headers_sent()) { header('Cache-Control: no-store'); }
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
     <meta name="app-base" content="<?= e(BASE_URL) ?>">
+    <script>try{if(localStorage.getItem('rc2000-admin-theme')==='dark')document.documentElement.dataset.adminTheme='dark'}catch(e){}</script>
     <title><?= e($pageTitle) ?> | Reading Club 2000 Super Admin</title>
     <link rel="icon" href="<?= e(asset('images/logo.png')) ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,6 +28,7 @@ if (!headers_sent()) { header('Cache-Control: no-store'); }
     <link rel="stylesheet" href="<?= e(asset('css/components.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('css/superadmin.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('css/notifications.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset('css/admin-theme.css')) ?>">
 <?php foreach ($extraCss as $css): ?>
     <link rel="stylesheet" href="<?= e(asset('css/' . $css)) ?>">
 <?php endforeach; ?>

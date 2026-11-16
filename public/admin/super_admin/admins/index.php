@@ -36,7 +36,9 @@ require dirname(__DIR__, 4) . '/includes/portal/superadmin-header.php';
         <h1 class="page-title">Admin account management</h1>
         <p class="page-subtitle">Select an administrator to edit, reset the password, deactivate, or remove.</p>
     </div>
-    <a class="btn btn-maroon" href="<?= e(url('superadmin/admins/add.php')) ?>">+ Add admin</a>
+    <div class="sa-page-actions">
+        <a class="btn btn-maroon" href="<?= e(url('superadmin/admins/add.php')) ?>">+ Add admin</a>
+    </div>
 </header>
 
 <?php if ($loadError): ?>

@@ -9,6 +9,7 @@ $extraJs = $extraJs ?? [];
     </main>
 </div>
 <script src="<?= e(asset('js/main.js')) ?>"></script>
+<script src="<?= e(asset('js/admin-theme.js')) ?>"></script>
 <?php foreach ($extraJs as $js): ?>
 <script src="<?= e(asset('js/' . $js)) ?>"></script>
 <?php endforeach; ?>

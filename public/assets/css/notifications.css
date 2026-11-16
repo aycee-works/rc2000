@@ -1,9 +1,13 @@
 .portal-toolbar {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
+    gap: 10px;
     min-height: 40px;
-    margin: -14px 0 10px;
-    position: relative;
+    margin: 0;
+    position: absolute;
+    top: 28px;
+    right: 32px;
     z-index: 30;
 }
 .notification-center { position: relative; }
@@ -95,7 +99,7 @@
 .superadmin-body .notification-item.is-unread { background: #fff8e9; }
 
 @media (max-width: 900px) {
-    .portal-toolbar { margin-top: 0; }
+    .portal-toolbar { top: 18px; right: 16px; }
 }
 @media (max-width: 480px) {
     .notification-panel { right: -2px; }
