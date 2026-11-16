@@ -10,11 +10,7 @@ $bodyClass = trim('site ' . (string) ($pageClass ?? ''));
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= e($title) ?></title>
   <script>try{if(localStorage.getItem('rc2000-theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}</script>
-<<<<<<< HEAD
-  <link rel="stylesheet" href="/rc2000/public/assets/css/style.css?v=16">
+  <link rel="stylesheet" href="<?= e(app_url('public/assets/css/style.css?v=18')) ?>">
 </head>
-=======
-  <link rel="stylesheet" href="<?= e(app_url('public/assets/css/style.css?v=15')) ?>"></head>
->>>>>>> origin/adeng-changes
 <body class="<?= e($bodyClass) ?>">
 <?php require __DIR__ . '/navbar.php'; ?>

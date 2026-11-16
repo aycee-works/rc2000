@@ -3,7 +3,7 @@ $searchValue = trim((string) ($_GET['q'] ?? ''));
 ?>
 <header class="site-header">
   <a class="brand" href="<?= e(app_url('public/home.php')) ?>" aria-label="Reading Club 2000 home">
-    
+    <img class="brand-logo" src="<?= e(app_url('public/assets/images/logo.png')) ?>" alt="" width="24" height="24">
     <span class="brand-name">Reading Club 2000</span>
   </a>
   <nav class="main-nav" aria-label="Main navigation">
