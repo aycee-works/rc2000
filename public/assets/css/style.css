@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
-@import url('pages/home.css?v=2');
+@import url('pages/home.css?v=3');
 @import url('pages/explore.css');
 @import url('pages/donate.css');
 @import url('pages/inquiry.css');
@@ -699,8 +699,6 @@ html[data-theme="dark"] .hero:not(.has-photo) { background: linear-gradient(110d
 html[data-theme="dark"] .hero:not(.has-photo) p { color: var(--muted); }
 html[data-theme="dark"] .contact-grid .visit-card p,
 html[data-theme="dark"] .testimonial p { color: var(--ink); }
-.facebook-embed { width: min(100%, 500px); margin: 0 auto; overflow: hidden; border-radius: 12px; background: #fff; }
-.facebook-embed iframe { display: block; width: 100%; max-width: 500px; }
 
 
 @media (max-width: 900px) {
