@@ -59,4 +59,44 @@
       });
     });
   });
+    const feedbackDialog = document.getElementById('feedback-dialog');
+  if (feedbackDialog) {
+    const feedbackForm = document.getElementById('feedback-form');
+    const feedbackStatus = document.getElementById('feedback-status');
+    const showFeedbackStatus = (text, type) => {
+      feedbackStatus.textContent = text;
+      feedbackStatus.className = 'feedback-status is-' + type;
+      feedbackStatus.hidden = false;
+    };
+
+    document.querySelectorAll('[data-feedback-open]').forEach((button) => {
+      button.addEventListener('click', () => {
+        feedbackStatus.hidden = true;
+        feedbackDialog.showModal();
+      });
+    });
+    feedbackDialog.querySelector('[data-feedback-close]').addEventListener('click', () => feedbackDialog.close());
+    feedbackDialog.addEventListener('click', (event) => {
+      if (event.target === feedbackDialog) feedbackDialog.close();
+    });
+
+    feedbackForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const submit = feedbackForm.querySelector('button[type="submit"]');
+      submit.disabled = true;
+      try {
+        const response = await fetch(feedbackForm.action, {
+          method: 'POST',
+          body: new FormData(feedbackForm),
+          headers: { 'Accept': 'application/json' },
+        });
+        const data = await response.json();
+        showFeedbackStatus(data.message, data.success ? 'success' : 'error');
+        if (data.success) feedbackForm.reset();
+      } catch (error) {
+        showFeedbackStatus('Could not reach the server. Please try again.', 'error');
+      }
+      submit.disabled = false;
+    });
+  }
 })();

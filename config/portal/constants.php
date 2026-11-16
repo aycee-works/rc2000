@@ -24,7 +24,7 @@ const INQUIRY_STATUSES = [
     'closed'      => 'Closed',
 ];
 
-const INQUIRY_CATEGORIES = ['Request', 'Technical', 'Report', 'Inquiry'];
+const INQUIRY_CATEGORIES = ['Request', 'Technical', 'Report', 'Inquiry', 'Message'];
 
 const CONTENT_STATUSES = [
     'draft'     => 'Draft',

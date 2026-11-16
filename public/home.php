@@ -18,7 +18,9 @@ if (empty($stories)) {
 // Retrieve published articles and announcements.
 $articles = published_content('article', 4);
 $announcements = published_content('announcement', 6);
+$trivia = published_trivia(5);
 $facebookPageUrl = facebook_page_url();
+$facebookLatestPostUrl = 'https://web.facebook.com/reel/2591073461400611/';
 
 /*
 |--------------------------------------------------------------------------
@@ -353,6 +355,37 @@ page_start('Home');
 
     </section>
 
+    <!-- TRIVIA -->
+       <section class="section tinted" id="trivia" data-reveal>
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">A little something to learn</span>
+        <h2>Daily Trivia</h2>
+      </div>
+    </div>
+    <div class="trivia-list wide">
+      <?php if ($trivia): foreach ($trivia as $item): ?>
+        <article class="trivia-card">
+          <div class="trivia-icon">?</div>
+          <div>
+            <h3><?= e($item['title'] ?: 'Did you know?') ?></h3>
+            <p><?= nl2br(e($item['body'])) ?></p>
+            <?php if (!empty($item['source'])): ?>
+              <small>Source: <?= e($item['source']) ?></small>
+            <?php endif; ?>
+          </div>
+        </article>
+      <?php endforeach; else: ?>
+        <article class="trivia-card">
+          <div class="trivia-icon">?</div>
+          <div>
+            <h3>Did you know?</h3>
+            <p>Reading for just a few minutes each day can introduce you to new ideas, places, and people.</p>
+          </div>
+        </article>
+      <?php endif; ?>
+    </div>
+  </section>
 
     <!-- ANNOUNCEMENTS -->
 
@@ -446,20 +479,14 @@ page_start('Home');
             </div>
             <a href="<?= e($facebookPageUrl) ?>" target="_blank" rel="noopener noreferrer">Visit our Facebook page →</a>
         </div>
-        <div class="facebook-embed">
-            <iframe
-                title="Reading Club 2000 Facebook posts"
-                src="https://www.facebook.com/plugins/page.php?href=<?= rawurlencode($facebookPageUrl) ?>&tabs=timeline&width=500&height=650&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false"
-                width="500"
-                height="650"
-                style="border:none;overflow:hidden"
-                scrolling="no"
-                frameborder="0"
-                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+        <a class="facebook-post-preview" href="<?= e($facebookLatestPostUrl) ?>" target="_blank" rel="noopener noreferrer" aria-label="Watch the latest Reading Club 2000 post on Facebook">
+            <img
+                src="<?= e(app_url('public/assets/images/facebook-latest-post.png?v=2')) ?>"
+                alt="Reading Club 2000 Facebook Page preview with its book-filled cover photo and profile"
                 loading="lazy"
-                referrerpolicy="strict-origin-when-cross-origin"
-            ></iframe>
-        </div>
+            >
+            <span class="facebook-post-cta">Watch the latest post <span aria-hidden="true">↗</span></span>
+        </a>
     </section>
     <?php endif; ?>
 

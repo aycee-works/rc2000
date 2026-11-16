@@ -52,7 +52,7 @@ require dirname(__DIR__, 2) . '/includes/portal/admin-header.php';
 ?>
 <header class="page-header">
     <h1 class="page-title">Welcome, Admin<?= $adminFirstName !== '' ? ' ' . e($adminFirstName) : '' ?>!</h1>
-    <p class="page-subtitle">Overview of donations and inquiries.</p>
+    <p class="page-subtitle">Overview of monetary donations and inquiries.</p>
 </header>
 
 <?php if ($loadError): ?>
@@ -105,7 +105,7 @@ require dirname(__DIR__, 2) . '/includes/portal/admin-header.php';
                     <tr>
                         <td><?= e($d['label']) ?></td>
                         <td><?= e($d['donor']) ?></td>
-                        <td><?= $d['type'] === 'book' ? 'Book' : 'Monetary' ?></td>
+                        <td>Monetary</td>
                         <td><a href="<?= e($d['review_url']) ?>">Review</a></td>
                     </tr>
                 <?php endforeach; ?>

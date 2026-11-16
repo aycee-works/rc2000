@@ -55,14 +55,13 @@ function valid_phone(string $value): bool
     return (bool) preg_match('/^[0-9+\-\s()]{7,30}$/', $value);
 }
 
-
 function inquiry_categories(): array
 {
     return [
-        'inquiry'  => 'Inquiry',
-        'request'  => 'Request',
+        'inquiry' => 'Inquiry',
+        'request' => 'Request',
         'technical' => 'Technical',
-        'report'   => 'Report',
+        'report' => 'Report',
+        'message' => 'Message',
     ];
 }
-

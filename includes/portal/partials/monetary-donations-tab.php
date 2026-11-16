@@ -3,8 +3,20 @@
  * includes/partials/monetary-donations-tab.php
  * The "Monetary donations" tab. Included by admin/donations/index.php, which
  * provides: $moneySummary, $moneyList, $moneyFilters, $moneySelected, $moneyHistory and donations_url().
+ *
+ * @var array  $moneySummary
+ * @var array  $moneyList
+ * @var array  $moneyFilters
+ * @var ?array $moneySelected
+ * @var array  $moneyHistory
  */
-$baseParams = ['tab' => 'monetary', 'q' => $moneyFilters['q'], 'status' => $moneyFilters['status'], 'page' => $moneyFilters['page'] > 1 ? $moneyFilters['page'] : ''];
+
+$baseParams = [
+    'tab'    => 'monetary',
+    'q'      => $moneyFilters['q'],
+    'status' => $moneyFilters['status'],
+    'page'   => $moneyFilters['page'] > 1 ? $moneyFilters['page'] : '',
+];
 $hasFilters = $moneyFilters['q'] !== '' || $moneyFilters['status'] !== '';
 $m = $moneySelected;
 ?>
