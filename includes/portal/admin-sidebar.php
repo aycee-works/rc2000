@@ -9,6 +9,7 @@ $navItems = [
     'donations' => ['Manage donations', 'admin/donations/index.php'],
     'content'   => ['Manage content',   'admin/content/index.php'],
     'inquiries' => ['Manage inquiries', 'admin/inquiries/index.php'],
+    'feedback'  => ['Website feedback', 'admin/feedback/index.php'],
 ];
 ?>
 <aside class="sidebar">

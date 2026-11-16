@@ -10,7 +10,6 @@ $results = $query !== ''
 $gallery = active_gallery(8);
 $articles = published_content('article', 8);
 $stories = published_content('story', 8);
-$trivia = published_trivia(3);
 
 // Keep this empty until a published history source is connected.
 $history = [];
@@ -371,106 +370,18 @@ page_start('Explore');
 
     <!-- TRIVIA AND LIBRARY HISTORY -->
 
-    <section class="section split">
-
-        <div>
-
-            <h2>Trivia</h2>
-
-            <div class="trivia-list">
-
-                <?php if ($trivia): ?>
-
-                    <?php foreach ($trivia as $item): ?>
-
-                        <article class="trivia-card">
-
-                            <div class="trivia-icon">?</div>
-
-                            <div>
-
-                                <h3>
-                                    <?= e($item['title'] ?: 'Did you know?') ?>
-                                </h3>
-
-                                <p>
-                                    <?= e(excerpt($item['body'], 140)) ?>
-                                </p>
-
-                            </div>
-
-                        </article>
-
-                    <?php endforeach; ?>
-
-                <?php else: ?>
-
-                    <article class="trivia-card">
-
-                        <div class="trivia-icon">?</div>
-
-                        <div>
-
-                            <h3>Did you know?</h3>
-
-                            <p>
-                                A sidewalk library can turn leftover books
-                                into a neighborhood habit.
-                            </p>
-
-                        </div>
-
-                    </article>
-
-                <?php endif; ?>
-
-            </div>
-
-            <p>
-                <a
-                    class="text-link"
-                    href="<?= e(app_url('public/daily_trivia.php')) ?>"
-                >
-                    More trivia →
-                </a>
-            </p>
-
-        </div>
-
-        <aside class="history-panel" id="history">
-
-            <h2>Library History</h2>
-
-            <?php if ($history): ?>
-
-                <h3><?= e($history[0]['title']) ?></h3>
-
-                <p>
-                    <?= e(excerpt($history[0]['body'], 420)) ?>
-                </p>
-
-            <?php else: ?>
-
-                <p>
-                    It all began in 2000. Mang Nanie was about to turn 60
-                    when he found himself worrying about retirement.
-                    Instead of slowing down, he gathered books from around
-                    the house, set them out, and showed neighbors that
-                    reading could be free. The rest is history.
-                </p>
-
-            <?php endif; ?>
-
-            <a
-                class="text-link"
-                href="<?= e(app_url('public/about.php')) ?>"
-            >
-                More →
-            </a>
-
-        </aside>
-
-    </section>
+  <section class="section">
+    <aside class="history-panel" id="history">
+      <h2>Library History</h2>
+      <?php if ($history): ?>
+        <h3><?= e($history[0]['title']) ?></h3>
+        <p><?= e(excerpt($history[0]['body'], 420)) ?></p>
+      <?php else: ?>
+        <p>It all began in 2000. Mang Nanie was about to turn 60 when he found himself worrying about retirement. Instead of slowing down, he gathered books from around the house, set them out, and showed neighbors that reading could be free. The rest is history.</p>
+      <?php endif; ?>
+      <a class="text-link" href="/rc2000/public/about.php">More →</a>
+    </aside>
+  </section>
 
 </main>
 

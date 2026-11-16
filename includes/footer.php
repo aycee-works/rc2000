@@ -1,39 +1,45 @@
 <footer class="site-footer">
-  <div class="footer-main">
-    <a class="footer-brand" href="<?= e(app_url('public/home.php')) ?>">
-      <img class="brand-logo footer-logo" src="<?= e(app_url('public/assets/images/icons/logo.png')) ?>" alt="" width="32" height="32">
-      <span><strong>Reading Club 2000</strong><small>A neighborhood library built around sharing stories.</small></span>
-    </a>
-    <div class="footer-connect">
-      <nav aria-label="More links">
-        <a href="<?= e(app_url('public/about.php')) ?>">About the Club</a>
-        <a href="<?= e(app_url('public/contact.php')) ?>">Contact Us</a>
-        <a href="<?= e(app_url('public/inquiry.php')) ?>">Inquiries</a>
-        <a href="<?= e(app_url('public/home.php#announcements')) ?>">Announcements</a>
-      </nav>
-      <a class="footer-facebook" href="<?= e(facebook_page_url() ?: 'https://www.facebook.com/share/1CnmU87GzQ/?mibextid=wwXIfr') ?>" target="_blank" rel="noopener noreferrer" aria-label="Reading Club 2000 on Facebook">
-        <img src="<?= e(app_url('public/assets/images/icons/homefb_icon.png')) ?>" alt="" width="24" height="24">
-        <span>Facebook</span>
-      </a>
+  <div class="footer-brand">
+    <img class="brand-logo footer-logo" src="<?= e(app_url('public/assets/images/logo.png')) ?>" alt="" width="28" height="28">
+    <div>
+      <strong>Reading Club 2000</strong>
+      <p>A neighborhood library built around sharing stories.</p>
     </div>
-    <div class="footer-bottom">
-        <small id="copyright">© <?= date('Y') ?> Reading Club 2000 Mang Nanie. All rights reserved. No part of this website may be copied, reproduced, or redistributed without written permission.</small>
-      <details class="footer-terms">
-        <summary>Terms and Conditions</summary>
-        <ol>
-          <li>Using this site means you agree to these terms.</li>
-          <li>Articles, stories, and other content are for personal, non-commercial use.</li>
-          <li>External links belong to their owners; we are not responsible for their content.</li>
-          <li>Stories or messages you send may be featured on the site only with your permission.</li>
-          <li>Information from the inquiry form is used only to reply to you and is not shared with third parties.</li>
-          <li>The club may update these terms at any time.</li>
-          <li>Questions? Reach us through the <a href="<?= e(app_url('public/inquiry.php')) ?>">Inquiries page</a>.</li>
-        </ol>
-      </details>
-      <a href="#copyright">Copyright</a>
+  </div>
+  <div class="footer-contact">
+    <h2>Give Us a Feedback</h2>
+    <p>Tell us what you think about our website. Your feedback goes straight to our admins.</p>
+    <button type="button" class="button button-gold" data-feedback-open>Give Us a Feedback</button>
+    <div class="socials" aria-label="Social links">
+      <a href="mailto:hello@readingclub2000.local" aria-label="Email">✉</a>
     </div>
   </div>
 </footer>
-<script src="<?= e(app_url('public/assets/js/site.js?v=2')) ?>"></script>
+<dialog class="feedback-dialog" id="feedback-dialog" aria-labelledby="feedback-title">
+  <div class="feedback-body">
+    <div class="feedback-head">
+      <div>
+        <h2 id="feedback-title">Give Us a Feedback</h2>
+        <p>How is your experience with our website? Tell us about the design and how easy it is to use.</p>
+      </div>
+      <button type="button" class="feedback-close" data-feedback-close aria-label="Close">×</button>
+    </div>
+    <p class="feedback-status" id="feedback-status" role="status" hidden></p>
+    <form id="feedback-form" action="/rc2000/public/feedback.php" method="post">
+      <?= csrf_field() ?>
+      <label>Name
+        <input name="name" required maxlength="120">
+      </label>
+      <label>Email
+        <input type="email" name="email" required maxlength="150">
+      </label>
+      <label>Your feedback
+        <textarea name="message" rows="5" required minlength="10" maxlength="5000"></textarea>
+      </label>
+      <button class="button wide" type="submit">Send feedback</button>
+    </form>
+  </div>
+</dialog>
+<script src="<?= e(app_url('public/assets/js/site.js?v=3')) ?>"></script>
 </body>
 </html>

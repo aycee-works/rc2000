@@ -23,7 +23,7 @@ function db(): PDO
     $port = getenv('RC2000_DB_PORT') ?: ($local['port'] ?? '5432');
     $name = getenv('RC2000_DB_NAME') ?: ($local['name'] ?? 'rc2000_db');
     $user = getenv('RC2000_DB_USER') ?: ($local['user'] ?? 'postgres');
-    $pass = getenv('RC2000_DB_PASSWORD') ?: ($local['pass'] ?? '12345Ikang02!');
+    $pass = getenv('RC2000_DB_PASSWORD') ?: ($local['pass'] ?? '$pid3rm4n!');
     $dsn = "pgsql:host={$host};port={$port};dbname={$name};sslmode=require";
    // Local PostgreSQL installations often have SSL disabled. Keep SSL enabled
     // for remote hosts, while allowing an explicit override for either setup.

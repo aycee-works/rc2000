@@ -1,10 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/functions.php';
 
-$tab = $_GET['tab'] ?? 'book';
-if (!in_array($tab, ['book', 'money'], true)) {
-    $tab = 'book';
-}
+$tab = 'money';
 
 $methods = active_donation_methods();
 $errors = [];
@@ -37,90 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     $old['anonymous'] = isset($_POST['anonymous']) ? '1' : '';
-    $tab = $action === 'monetary' ? 'money' : 'book';
-
-    if (!$errors && $action === 'book') {
-        if (!required_text($old['donor_name'], 150)) {
-            $errors[] = 'Please enter your name.';
-        }
-        if (!optional_text($old['contact_info'], 255)) {
-            $errors[] = 'Contact information is too long.';
-        }
-        if (!valid_email($old['donor_email']) || mb_strlen($old['donor_email']) > 150) {
-            $errors[] = 'Please enter a valid email address (up to 150 characters).';
-        }
-        if (!valid_quantity($old['quantity'])) {
-            $errors[] = 'Quantity must be at least 1.';
-        }
-
-        $parts = [];
-        if ($old['title'] !== '') {
-            $parts[] = 'Title: ' . $old['title'];
-        }
-        if ($old['author'] !== '') {
-            $parts[] = 'Author: ' . $old['author'];
-        }
-        if ($old['genre'] !== '') {
-            $parts[] = 'Genre: ' . $old['genre'];
-        }
-        if ($old['condition'] !== '') {
-            $parts[] = 'Condition: ' . $old['condition'];
-        }
-        if ($old['donation_description'] !== '') {
-            $parts[] = $old['donation_description'];
-        }
-        $description = implode("\n", $parts);
-        if (!optional_text($description, 8000)) {
-            $errors[] = 'The book details are too long.';
-        }
-
-        $photo = store_upload('donation_photo', 'donations', $errors, false);
-
-        if (!$errors) {
-            try {
-                $pdo = db();
-                $pdo->beginTransaction();
-                $stmt = $pdo->prepare(
-                    'INSERT INTO public.donations (donor_name, contact_info, quantity, donation_description, donation_photo_path)
-                     VALUES (:donor_name, :contact_info, :quantity, :donation_description, :donation_photo_path)'
-                );
-                $stmt->execute([
-                    'donor_name' => $old['donor_name'],
-                    'contact_info' => $old['contact_info'] !== '' ? $old['contact_info'] : null,
-                    'quantity' => (int) $old['quantity'],
-                    'donation_description' => $description !== '' ? $description : null,
-                    'donation_photo_path' => $photo,
-                ]);
-                $portal = $pdo->prepare(
-                    "INSERT INTO rc2000_admin.book_donations
-                        (reference_no, donor_name, donor_email, donor_contact, book_title, author, genre, book_condition, qty_offered, notes)
-                     VALUES
-                        ('BD-' || lpad(nextval('rc2000_admin.book_donation_seq')::text, 4, '0'), :donor_name, :donor_email, :donor_contact, :book_title, :author, :genre, :book_condition, :qty_offered, :notes)"
-                );
-                $contact = trim($old['contact_info']);
-                $portal->execute([
-                    'donor_name' => $old['donor_name'],
-                    'donor_email' => strtolower(trim($old['donor_email'])),
-                    'donor_contact' => preg_match('/^[0-9+() \\-]{7,30}$/', $contact) ? $contact : null,
-                    'book_title' => trim($old['title']) !== '' ? $old['title'] : 'Book donation',
-                    'author' => trim($old['author']) !== '' ? mb_substr($old['author'], 0, 150) : null,
-                    'genre' => trim($old['genre']) !== '' ? mb_substr($old['genre'], 0, 60) : null,
-                    'book_condition' => ['Like new' => 'Excellent', 'Mixed lot' => 'Good'][$old['condition']] ?? ($old['condition'] ?: 'Good'),
-                    'qty_offered' => (int) $old['quantity'],
-                    'notes' => $description !== '' ? $description : null,
-                ]);
-                $pdo->commit();
-                flash_set('success', 'Thank you. Your book donation was recorded and is pending review.');
-                redirect('/public/donate.php?tab=book');
-            } catch (Throwable $error) {
-                if (isset($pdo) && $pdo->inTransaction()) {
-                    $pdo->rollBack();
-                }
-                error_log('Book donation save failed: ' . $error->getMessage());
-                $errors[] = 'We could not save your donation yet. Please try again when the database is available.';
-            }
-        }
-    }
+    $tab = 'money';
 
     if (!$errors && $action === 'monetary') {
         $donorName = $old['anonymous'] === '1' ? 'Anonymous' : $old['donor_name'];
@@ -224,7 +138,6 @@ page_start('Donate');
 <main class="donate-layout">
   <aside class="donate-side">
     <p class="eyebrow">Donate by</p>
-    <a class="<?= $tab === 'book' ? 'is-active' : '' ?>" href="<?= e(app_url('public/donate.php?tab=book')) ?>">Book Donation</a>
     <a class="<?= $tab === 'money' ? 'is-active' : '' ?>" href="<?= e(app_url('public/donate.php?tab=money')) ?>">Monetary Donation</a>
   </aside>
 
@@ -234,60 +147,12 @@ page_start('Donate');
     <section class="howto">
       <h3>How to donate</h3>
       <ol>
-        <li>Books: set a drop-off time, or we’ll contact you about pick-up.</li>
-        <li>Money: use QR, bank transfer, or check, then fill out the donation form so we can thank you.</li>
+        <li>Use QR, bank transfer, or check, then fill out the donation form so we can thank you.</li>
         <li>You’ll get a confirmation after you submit.</li>
       </ol>
     </section>
 
-    <?php if ($tab === 'book'): ?>
-      <section class="form-card">
-        <h1>Book donation</h1>
-        <form method="post" enctype="multipart/form-data">
-          <?= csrf_field() ?>
-          <input type="hidden" name="action" value="book">
-          <div class="form-grid">
-            <label>Name (Donor or Organization)
-              <input name="donor_name" required maxlength="150" value="<?= e($old['donor_name']) ?>">
-            </label>
-            <label>Email
-              <input type="email" name="donor_email" required maxlength="150" value="<?= e($old['donor_email']) ?>">
-            </label>
-            <label>Contact info
-              <input name="contact_info" maxlength="255" placeholder="Phone (optional)" value="<?= e($old['contact_info']) ?>">
-            </label>
-            <label>Title <span class="field-note"></span>
-              <input name="title" maxlength="200" placeholder=" Description only if bulk donation" value="<?= e($old['title']) ?>">
-            </label>
-            <label>Author 
-              <input name="author" maxlength="200" placeholder="Leave blank if donating multiple books" value="<?= e($old['author']) ?>">
-            </label>
-            <label>Genre
-              <input name="genre" maxlength="120" value="<?= e($old['genre']) ?>">
-            </label>
-            <label>Estimated quantity <span class="field-note">An approximate count is fine. If you only know a range, enter your best estimate and note the range below. We use this for transparency and don’t track each donated book individually.</span>
-              <input type="number" name="quantity" min="1" value="<?= e($old['quantity']) ?>" required>
-            </label>
-            <label>Condition
-              <select name="condition">
-                <option value="">Select</option>
-                <?php foreach (['Like new', 'Good', 'Fair', 'Mixed lot'] as $condition): ?>
-                  <option value="<?= e($condition) ?>" <?= $old['condition'] === $condition ? 'selected' : '' ?>><?= e($condition) ?></option>
-                <?php endforeach; ?>
-              </select>
-            </label>
-          </div>
-          <label>Notes
-            <textarea name="donation_description" rows="3" placeholder="Optional: estimated quantity range, editions, or pickup notes"><?= e($old['donation_description']) ?></textarea>
-          </label>
-          <label class="upload-box">
-            <span>Upload book photo (optional)</span>
-            <input type="file" name="donation_photo" accept="image/jpeg,image/png,image/webp,image/gif">
-          </label>
-          <button class="button wide" type="submit">Submit book donation</button>
-        </form>
-      </section>
-    <?php else: ?>
+    <?php if ($tab === 'money'): ?>
       <section class="form-card">
         <h1>Monetary donation</h1>
         <p class="lede">After donating, please fill out this form so we can thank you. The amount is self-reported and recorded for transparency; it is not independently tracked through this form.</p>

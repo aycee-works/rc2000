@@ -211,3 +211,32 @@ function update_money_donation(PDO $pdo, int $id, int $adminId, string $decision
 
     return ['ok' => true, 'message' => $message, 'code' => 200, 'changed' => true, 'record' => get_money_donation($pdo, $id)];
 }
+
+/**
+ * Retrieve a donor's previous monetary donation history.
+ * Identifies donors through their email address.
+ */
+function get_money_donor_history(PDO $pdo, array $donation): array
+{
+    $stmt = $pdo->prepare(
+        'SELECT
+            COUNT(*) AS previous,
+            MIN(created_at) AS since
+         FROM monetary_donations
+         WHERE donor_email = ?
+           AND id != ?'
+    );
+
+    $stmt->execute([
+        $donation['donor_email'],
+        $donation['id']
+    ]);
+
+    $row = $stmt->fetch();
+
+    return [
+        'previous' => (int) ($row['previous'] ?? 0),
+        'since' => $row['since'] ?? null
+    ];
+}
+

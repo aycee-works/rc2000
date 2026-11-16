@@ -50,115 +50,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (!$errors) {
-            $label = $categories[$old['category']];
+            $category = $categories[$old['category']];
             $message = $old['message'];
             if ($old['phone'] !== '') {
                 $message .= "\n\nPhone: " . $old['phone'];
             }
-            
-              try {
-                  $pdo = db();
-                  $pdo->beginTransaction();
-
-                  $stmt = $pdo->prepare(
-                      'INSERT INTO rc2000_admin.inquiries
-                          (name, email, category, subject, message, status)
-                      VALUES
-                          (:name, :email, :category, :subject, :message, :status)
-                      RETURNING id, created_at'
-                  );
-
-                  $stmt->execute([
-                      'name'     => $old['sender_name'],
-                      'email'    => $old['sender_email'],
-                      'category' => $label,
-                      'subject'  => $old['subject'],
-                      'message'  => $message,
-                      'status'   => 'open',
-                  ]);
-
-                  $row = $stmt->fetch();
-                  $inquiryId = (int) $row['id'];
-
-                  $referenceNo = 'INQ-' . str_pad(
-                      (string) $inquiryId,
-                      4,
-                      '0',
-                      STR_PAD_LEFT
-                  );
-
-                  $update = $pdo->prepare(
-                      'UPDATE rc2000_admin.inquiries
-                      SET reference_no = :reference_no
-                      WHERE id = :id'
-                  );
-
-                  $update->execute([
-                      'reference_no' => $referenceNo,
-                      'id' => $inquiryId,
-                  ]);
-
-                  $pdo->commit();
-
-                  flash_set(
-                      'success',
-                      'Inquiry submitted. Save this reference number to check status: '
-                      . $referenceNo
-                  );
-
-                  redirect('/public/inquiry.php?view=status');
-
-              } catch (Throwable $error) {
-                  if (isset($pdo) && $pdo instanceof PDO
-                      && $pdo->inTransaction()) {
-                      $pdo->rollBack();
-                  }
-
-                  error_log(
-                      'Public inquiry submission failed: '
-                      . $error->getMessage()
-                  );
-
-                  $errors[] = 'We could not save your inquiry. Please check the database connection and try again.';
-              }
-
-        }
-    }
-
-    if ($action === 'status') {
-        $view = 'status';
-        $referenceNo = strtoupper(trim($old['ticket_number']));
-        if (!preg_match('/^INQ-\d{4,}$/', $referenceNo)) {
-            $errors[] = 'Enter a reference number such as INQ-0001.';
-        }
-        if (!required_text($old['sender_name'], 150)) {
-            $errors[] = 'Please enter the name used when you submitted.';
-        }
-        if (!valid_email($old['sender_email'])) {
-            $errors[] = 'Please enter the email used when you submitted.';
-        }
-        if (!$errors) {
-            $stmt = db()->prepare(
-                'SELECT id, reference_no, name, email, subject, status, created_at, updated_at
-                 FROM rc2000_admin.inquiries
-                 WHERE LOWER(reference_no) = LOWER(:reference_no)
-                   AND LOWER(email) = LOWER(:email)
-                   AND LOWER(name) = LOWER(:name)
-                 LIMIT 1'
-            );
-            $stmt->execute([
-                'reference_no' => $referenceNo,
-                'email' => $old['sender_email'],
-                'name' => $old['sender_name'],
-            ]);
-            $row = $stmt->fetch() ?: null;
-            if (!$row) {
-                $errors[] = 'No ticket matched that number, name, and email.';
-            } else {
-                $statusResult = $row;
+            try {
+                $stmt = db()->prepare(
+                    "INSERT INTO rc2000_admin.inquiries (reference_no, name, email, subject, category, message)
+                     VALUES ('INQ-' || lpad(nextval('rc2000_admin.inquiry_seq')::text, 4, '0'),
+                             :name, :email, :subject, :category, :message)
+                     RETURNING reference_no"
+                );
+                $stmt->execute([
+                    'name' => $old['sender_name'],
+                    'email' => $old['sender_email'],
+                    'subject' => $old['subject'],
+                    'category' => $category,
+                    'message' => $message,
+                ]);
+                $ticket = (string) $stmt->fetchColumn();
+                flash_set('success', 'Ticket submitted. Save this number to check status: ' . $ticket);
+                redirect('/public/inquiry.php?view=status');
+            } catch (Throwable $error) {
+                $errors[] = 'We could not save your ticket yet. Please try again when the database is available.';
             }
         }
     }
+
+if ($action === 'status') {
+    $view = 'status';
+
+    $ticketRef = strtoupper(trim($old['ticket_number']));
+    if (!preg_match('/^INQ-\d{4,}$/', $ticketRef)) {
+        $errors[] = 'Enter a ticket number such as INQ-0001.';
+    }
+
+    $referenceNo = $ticketRef;
+
+    if (!required_text($old['sender_name'], 150)) {
+        $errors[] = 'Please enter the name used when you submitted.';
+    }
+
+    if (!valid_email($old['sender_email'])) {
+        $errors[] = 'Please enter the email used when you submitted.';
+    }
+
+    if (!$errors) {
+        $stmt = db()->prepare(
+            'SELECT id, reference_no, name, email, subject, status, created_at, updated_at
+             FROM rc2000_admin.inquiries
+             WHERE LOWER(reference_no) = LOWER(:reference_no)
+               AND LOWER(email) = LOWER(:email)
+               AND LOWER(name) = LOWER(:name)
+             LIMIT 1'
+        );
+
+        $stmt->execute([
+            'reference_no' => $referenceNo,
+            'email' => $old['sender_email'],
+            'name' => $old['sender_name'],
+        ]);
+
+        $row = fetch_one(
+            'SELECT reference_no, name, email, subject, status, created_at
+            FROM rc2000_admin.inquiries
+            WHERE reference_no = :ref
+              AND LOWER(email) = LOWER(:email)
+              AND LOWER(name) = LOWER(:name)
+            LIMIT 1',
+            [
+                'ref' => $ticketRef,
+                'email' => $old['sender_email'],
+                'name' => $old['sender_name'],
+            ]
+        );
+
+        if (!$row) {
+            $errors[] = 'No ticket matched that number, name, and email.';
+        } else {
+            $statusResult = $row;
+        }
+    }
+}
 }
 
 page_start('Inquiry');
@@ -167,7 +141,7 @@ page_start('Inquiry');
   <div class="section-heading">
     <div>
       <h1>Send us an inquiry!</h1>
-      <p>Drop us a message and we’ll reply faster than you can finish a chapter. You’ll get a reference number so you can check your message status.</p>
+      <p>Send us an inquiry, request, report, or message. You’ll get a ticket number to track it.</p>
     </div>
   </div>
 
@@ -214,10 +188,11 @@ page_start('Inquiry');
   <?php else: ?>
     <section class="form-card framed" data-reveal>
       <?php if ($statusResult): ?>
+        <?php $statusLabels = ['open' => 'Open', 'in_progress' => 'In progress', 'resolved' => 'Resolved', 'closed' => 'Closed']; ?>
         <div class="status-result">
-          <p class="eyebrow">Inquiry reference</p>
+          <p class="eyebrow">Ticket</p>
           <h2><?= e((string) $statusResult['reference_no']) ?></h2>
-          <p><strong>Status:</strong> <?= e(['open' => 'Open', 'in_progress' => 'In progress', 'resolved' => 'Resolved', 'closed' => 'Closed'][(string) $statusResult['status']] ?? (string) $statusResult['status']) ?></p>
+          <p><strong>Status:</strong> <?= e($statusLabels[$statusResult['status']] ?? (string) $statusResult['status']) ?></p>
           <p><strong>Subject:</strong> <?= e((string) $statusResult['subject']) ?></p>
           <p><strong>Submitted:</strong> <?= e(date('M j, Y g:i A', strtotime((string) $statusResult['created_at']))) ?></p>
         </div>
