@@ -32,8 +32,8 @@ $extraCss  = ['dashboard.css'];
 require dirname(__DIR__, 3) . '/includes/portal/superadmin-header.php';
 ?>
 <header class="page-header">
-    <h1 class="page-title">Super Admin dashboard</h1>
-    <p class="page-subtitle">Monitor administrator accounts and recent administrator activity</p>
+    <h1 class="page-title">Super Admin Dashboard</h1>
+    <p class="page-subtitle">Monitor Administrator Accounts and Recent Administrator Activity.</p>
 </header>
 
 <?php if ($loadError): ?>
@@ -42,24 +42,24 @@ require dirname(__DIR__, 3) . '/includes/portal/superadmin-header.php';
 
 <section class="stat-grid stat-grid-4" aria-label="Overview">
     <article class="stat-card">
-        <div class="stat-label">Active administrators</div>
+        <div class="stat-label">Active Administrators</div>
         <div class="stat-value"><?= $counts ? (int) $counts['active'] : '–' ?></div>
         <div class="stat-sub"><?= $counts ? 'of ' . (int) $counts['total'] . ' admin account' . ($counts['total'] === 1 ? '' : 's') : '' ?></div>
     </article>
     <article class="stat-card">
-        <div class="stat-label">Deactivated accounts</div>
+        <div class="stat-label">Deactivated Accounts</div>
         <div class="stat-value"><?= $counts ? (int) $counts['deactivated'] : '–' ?></div>
-        <a class="stat-link" href="<?= e(url('superadmin/admins/index.php?status=deactivated')) ?>">Review accounts ›</a>
+        <a class="stat-link" href="<?= e(url('superadmin/admins/index.php?status=deactivated')) ?>">Review Accounts ›</a>
     </article>
     <article class="stat-card">
-        <div class="stat-label">Admin actions today</div>
+        <div class="stat-label">Admin Actions Today</div>
         <div class="stat-value"><?= $actions ? (int) $actions['today'] : '–' ?></div>
         <div class="stat-sub"><?= e(date('M j, Y')) ?></div>
     </article>
     <article class="stat-card">
-        <div class="stat-label">Admin actions this week</div>
+        <div class="stat-label">Admin Actions This Week</div>
         <div class="stat-value"><?= $actions ? (int) $actions['week'] : '–' ?></div>
-        <a class="stat-link" href="<?= e(url('superadmin/audit-logs.php')) ?>">Open audit logs ›</a>
+        <a class="stat-link" href="<?= e(url('superadmin/audit-logs.php')) ?>">Open Audit Logs ›</a>
     </article>
 </section>
 
@@ -67,7 +67,7 @@ require dirname(__DIR__, 3) . '/includes/portal/superadmin-header.php';
     <div class="sa-dash-main">
         <section class="panel" aria-label="Recent administrative activity">
             <div class="panel-header">
-                <h2 class="panel-title">Recent administrative activity</h2>
+                <h2 class="panel-title">Recent Administrative Activity</h2>
                 <a href="<?= e(url('superadmin/audit-logs.php')) ?>">View all</a>
             </div>
             <div class="table-wrap">
@@ -95,7 +95,7 @@ require dirname(__DIR__, 3) . '/includes/portal/superadmin-header.php';
 
         <section class="panel" aria-label="Activity by module">
             <div class="panel-header">
-                <h2 class="panel-title">Activity by module</h2>
+                <h2 class="panel-title">Activity by Module</h2>
                 <span class="muted sa-small">This week · <?= $actions ? (int) $actions['week'] : 0 ?> action<?= $actions && $actions['week'] === 1 ? '' : 's' ?></span>
             </div>
             <div class="panel-body">
@@ -113,7 +113,7 @@ require dirname(__DIR__, 3) . '/includes/portal/superadmin-header.php';
 
     <aside class="sa-dash-side">
         <section class="panel" aria-label="Admin accounts">
-            <div class="panel-header"><h2 class="panel-title">Admin accounts</h2></div>
+            <div class="panel-header"><h2 class="panel-title">Admin Accounts</h2></div>
             <ul class="sa-account-list">
                 <?php if (!$accounts): ?>
                     <li class="table-empty">No admin accounts yet.</li>
@@ -133,7 +133,7 @@ require dirname(__DIR__, 3) . '/includes/portal/superadmin-header.php';
                 <?php endforeach; ?>
             </ul>
             <div class="panel-body">
-                <a class="btn btn-maroon btn-block" href="<?= e(url('superadmin/admins/index.php')) ?>">Manage admin accounts</a>
+                <a class="btn btn-maroon btn-block" href="<?= e(url('superadmin/admins/index.php')) ?>">Manage Admin Accounts</a>
             </div>
         </section>
     </aside>

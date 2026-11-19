@@ -6,11 +6,11 @@
 $admin = current_admin();
 $navItems = [
     'dashboard' => ['Dashboard',        'admin/dashboard.php'],
-    'donations' => ['Manage donations', 'admin/donations/index.php'],
-    'community' => ['Manage campaigns', 'admin/community.php'],
-    'content'   => ['Manage content',   'admin/content/index.php'],
-    'inquiries' => ['Manage inquiries', 'admin/inquiries/index.php'],
-    'feedback'  => ['Website feedback', 'admin/feedback/index.php'],
+    'donations' => ['Manage Donations', 'admin/donations/index.php'],
+    'community' => ['Manage Campaigns', 'admin/community.php'],
+    'content'   => ['Manage Content',   'admin/content/index.php'],
+    'inquiries' => ['Manage Inquiries', 'admin/inquiries/index.php'],
+    'feedback'  => ['Website Feedback', 'admin/feedback/index.php'],
 ];
 ?>
 <aside class="sidebar">
@@ -32,7 +32,7 @@ $navItems = [
         <div class="sidebar-user"><?= e($admin['name'] ?? '') ?></div>
         <form method="post" action="<?= e(url('admin/logout.php')) ?>">
             <?= csrf_field() ?>
-            <button type="submit" class="link-button">Log out</button>
+            <button type="submit" class="link-button">Log Out</button>
         </form>
     </div>
 </aside>

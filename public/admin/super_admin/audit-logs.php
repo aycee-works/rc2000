@@ -34,7 +34,7 @@ $activeNav = 'audit';
 require dirname(__DIR__, 3) . '/includes/portal/superadmin-header.php';
 ?>
 <header class="page-header">
-    <h1 class="page-title">Audit logs</h1>
+    <h1 class="page-title">Audit Logs</h1>
     <p class="page-subtitle">Review administrative activity on content, donations, and inquiries.</p>
 </header>
 

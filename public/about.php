@@ -32,21 +32,21 @@ page_start('About');
   <section class="section rc-history" id="history" data-reveal>
     <div class="history-heading">
       <span class="eyebrow">A COMMUNITY LIBRARY IN MAKATI</span>
-      <h2>The story of RC2000</h2>
+      <h2>The Story of RC2000</h2>
       <p>From a small collection outside a family home to an open invitation to read, Reading Club 2000 has grown through the generosity of its community.</p>
     </div>
     <div class="history-timeline">
       <article class="history-milestone">
         <span class="history-year">2000</span>
-        <div><h3>A library begins at home</h3><p>Mang Nanie placed books outside his home on Balagtas Street in La Paz, Makati, making them freely available to neighbors and passersby.</p></div>
+        <div><h3>A Library Begins at Home</h3><p>Mang Nanie placed books outside his home on Balagtas Street in La Paz, Makati, making them freely available to neighbors and passersby.</p></div>
       </article>
       <article class="history-milestone">
-        <span class="history-year">A growing collection</span>
-        <div><h3>Readers become donors</h3><p>People borrowed books and brought more to share. Over time, community support turned the small collection into thousands of books.</p></div>
+        <span class="history-year">A Growing Collection</span>
+        <div><h3>Readers Become Donors</h3><p>People borrowed books and brought more to share. Over time, community support turned the small collection into thousands of books.</p></div>
       </article>
       <article class="history-milestone">
         <span class="history-year">Today</span>
-        <div><h3>Reading stays open to all</h3><p>Reading Club 2000 continues to welcome readers and share books at no cost, carrying forward Mang Nanie’s belief that everyone should have access to reading.</p></div>
+        <div><h3>Reading Stays Open to All</h3><p>Reading Club 2000 continues to welcome readers and share books at no cost, carrying forward Mang Nanie’s belief that everyone should have access to reading.</p></div>
       </article>
     </div>
   </section>

@@ -36,7 +36,7 @@ page_start('Explore');
     <section class="page-hero explore-hero">
         <div class="section">
             <span class="eyebrow">Read, learn, discover</span>
-            <h1>Explore our stories</h1>
+            <h1>Explore Our Stories</h1>
             <p>Stories, articles, and activities from the RC2000 community.</p>
             <form class="explore-search" action="<?= e(app_url('public/explore.php')) ?>" method="get" role="search">
                 <label class="sr-only" for="explore-query">Search stories and articles</label>

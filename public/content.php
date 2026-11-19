@@ -27,7 +27,7 @@ if (!$content) {
     ?>
     <main class="section narrow">
         <p class="eyebrow">Reading Club 2000</p>
-        <h1>Content not found</h1>
+        <h1>Content not Found</h1>
         <p>
             This story or article may no longer be available,
             or its link may be invalid.

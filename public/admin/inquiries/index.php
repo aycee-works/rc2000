@@ -53,7 +53,7 @@ $extraJs   = ['review-dialog.js', 'inquiries.js'];
 require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
 ?>
 <header class="page-header">
-    <h1 class="page-title">Manage inquiries</h1>
+    <h1 class="page-title">Manage Inquiries</h1>
     <p class="page-subtitle">Review, respond, and resolve inquiries submitted through the website.</p>
 </header>
 
