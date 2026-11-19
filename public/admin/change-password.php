@@ -68,7 +68,7 @@ if (is_post()) {
             </form>
             <form method="post" action="<?= e(url('admin/logout.php')) ?>" style="margin-top:12px;text-align:center">
                 <?= csrf_field() ?>
-                <button type="submit" class="link-button login-footnote">Log out</button>
+                <button type="submit" class="link-button login-footnote">Log Out</button>
             </form>
         </div>
     </section>

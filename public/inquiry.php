@@ -140,14 +140,14 @@ page_start('Inquiry');
 <main class="section inquiry-page">
   <div class="section-heading">
     <div>
-      <h1>Send us an inquiry!</h1>
+      <h1>Send Us an Inquiry!</h1>
       <p>Send us an inquiry, request, report, or message. You’ll get a ticket number to track it.</p>
     </div>
   </div>
 
   <div class="subnav">
-    <a href="<?= e(app_url('public/inquiry.php?view=submit')) ?>" class="<?= $view === 'submit' ? 'is-active' : '' ?>">Submit an inquiry</a>
-    <a href="<?= e(app_url('public/inquiry.php?view=status')) ?>" class="<?= $view === 'status' ? 'is-active' : '' ?>">Check inquiry status</a>
+    <a href="<?= e(app_url('public/inquiry.php?view=submit')) ?>" class="<?= $view === 'submit' ? 'is-active' : '' ?>">Submit an Inquiry</a>
+    <a href="<?= e(app_url('public/inquiry.php?view=status')) ?>" class="<?= $view === 'status' ? 'is-active' : '' ?>">Check Inquiry Status</a>
   </div>
 
   <?php render_alerts($errors); ?>

@@ -24,7 +24,7 @@ $navItems = [
         <div class="sidebar-user">Super Admin</div>
         <form method="post" action="<?= e(url('superadmin/logout.php')) ?>">
             <?= csrf_field() ?>
-            <button type="submit" class="link-button">Log out</button>
+            <button type="submit" class="link-button">Log Out</button>
         </form>
     </div>
 </aside>

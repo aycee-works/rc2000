@@ -105,7 +105,7 @@ if ($quiz) {
 page_start('Daily quiz', ['class' => 'daily-quiz-page']);
 ?>
 <main class="section quiz-page">
-  <header class="quiz-page-header"><span class="eyebrow">Reading together · daily quiz</span><h1>Five questions, one at a time</h1><p>Answer all five questions to see your score. Joining the leaderboard is optional.</p></header>
+  <header class="quiz-page-header"><span class="eyebrow">Reading together · daily quiz</span><h1>Five Questions, One at a Time</h1><p>Answer all five questions to reveal your score. Joining the leaderboard is optional.</p></header>
   <?php render_alerts($errors); ?>
   <?php if ($result): ?>
     <section class="quiz-result" aria-live="polite"><span class="eyebrow">Quiz complete · your score</span><div class="quiz-result-score"><?= (int) $result['score'] ?>/5</div><h2><?= !empty($result['joined']) ? 'Thanks for joining the leaderboard, ' . e((string) $result['username']) . '!' : 'Here is your result.' ?></h2><p>You answered <?= (int) $result['score'] ?> out of 5 questions correctly.</p><p>Quiz date: <?= e(date('M j, Y', strtotime((string) $quiz['quiz_date']))) ?></p></section>
@@ -117,13 +117,13 @@ page_start('Daily quiz', ['class' => 'daily-quiz-page']);
         <div class="quiz-leaderboard-actions"><button type="submit" form="quiz-join-form" class="button">Join leaderboard</button><form method="post" class="quiz-skip-form"><?= csrf_field() ?><input type="hidden" name="action" value="skip_leaderboard"><button type="submit" class="button">No thanks, skip</button></form></div>
       </section>
     <?php endif; ?>
-  <?php elseif (!$quiz || count($questions) !== 5): ?><section class="quiz-result"><h2>No quiz is published today</h2><p>Please check back later for the next daily quiz.</p></section>
+  <?php elseif (!$quiz || count($questions) !== 5): ?><section class="quiz-result"><h2>Today's Quiz Is Not Yet Available</h2><p>Please check back later.</p></section>
   <?php else: ?>
     <form method="post" class="daily-quiz-form" data-quiz-steps><?= csrf_field() ?><input type="hidden" name="action" value="calculate_score">
       <?php foreach ($questions as $i => $q): ?><fieldset class="quiz-step<?= $i === 0 ? ' is-current' : '' ?>" data-quiz-step="<?= $i ?>" <?= $i ? 'hidden' : '' ?>><legend><span>Question <?= $i + 1 ?> of 5</span><h2><?= e($q['question']) ?></h2></legend><div class="quiz-options"><?php foreach ($q['options'] as $index => $option): ?><label><input type="radio" name="answers[<?= (int) $q['id'] ?>]" value="<?= (int) $index ?>"><span><?= e((string) $option) ?></span></label><?php endforeach; ?></div><div class="quiz-step-actions"><?php if ($i > 0): ?><button type="button" class="button button-outline" data-quiz-prev>← Back</button><?php endif; ?><?php if ($i < 4): ?><button type="button" class="button" data-quiz-next>Next →</button><?php else: ?><button type="submit" class="button" data-quiz-submit-score>See score</button><?php endif; ?></div></fieldset><?php endforeach; ?>
       <div class="quiz-progress"><span data-quiz-progress></span></div>
     </form>
   <?php endif; ?>
-  <section class="quiz-leaderboard"><h2>Today’s leaderboard</h2><?php if ($leaders): ?><ol><?php foreach ($leaders as $leader): ?><li><span><?= e($leader['username']) ?></span><strong><?= (int) $leader['score'] ?>/5</strong></li><?php endforeach; ?></ol><?php else: ?><p>Scores will appear here after visitors complete today’s quiz.</p><?php endif; ?></section>
+  <section class="quiz-leaderboard"><h2>Today’s Leaderboard</h2><?php if ($leaders): ?><ol><?php foreach ($leaders as $leader): ?><li><span><?= e($leader['username']) ?></span><strong><?= (int) $leader['score'] ?>/5</strong></li><?php endforeach; ?></ol><?php else: ?><p>The leaderboard will update as participants complete today's quiz.</p><?php endif; ?></section>
 </main>
 <?php page_end(); ?>
