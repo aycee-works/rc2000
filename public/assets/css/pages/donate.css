@@ -42,3 +42,10 @@ body:has(.donate-layout) .payment-date-label img { display: block; width: 18px; 
   body:has(.donate-layout) .form-card { padding: 18px; }
   body:has(.donate-layout) .form-grid { grid-template-columns: minmax(0, 1fr); }
 }
+.campaign-payment-methods { margin:20px 0; }
+.campaign-payment-methods h2 { font-size:1.25rem; }
+.campaign-payment-methods > div { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; }
+.campaign-payment-methods article { padding:13px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+.campaign-payment-methods article strong,.campaign-payment-methods article span { display:block; }
+.campaign-payment-methods article span,.campaign-payment-methods article p { color:var(--muted); font-size:.82rem; }
+.campaign-payment-methods img { width:min(100%,180px); margin:10px auto; }

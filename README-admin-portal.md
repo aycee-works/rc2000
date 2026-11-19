@@ -14,7 +14,8 @@ The portals use shared code in `includes/portal/`, settings in `config/portal/`,
 1. Start Apache and PostgreSQL in XAMPP.
 2. In pgAdmin, select the existing `rc2000_db` database and run `database/admin_portal_schema.sql`.
 3. Run `database/super-admin.sql`, then `database/integration.sql` in the same database.
-4. In XAMPP Shell, create the initial superadmin:
+4. Run `database/community_features.sql` in the same database to add public campaigns, campaign donation tracking, weekly challenges, and daily quizzes.
+5. In XAMPP Shell, create the initial superadmin:
 
    ```powershell
    cd C:\xampp\htdocs\rc2000
@@ -25,5 +26,5 @@ The portals use shared code in `includes/portal/`, settings in `config/portal/`,
 
 The portal connection reuses `config/db.php` and its `RC2000_DB_*` environment variables. Keep that file's local database credentials configured for XAMPP.
 
-The current public forms continue to use the existing public tables. The portal's separate donation and inquiry tables are ready for submissions sent to the added /api/public/ endpoints; the existing form handlers are not yet wired to those endpoints, so current form submissions will not automatically appear in the new admin lists.
+The campaign and quiz experience requires the one-time `database/community_features.sql` migration. It adds the campaign, challenge, vote, quiz, and quiz score tables to `rc2000_admin` and extends monetary donation records with campaign and email status fields. Campaigns and donation reports are managed at `/rc2000/public/admin/community.php`; weekly challenges, daily quizzes, and leaderboard publishing are in Manage content at `/rc2000/public/admin/content/index.php`. Existing featured stories and articles remain in their current content system.
 

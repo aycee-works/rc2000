@@ -27,3 +27,14 @@ body:has(.history-panel) .gallery-grid.mosaic figcaption { padding: 7px 9px; bac
   body:has(.history-panel) .article-tile { min-height: 190px; }
   body:has(.gallery-grid.mosaic):not(:has(.hero)) .gallery-grid.mosaic { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+/* Search-led Explore page from the multi-page RC2000 concept. */
+.explore-hero { background:linear-gradient(115deg,#e2ecee,#f7f2e6 67%,#eee0c7); color:var(--ink); }
+.explore-hero .section { max-width:1200px; margin:0 auto; padding-top:54px; padding-bottom:44px; }
+.explore-hero h1 { margin:7px 0 2px; font-size:clamp(2rem,4vw,3rem); }
+.explore-hero p { margin:0 0 18px; color:var(--muted); }
+.explore-search { display:flex; max-width:660px; gap:9px; padding:7px; border:1px solid #d9dfe2; border-radius:7px; background:#fff; }
+.explore-search input { flex:1; min-width:0; border:0; padding:8px 10px; outline:0; }
+.explore-categories { display:flex; flex-wrap:wrap; gap:9px; margin-top:15px; }
+.explore-categories a { min-width:90px; padding:6px 13px; border-radius:99px; background:#f3efe6; color:var(--ink); font-size:.78rem; text-align:center; text-decoration:none; }
+.explore-categories a:hover { background:var(--red); color:#fff; }
+@media(max-width:560px) { .explore-search { flex-wrap:wrap; } .explore-search .button { width:100%; } }

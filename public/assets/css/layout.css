@@ -64,7 +64,10 @@
         flex-direction: row; flex-wrap: wrap; align-items: center;
         gap: 8px 16px; padding: 12px 16px;
         border-right: 0; border-bottom: 1px solid var(--color-border);
+        transform:none !important;
+        box-shadow:none !important;
     }
+    .sidebar-reveal { display:none; }
     .sidebar-brand { padding: 0; }
     .sidebar-nav { flex-direction: row; flex-wrap: wrap; flex: 1; }
     .sidebar-footer {
@@ -72,4 +75,44 @@
         display: flex; gap: 12px; align-items: center;
     }
     .admin-main { padding: 20px 16px 40px; }
+}
+
+/* Keep the admin workspace full width and reveal navigation from the left edge. */
+@media (min-width: 901px) {
+    body.admin-body:not(.superadmin-body) .admin-shell { display:block; }
+    body.admin-body:not(.superadmin-body) .sidebar {
+        position:fixed;
+        left:0;
+        z-index:1000;
+        width:210px;
+        transform:translateX(calc(-100% + 22px));
+        transition:transform .22s ease, box-shadow .22s ease;
+        box-shadow:none;
+    }
+    body.admin-body:not(.superadmin-body) .sidebar-reveal {
+        position:absolute;
+        top:44%;
+        right:0;
+        width:22px;
+        height:58px;
+        padding:0;
+        border:0;
+        border-radius:0 6px 6px 0;
+        background:var(--color-maroon);
+        color:#fff;
+        font-size:17px;
+        cursor:pointer;
+        box-shadow:2px 1px 5px rgba(0,0,0,.18);
+    }
+    body.admin-body:not(.superadmin-body) .sidebar-reveal:focus-visible { outline:3px solid #d8ad47; outline-offset:2px; }
+    body.admin-body:not(.superadmin-body) .sidebar:hover,
+    body.admin-body:not(.superadmin-body) .sidebar:focus-within {
+        transform:translateX(0);
+        box-shadow:8px 0 24px rgba(17,29,43,.2);
+    }
+    body.admin-body:not(.superadmin-body) .sidebar.is-pinned-open { transform:translateX(0); box-shadow:8px 0 24px rgba(17,29,43,.2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.admin-body:not(.superadmin-body) .sidebar { transition:none; }
 }

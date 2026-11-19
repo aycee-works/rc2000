@@ -59,6 +59,24 @@
       });
     });
   });
+
+  document.querySelectorAll('[data-quiz-steps]').forEach((form) => {
+    const steps = [...form.querySelectorAll('[data-quiz-step]')];
+    const progress = form.querySelector('[data-quiz-progress]');
+    let current = 0;
+    const show = (index) => {
+      current = Math.max(0, Math.min(index, steps.length - 1));
+      steps.forEach((step, i) => { step.hidden = i !== current; step.classList.toggle('is-current', i === current); });
+      if (progress) progress.style.width = ((current + 1) / steps.length * 100) + '%';
+    };
+    form.querySelectorAll('[data-quiz-next]').forEach((button) => button.addEventListener('click', () => {
+      const checked = steps[current].querySelector('input[type="radio"]:checked');
+      if (!checked) { steps[current].querySelector('input[type="radio"]')?.focus(); return; }
+      show(current + 1);
+    }));
+    form.querySelectorAll('[data-quiz-prev]').forEach((button) => button.addEventListener('click', () => show(current - 1)));
+    show(0);
+  });
     const feedbackDialog = document.getElementById('feedback-dialog');
   if (feedbackDialog) {
     const feedbackForm = document.getElementById('feedback-form');

@@ -1,3 +1,3 @@
 <?php
-header('Location: /rc2000/public/home.php#trivia', true, 301);
+header('Location: /rc2000/public/daily-quiz.php', true, 302);
 exit;

@@ -1,5 +1,30 @@
 <?php
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/community.php';
+
+$challengeNotice = '';
+$challenge = current_challenge();
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'challenge_vote') {
+    if (!csrf_is_valid($_POST['csrf_token'] ?? null)) {
+        $challengeNotice = 'Your session expired. Please try again.';
+    } elseif ($challenge && (int) ($_POST['challenge_id'] ?? 0) === (int) $challenge['id']) {
+        $choice = (string) ($_POST['choice'] ?? '');
+        if (in_array($choice, ['accept', 'not_for_me'], true)) {
+            try {
+                $voterHash = hash('sha256', ($_SERVER['REMOTE_ADDR'] ?? '') . '|' . ($_SERVER['HTTP_USER_AGENT'] ?? ''));
+                $stmt = db()->prepare('INSERT INTO rc2000_admin.challenge_votes (challenge_id, voter_hash, choice) VALUES (?, ?, ?) ON CONFLICT (challenge_id, voter_hash) DO NOTHING');
+                $stmt->execute([(int) $challenge['id'], $voterHash, $choice]);
+                $challengeNotice = $stmt->rowCount() ? 'Thanks for sharing your response.' : 'Your response has already been counted for this challenge.';
+                $challenge = current_challenge();
+            } catch (Throwable $e) {
+                error_log('Challenge vote failed: ' . $e->getMessage());
+                $challengeNotice = 'We could not save your vote right now. Please try again.';
+            }
+        }
+    }
+}
+$campaign = featured_campaign();
+$quizToday = daily_quiz();
 
 /*
 |--------------------------------------------------------------------------
@@ -133,7 +158,6 @@ page_start('Home');
         </div>
 
     </section>
-
 
     <!-- FEATURED STORIES -->
 
@@ -354,6 +378,38 @@ page_start('Home');
         <?php endif; ?>
 
     </section>
+
+    <?php if ($campaign): $goal = (float) $campaign['goal_amount']; $raised = (float) $campaign['raised']; $percent = $goal > 0 ? min(100, (int) round($raised / $goal * 100)) : 0; ?>
+    <section class="section community-programs" id="community-programs">
+        <div class="section-heading"><div><span class="eyebrow">Your support in action</span><h2>Community campaign</h2></div><span class="campaign-open-badge">Active campaign</span></div>
+        <article class="campaign-summary">
+            <?php if (!empty($campaign['image_path']) && media_file_exists($campaign['image_path'])): ?><img class="campaign-summary-image" src="<?= e(media_url($campaign['image_path'])) ?>" alt="<?= e($campaign['title']) ?>" loading="lazy"><?php else: ?><div class="campaign-summary-art" aria-hidden="true">RC2000</div><?php endif; ?>
+            <div class="campaign-summary-copy"><h3><?= e($campaign['title']) ?></h3><p><?= nl2br(e($campaign['description'])) ?></p>
+                <div class="campaign-stats"><strong>₱<?= e(number_format($raised, 2)) ?> raised</strong><span>₱<?= e(number_format($goal, 2)) ?> goal</span></div>
+                <div class="campaign-progress" role="progressbar" aria-label="Campaign funding progress" aria-valuenow="<?= $percent ?>" aria-valuemin="0" aria-valuemax="100"><span style="width:<?= $percent ?>%"></span></div>
+                <p class="campaign-meta"><strong><?= $percent ?>% funded</strong><span><?= (int) $campaign['donor_count'] ?> verified donors</span></p>
+                <a class="button" href="<?= e(app_url('public/donate.php?tab=campaign')) ?>">Donate Now →</a>
+            </div>
+        </article>
+    </section>
+    <?php endif; ?>
+
+    <?php if ($challenge): $votesTotal = (int) $challenge['accept_count'] + (int) $challenge['decline_count']; $acceptPct = $votesTotal ? (int) round((int) $challenge['accept_count'] / $votesTotal * 100) : 0; ?>
+    <section class="section weekly-challenge" id="weekly-challenge">
+        <div class="section-heading"><div><span class="eyebrow">Reading together</span><h2>This week’s reading challenge</h2></div></div>
+        <div class="challenge-card">
+            <?php if (!empty($challenge['image_path']) && media_file_exists($challenge['image_path'])): ?><img src="<?= e(media_url($challenge['image_path'])) ?>" alt="<?= e($challenge['title']) ?>" loading="lazy"><?php endif; ?>
+            <div class="challenge-copy"><h3><?= e($challenge['title']) ?></h3><p><?= nl2br(e($challenge['prompt'])) ?></p>
+                <?php if ($challengeNotice !== ''): ?><p class="challenge-notice" role="status"><?= e($challengeNotice) ?></p><?php endif; ?>
+                <form method="post" class="challenge-vote-form"><?= csrf_field() ?><input type="hidden" name="action" value="challenge_vote"><input type="hidden" name="challenge_id" value="<?= (int) $challenge['id'] ?>"><button class="button challenge-accept" name="choice" value="accept">I accept</button><button class="button button-outline" name="choice" value="not_for_me">Not for me</button></form>
+                <div class="challenge-results"><div class="challenge-donut" style="--vote-percent:<?= $acceptPct ?>%"><span><?= $acceptPct ?>%</span></div><div><strong>Community response</strong><p><span><?= (int) $challenge['accept_count'] ?> accept</span><span><?= (int) $challenge['decline_count'] ?> not for me</span></p></div></div>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
+
+    <?php if ($quizToday): ?><section class="section quiz-callout"><span class="eyebrow">Daily quiz</span><h2>Five questions, one at a time</h2><p>Take today’s reading quiz and see how you rank in the community.</p><a class="button" href="<?= e(app_url('public/daily-quiz.php')) ?>">Take today’s quiz →</a></section><?php endif; ?>
+
 
     <!-- TRIVIA -->
        <section class="section tinted" id="trivia" data-reveal>

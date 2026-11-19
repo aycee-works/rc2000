@@ -9,6 +9,89 @@
     var API = 'admin/api/content.php';
     var listUrl = RC.baseUrl() + '/admin/content/index.php';
 
+    // Keep the two content areas compact and allow activity links to open the right tab.
+    var contentTabs = Array.prototype.slice.call(document.querySelectorAll('[data-content-tab]'));
+    var contentPanels = Array.prototype.slice.call(document.querySelectorAll('[data-content-panel]'));
+    if (contentTabs.length && contentPanels.length) {
+        function selectContentTab(name) {
+            contentTabs.forEach(function (tab) {
+                var selected = tab.getAttribute('data-content-tab') === name;
+                tab.classList.toggle('is-active', selected);
+                tab.setAttribute('aria-selected', selected ? 'true' : 'false');
+                tab.tabIndex = selected ? 0 : -1;
+            });
+            contentPanels.forEach(function (panel) {
+                panel.hidden = panel.getAttribute('data-content-panel') !== name;
+            });
+        }
+        contentTabs.forEach(function (tab) {
+            tab.addEventListener('click', function () { selectContentTab(tab.getAttribute('data-content-tab')); });
+        });
+        selectContentTab('activities');
+    }
+
+    var quizMaker = document.querySelector('[data-quiz-question-maker]');
+    if (quizMaker) {
+        function renumberOptions(questionEditor) {
+            var questionIndex = Array.prototype.indexOf.call(quizMaker.querySelectorAll('[data-question-editor]'), questionEditor);
+            var rows = Array.prototype.slice.call(questionEditor.querySelectorAll('[data-option-row]'));
+            rows.forEach(function (row, optionIndex) {
+                var radio = row.querySelector('input[type="radio"]');
+                var option = row.querySelector('input[type="text"]');
+                var remove = row.querySelector('[data-option-remove]');
+                radio.name = 'questions[' + questionIndex + '][correct]';
+                radio.value = String(optionIndex);
+                radio.setAttribute('aria-label', 'Mark option ' + (optionIndex + 1) + ' as correct');
+                option.name = 'questions[' + questionIndex + '][options][]';
+                option.placeholder = 'Answer option ' + (optionIndex + 1);
+                remove.setAttribute('aria-label', 'Remove option ' + (optionIndex + 1));
+                remove.disabled = rows.length <= 2;
+            });
+            var add = questionEditor.querySelector('[data-option-add]');
+            add.disabled = rows.length >= 5;
+        }
+
+        quizMaker.addEventListener('click', function (event) {
+            var add = event.target.closest('[data-option-add]');
+            if (add) {
+                var questionEditor = add.closest('[data-question-editor]');
+                var list = questionEditor.querySelector('[data-option-list]');
+                var count = list.querySelectorAll('[data-option-row]').length;
+                if (count >= 5) { return; }
+                var row = document.createElement('div');
+                row.className = 'quiz-option-maker';
+                row.setAttribute('data-option-row', '');
+                row.innerHTML = '<label class="quiz-correct-choice"><input type="radio" required><span>Correct</span></label><input type="text" maxlength="500" required><button type="button" class="quiz-option-remove" data-option-remove>Remove</button>';
+                list.appendChild(row);
+                renumberOptions(questionEditor);
+                row.querySelector('input[type="text"]').focus();
+                return;
+            }
+            var remove = event.target.closest('[data-option-remove]');
+            if (remove) {
+                var editor = remove.closest('[data-question-editor]');
+                var optionList = remove.closest('[data-option-list]');
+                var currentRows = optionList.querySelectorAll('[data-option-row]');
+                if (currentRows.length <= 2) { return; }
+                var removedWasCorrect = !!remove.closest('[data-option-row]').querySelector('input[type="radio"]').checked;
+                remove.closest('[data-option-row]').remove();
+                renumberOptions(editor);
+                if (removedWasCorrect) { editor.querySelector('[data-option-list] input[type="radio"]').checked = true; }
+            }
+        });
+    }
+
+    document.addEventListener('click', function (event) {
+        var toggle = event.target.closest('[data-editor-toggle]');
+        if (!toggle) { return; }
+        var editor = document.getElementById(toggle.getAttribute('data-editor-toggle'));
+        if (!editor) { return; }
+        var expanded = toggle.getAttribute('aria-expanded') !== 'true';
+        editor.hidden = !expanded;
+        toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        toggle.textContent = expanded ? toggle.getAttribute('data-close-label') : toggle.getAttribute('data-open-label');
+    });
+
     function showMessage(el, text) {
         if (!el) { return; }
         el.textContent = text;

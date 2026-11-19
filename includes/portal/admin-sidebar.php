@@ -7,12 +7,14 @@ $admin = current_admin();
 $navItems = [
     'dashboard' => ['Dashboard',        'admin/dashboard.php'],
     'donations' => ['Manage donations', 'admin/donations/index.php'],
+    'community' => ['Manage campaigns', 'admin/community.php'],
     'content'   => ['Manage content',   'admin/content/index.php'],
     'inquiries' => ['Manage inquiries', 'admin/inquiries/index.php'],
     'feedback'  => ['Website feedback', 'admin/feedback/index.php'],
 ];
 ?>
 <aside class="sidebar">
+    <button class="sidebar-reveal" type="button" aria-label="Open admin navigation" aria-expanded="false" data-sidebar-toggle><span aria-hidden="true">☰</span></button>
     <a class="sidebar-brand" href="<?= e(url('admin/dashboard.php')) ?>">
         <img src="<?= e(asset('images/logo.png')) ?>" alt="" width="26" height="26" onerror="this.style.display='none'">
         <span>Reading Club 2000</span>

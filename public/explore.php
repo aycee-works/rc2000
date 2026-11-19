@@ -36,6 +36,20 @@ page_start('Explore');
 
 <main>
 
+    <section class="page-hero explore-hero">
+        <div class="section">
+            <span class="eyebrow">Read, learn, discover</span>
+            <h1>Explore our stories</h1>
+            <p>Stories, articles, and activities from the RC2000 community.</p>
+            <form class="explore-search" action="<?= e(app_url('public/explore.php')) ?>" method="get" role="search">
+                <label class="sr-only" for="explore-query">Search stories and articles</label>
+                <input id="explore-query" type="search" name="q" placeholder="Search stories and articles" value="<?= e($query) ?>">
+                <button class="button" type="submit">Search</button>
+            </form>
+            <nav class="explore-categories" aria-label="Explore sections"><a href="#stories">Stories</a><a href="#articles">Articles</a><a href="#gallery">Gallery</a><a href="<?= e(app_url('public/daily-quiz.php')) ?>">Daily quiz</a></nav>
+        </div>
+    </section>
+
     <!-- SEARCH RESULTS -->
 
     <?php if ($query !== ''): ?>

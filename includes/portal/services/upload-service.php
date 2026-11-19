@@ -15,7 +15,7 @@
 
 const UPLOAD_MAX_BYTES     = 5 * 1024 * 1024;
 const UPLOAD_MAX_DIMENSION = 8000;
-const UPLOAD_FOLDERS       = ['gallery', 'stories', 'announcements'];
+const UPLOAD_FOLDERS       = ['gallery', 'stories', 'announcements', 'campaigns', 'challenges'];
 const UPLOAD_MIME_EXT      = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
 
 /** Did the user pick a file in this form field? */
@@ -116,7 +116,7 @@ function save_uploaded_image($file, string $folder): array
 /** Delete a stored upload by its relative path. Only paths we generated are accepted. */
 function delete_uploaded_file(?string $relPath): void
 {
-    if (!$relPath || !preg_match('#^uploads/(gallery|stories|announcements)/[A-Za-z0-9_-][A-Za-z0-9._-]*$#', $relPath)) {
+    if (!$relPath || !preg_match('#^uploads/(gallery|stories|announcements|campaigns|challenges)/[A-Za-z0-9_-][A-Za-z0-9._-]*$#', $relPath)) {
         return;
     }
     $full = ROOT_PATH . '/public/' . $relPath;

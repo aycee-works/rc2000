@@ -59,6 +59,6 @@
     </form>
   </div>
 </dialog>
-<script src="<?= e(app_url('public/assets/js/site.js?v=3')) ?>"></script>
+<script src="<?= e(app_url('public/assets/js/site.js?v=4')) ?>"></script>
 </body>
 </html>

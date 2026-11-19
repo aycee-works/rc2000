@@ -1,7 +1,8 @@
 <?php
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/community.php';
 
-$tab = 'money';
+$tab = in_array($_GET['tab'] ?? '', ['money', 'campaign', 'status'], true) ? (string) $_GET['tab'] : 'money';
 
 $methods = active_donation_methods();
 $errors = [];
@@ -34,7 +35,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     $old['anonymous'] = isset($_POST['anonymous']) ? '1' : '';
-    $tab = 'money';
+    $tab = in_array($_POST['action'] ?? '', ['campaign'], true) ? 'campaign' : 'money';
+
+    if (!$errors && $action === 'campaign') {
+        $campaignId = (int) post_string('campaign_id');
+        $name = $old['anonymous'] === '1' ? 'Anonymous' : trim($old['donor_name']);
+        if ($name === '' || mb_strlen($name) > 120) $errors[] = 'Please enter your name or select anonymous giving.';
+        if (!valid_email($old['donor_email']) || mb_strlen($old['donor_email']) > 150) $errors[] = 'Please enter a valid email address.';
+        if (!valid_amount($old['amount_reported'])) $errors[] = 'Please enter a valid amount.';
+        if (!valid_date_time($old['payment_date'])) $errors[] = 'Please enter the payment date.';
+        if (!required_text($old['transaction_reference'], 100)) $errors[] = 'Please enter a transaction reference or check number (100 characters maximum).';
+        $contact = trim($old['contact_info']);
+        if ($contact !== '' && !preg_match('/^[0-9+() \-]{7,30}$/', $contact)) $errors[] = 'Contact number may only contain digits, spaces, + ( ) and - (up to 30 characters).';
+        $campaign = fetch_one("SELECT id FROM rc2000_admin.campaigns WHERE id = :id AND status = 'open'", ['id' => $campaignId]);
+        if (!$campaign) $errors[] = 'Please choose an open campaign.';
+        $methodId = (int) $old['donation_method_id'];
+        $selectedMethod = null;
+        foreach ($methods as $method) if ((int) $method['donation_method_id'] === $methodId) $selectedMethod = $method;
+        if (!$selectedMethod) $errors[] = 'Please choose a donation method.';
+        $proof = store_upload('proof_of_payment', 'proofs', $errors, false);
+        if (!$errors) {
+            try {
+                $methodName = mb_substr(trim($selectedMethod['method_name'] . ' · ' . $selectedMethod['payment_provider']), 0, 40);
+                $stmt = db()->prepare("INSERT INTO rc2000_admin.monetary_donations (reference_no, donor_name, donor_email, donor_contact, reported_amount, payment_method, transaction_ref, proof_path, campaign_id) VALUES ('MD-' || lpad(nextval('rc2000_admin.monetary_donation_seq')::text, 4, '0'), :name, :email, :contact, :amount, :method, :reference, :proof, :campaign) RETURNING reference_no");
+                $stmt->execute(['name' => $name, 'email' => strtolower(trim($old['donor_email'])), 'contact' => $contact ?: null, 'amount' => number_format((float) $old['amount_reported'], 2, '.', ''), 'method' => $methodName, 'reference' => $old['transaction_reference'], 'proof' => $proof, 'campaign' => $campaignId]);
+                $trackingId = (string) $stmt->fetchColumn();
+                flash_set('success', 'Donation report received. Tracking ID: ' . $trackingId . '. It will appear as verified only after admin review.');
+                redirect('/public/donate.php?tab=status&reference=' . rawurlencode($trackingId));
+            } catch (Throwable $error) {
+                error_log('Campaign donation report failed: ' . $error->getMessage());
+                $errors[] = 'We could not save your campaign donation report yet. Please try again.';
+            }
+        }
+    }
 
     if (!$errors && $action === 'monetary') {
         $donorName = $old['anonymous'] === '1' ? 'Anonymous' : $old['donor_name'];
@@ -97,7 +130,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     "INSERT INTO rc2000_admin.monetary_donations
                         (reference_no, donor_name, donor_email, donor_contact, reported_amount, payment_method, transaction_ref, proof_path)
                      VALUES
-                        ('MD-' || lpad(nextval('rc2000_admin.monetary_donation_seq')::text, 4, '0'), :donor_name, :donor_email, :donor_contact, :reported_amount, :payment_method, :transaction_ref, :proof_path)"
+                        ('MD-' || lpad(nextval('rc2000_admin.monetary_donation_seq')::text, 4, '0'), :donor_name, :donor_email, :donor_contact, :reported_amount, :payment_method, :transaction_ref, :proof_path)
+                     RETURNING reference_no"
                 );
                 $contact = trim($old['contact_info']);
                 $portal->execute([
@@ -109,9 +143,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'transaction_ref' => $old['transaction_reference'],
                     'proof_path' => $proof,
                 ]);
+                $trackingId = (string) $portal->fetchColumn();
                 $pdo->commit();
-                flash_set('success', 'Thank you. Your monetary donation report was saved.');
-                redirect('/public/donate.php?tab=money');
+                flash_set('success', 'Donation report received. Tracking ID: ' . $trackingId . '. It will appear as verified only after admin review.');
+                redirect('/public/donate.php?tab=status&reference=' . rawurlencode($trackingId));
             } catch (PDOException $error) {
                 if (isset($pdo) && $pdo->inTransaction()) {
                     $pdo->rollBack();
@@ -133,12 +168,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+$campaigns = fetch_all("SELECT id, title, description, goal_amount FROM rc2000_admin.campaigns WHERE status = 'open' ORDER BY is_featured DESC, created_at DESC");
+$statusRecord = null;
+$statusMessage = '';
+if ($tab === 'status' && isset($_GET['reference'], $_GET['email'])) {
+    $statusRecord = fetch_one('SELECT d.reference_no, d.donor_email, d.reported_amount, d.verified_amount, d.status, d.verification_note, d.verified_at, d.created_at, c.title AS campaign_title FROM rc2000_admin.monetary_donations d LEFT JOIN rc2000_admin.campaigns c ON c.id = d.campaign_id WHERE upper(d.reference_no) = upper(:ref) AND lower(d.donor_email) = lower(:email)', ['ref' => trim((string) $_GET['reference']), 'email' => trim((string) $_GET['email'])]);
+    if (!$statusRecord) $statusMessage = 'We could not find a donation with that tracking ID and email address.';
+}
+
 page_start('Donate');
 ?>
 <main class="donate-layout">
   <aside class="donate-side">
     <p class="eyebrow">Donate by</p>
     <a class="<?= $tab === 'money' ? 'is-active' : '' ?>" href="<?= e(app_url('public/donate.php?tab=money')) ?>">Monetary Donation</a>
+    <a class="<?= $tab === 'campaign' ? 'is-active' : '' ?>" href="<?= e(app_url('public/donate.php?tab=campaign')) ?>">Campaign Donation</a>
+    <a class="<?= $tab === 'status' ? 'is-active' : '' ?>" href="<?= e(app_url('public/donate.php?tab=status')) ?>">Donation Status</a>
   </aside>
 
   <div class="donate-main">
@@ -250,6 +295,21 @@ page_start('Donate');
           </form>
         <?php endif; ?>
       </section>
+    <?php elseif ($tab === 'campaign'): ?>
+      <?php $featured = featured_campaign(); ?>
+      <section class="form-card campaign-donation-page">
+        <span class="eyebrow">Support reading in our community</span><h1>Make a campaign donation report</h1>
+        <?php if ($featured): $campaignGoal=(float)$featured['goal_amount']; $campaignRaised=(float)$featured['raised']; $campaignPct=$campaignGoal ? min(100,(int)round($campaignRaised/$campaignGoal*100)) : 0; ?>
+          <article class="campaign-donation-summary"><h2><?= e($featured['title']) ?></h2><p><?= nl2br(e($featured['description'])) ?></p><div class="campaign-stats"><strong>₱<?= e(number_format($campaignRaised,2)) ?> raised</strong><span>of ₱<?= e(number_format($campaignGoal,2)) ?> goal</span></div><div class="campaign-progress"><span style="width:<?= $campaignPct ?>%"></span></div><strong><?= $campaignPct ?>% funded</strong></article>
+        <?php endif; ?>
+        <?php if (!$campaigns): ?><p>No open campaigns are accepting reports right now.</p><?php elseif (!$methods): ?><p>Donation methods are not configured yet.</p><?php else: ?>
+        <p class="lede">This form records a payment you have already sent. It does not process payments. Your report stays pending until an admin verifies it.</p>
+        <div class="campaign-payment-methods"><h2>Choose a payment method</h2><div><?php foreach ($methods as $method): ?><article><strong><?=e($method['method_name'])?></strong><span><?=e($method['payment_provider'])?></span><?php if(!empty($method['qr_image_path'])&&media_file_exists($method['qr_image_path'])):?><img src="<?=e(media_url($method['qr_image_path']))?>" alt="<?=e($method['method_name'])?> payment QR" loading="lazy"><?php endif; ?><?php if(!empty($method['instructions'])):?><p><?=nl2br(e($method['instructions']))?></p><?php endif; ?></article><?php endforeach; ?></div></div>
+        <form method="post" enctype="multipart/form-data"><?= csrf_field() ?><input type="hidden" name="action" value="campaign"><label>Campaign<select name="campaign_id" required><?php foreach ($campaigns as $item): ?><option value="<?= (int)$item['id'] ?>" <?= (int)$item['id']===(int)($featured['id']??0)?'selected':'' ?>><?= e($item['title']) ?> · goal ₱<?= e(number_format((float)$item['goal_amount'],2)) ?></option><?php endforeach; ?></select></label><label class="check-line"><input type="checkbox" name="anonymous" value="1" <?= $old['anonymous']?'checked':'' ?>> Donate anonymously</label><div class="form-grid"><label>Name<input name="donor_name" maxlength="120" value="<?= e($old['donor_name']) ?>"></label><label>Email<input type="email" name="donor_email" required maxlength="150" value="<?= e($old['donor_email']) ?>"></label><label>Contact info<input name="contact_info" maxlength="30" value="<?= e($old['contact_info']) ?>"></label><label>Amount (PHP)<input type="number" name="amount_reported" min="1" step="0.01" required value="<?= e($old['amount_reported']) ?>"></label><label>Payment date<input type="datetime-local" name="payment_date" required value="<?= e($old['payment_date']) ?>"></label><label>Donation method<select name="donation_method_id" required><option value="">Select a method</option><?php foreach($methods as $method): ?><option value="<?= (int)$method['donation_method_id'] ?>"><?= e($method['method_name'].' · '.$method['payment_provider']) ?></option><?php endforeach; ?></select></label><label>Transaction reference<input name="transaction_reference" maxlength="100" value="<?= e($old['transaction_reference']) ?>"></label></div><label class="upload-box">Payment proof (optional)<input type="file" name="proof_of_payment" accept="image/jpeg,image/png,image/webp,image/gif"></label><label class="check-line"><input type="checkbox" required> I have already sent this donation</label><button class="button wide" type="submit">Submit donation report</button></form>
+        <?php endif; ?>
+      </section>
+    <?php else: ?>
+      <section class="form-card donation-status-page"><span class="eyebrow">Donation transparency</span><h1>Check your donation report</h1><p>Enter the tracking ID from your receipt and the email used in your report.</p><form method="get"><input type="hidden" name="tab" value="status"><div class="form-grid"><label>Tracking ID<input name="reference" required value="<?= e((string)($_GET['reference']??'')) ?>"></label><label>Email<input type="email" name="email" required value="<?= e((string)($_GET['email']??'')) ?>"></label></div><button class="button" type="submit">Check status</button></form><?php if ($statusMessage): ?><p class="alert alert-error" role="alert"><?= e($statusMessage) ?></p><?php endif; ?><?php if ($statusRecord): ?><div class="donation-status-result"><span class="eyebrow"><?= e($statusRecord['reference_no']) ?></span><h2><?= $statusRecord['status']==='verified'?'Donation verified':($statusRecord['status']==='not_verified'?'Donation not verified':'Donation report received') ?></h2><p>Reported amount: ₱<?= e(number_format((float)$statusRecord['reported_amount'],2)) ?></p><?php if ($statusRecord['verified_amount']!==null): ?><p>Verified amount: ₱<?= e(number_format((float)$statusRecord['verified_amount'],2)) ?></p><?php endif; ?><?php if ($statusRecord['campaign_title']): ?><p>Campaign: <?= e($statusRecord['campaign_title']) ?></p><?php endif; ?><?php if ($statusRecord['verification_note']): ?><p><?= nl2br(e($statusRecord['verification_note'])) ?></p><?php endif; ?><p class="field-note"><?= $statusRecord['status']==='pending'?'Pending admin verification.':($statusRecord['verified_at']?'Reviewed '.e(date('F j, Y',strtotime($statusRecord['verified_at']))):'') ?></p></div><?php endif; ?></section>
     <?php endif; ?>
   </div>
 </main>

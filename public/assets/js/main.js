@@ -6,6 +6,36 @@
     // ---- Helpers other scripts can reuse (window.RC) ----
     var RC = window.RC = window.RC || {};
 
+    // The desktop navigation stays tucked away until hovered, focused, or pinned open.
+    var adminSidebar = document.querySelector('body.admin-body:not(.superadmin-body) .sidebar');
+    if (adminSidebar) {
+        var sidebarToggle = adminSidebar.querySelector('[data-sidebar-toggle]');
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', function () {
+                var pinned = adminSidebar.classList.toggle('is-pinned-open');
+                sidebarToggle.setAttribute('aria-expanded', pinned ? 'true' : 'false');
+                sidebarToggle.setAttribute('aria-label', pinned ? 'Close admin navigation' : 'Open admin navigation');
+                if (!pinned) { sidebarToggle.blur(); }
+            });
+            document.addEventListener('click', function (event) {
+                if (!adminSidebar.contains(event.target) && adminSidebar.classList.contains('is-pinned-open')) {
+                    adminSidebar.classList.remove('is-pinned-open');
+                    sidebarToggle.setAttribute('aria-expanded', 'false');
+                    sidebarToggle.setAttribute('aria-label', 'Open admin navigation');
+                    if (adminSidebar.contains(document.activeElement)) { document.activeElement.blur(); }
+                }
+            });
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && adminSidebar.classList.contains('is-pinned-open')) {
+                    adminSidebar.classList.remove('is-pinned-open');
+                    sidebarToggle.setAttribute('aria-expanded', 'false');
+                    sidebarToggle.setAttribute('aria-label', 'Open admin navigation');
+                    sidebarToggle.blur();
+                }
+            });
+        }
+    }
+
     RC.csrfToken = function () {
         var m = document.querySelector('meta[name="csrf-token"]');
         return m ? m.getAttribute('content') : '';
