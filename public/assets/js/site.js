@@ -75,6 +75,14 @@
       show(current + 1);
     }));
     form.querySelectorAll('[data-quiz-prev]').forEach((button) => button.addEventListener('click', () => show(current - 1)));
+    form.addEventListener('submit', (event) => {
+      if (!event.submitter?.hasAttribute('data-quiz-submit-score')) return;
+      const unanswered = steps.findIndex((step) => !step.querySelector('input[type="radio"]:checked'));
+      if (unanswered === -1) return;
+      event.preventDefault();
+      show(unanswered);
+      steps[unanswered].querySelector('input[type="radio"]')?.focus();
+    });
     show(0);
   });
     const feedbackDialog = document.getElementById('feedback-dialog');
