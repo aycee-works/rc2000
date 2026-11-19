@@ -7,40 +7,11 @@ body:has(.hero) .button-row { align-items: center; }
 body:has(.hero) .button-row .button { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; line-height: 1.2; }
 body:has(.hero) .section { padding: clamp(32px, 4vw, 52px) clamp(22px, 4.5vw, 72px); }
 body:has(.hero) .section-heading { margin-bottom: 20px; }
-body:has(.facebook-updates) .facebook-post-preview {
-  position: relative;
-  display: block;
-  width: min(100%, 560px);
-  margin: 0 auto;
-  overflow: hidden;
-  border: 1px solid rgba(23,52,73,.12);
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 8px 26px rgba(23,52,73,.12);
-  color: #fff;
-  text-decoration: none;
-  transition: transform .2s ease, box-shadow .2s ease;
-}
-body:has(.facebook-updates) .facebook-post-preview:hover,
-body:has(.facebook-updates) .facebook-post-preview:focus-visible {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 34px rgba(23,52,73,.2);
-}
-body:has(.facebook-updates) .facebook-post-preview:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
-body:has(.facebook-updates) .facebook-post-preview img { display: block; width: 100%; height: auto; }
-body:has(.facebook-updates) .facebook-post-cta {
-  position: absolute;
-  right: 14px;
-  bottom: 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: rgba(14,29,39,.88);
-  font-size: .88rem;
-  font-weight: 700;
-}
+body:has(.facebook-updates) .facebook-page-embed { width:min(100%,500px); min-height:620px; margin:0 auto; }
+body:has(.facebook-updates) .facebook-page-embed .fb-page,
+body:has(.facebook-updates) .facebook-page-embed .fb-page > span,
+body:has(.facebook-updates) .facebook-page-embed .fb-page iframe { width:100% !important; }
+body:has(.facebook-updates) .facebook-page-embed .fb-page iframe { border:0; }
 body:has(.hero) .featured-story-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(14px, 1.5vw, 24px); }
 body:has(.hero) .featured-stories .story-card {
   display: flex; min-width: 0; flex-direction: column; overflow: hidden;

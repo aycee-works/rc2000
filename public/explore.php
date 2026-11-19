@@ -11,9 +11,6 @@ $gallery = active_gallery(8);
 $articles = published_content('article', 8);
 $stories = published_content('story', 8);
 
-// Keep this empty until a published history source is connected.
-$history = [];
-
 /*
 |--------------------------------------------------------------------------
 | Content URL helper
@@ -381,21 +378,6 @@ page_start('Explore');
 
     </section>
 
-
-    <!-- TRIVIA AND LIBRARY HISTORY -->
-
-  <section class="section">
-    <aside class="history-panel" id="history">
-      <h2>Library History</h2>
-      <?php if ($history): ?>
-        <h3><?= e($history[0]['title']) ?></h3>
-        <p><?= e(excerpt($history[0]['body'], 420)) ?></p>
-      <?php else: ?>
-        <p>It all began in 2000. Mang Nanie was about to turn 60 when he found himself worrying about retirement. Instead of slowing down, he gathered books from around the house, set them out, and showed neighbors that reading could be free. The rest is history.</p>
-      <?php endif; ?>
-      <a class="text-link" href="/rc2000/public/about.php">More →</a>
-    </aside>
-  </section>
 
 </main>
 

@@ -45,7 +45,6 @@ $articles = published_content('article', 4);
 $announcements = published_content('announcement', 6);
 $trivia = published_trivia(5);
 $facebookPageUrl = facebook_page_url();
-$facebookLatestPostUrl = 'https://web.facebook.com/reel/2591073461400611/';
 
 /*
 |--------------------------------------------------------------------------
@@ -535,14 +534,30 @@ page_start('Home');
             </div>
             <a href="<?= e($facebookPageUrl) ?>" target="_blank" rel="noopener noreferrer">Visit our Facebook page →</a>
         </div>
-        <a class="facebook-post-preview" href="<?= e($facebookLatestPostUrl) ?>" target="_blank" rel="noopener noreferrer" aria-label="Watch the latest Reading Club 2000 post on Facebook">
-            <img
-                src="<?= e(app_url('public/assets/images/facebook-latest-post.png?v=2')) ?>"
-                alt="Reading Club 2000 Facebook Page preview with its book-filled cover photo and profile"
-                loading="lazy"
-            >
-            <span class="facebook-post-cta">Watch the latest post <span aria-hidden="true">↗</span></span>
-        </a>
+        <div id="fb-root"></div>
+        <div class="facebook-page-embed">
+            <div class="fb-page"
+                 data-href="<?= e($facebookPageUrl) ?>"
+                 data-tabs="timeline"
+                 data-width="500"
+                 data-height="620"
+                 data-small-header="true"
+                 data-adapt-container-width="true"
+                 data-hide-cover="false"
+                 data-show-facepile="false">
+                <blockquote cite="<?= e($facebookPageUrl) ?>" class="fb-xfbml-parse-ignore">
+                    <a href="<?= e($facebookPageUrl) ?>" target="_blank" rel="noopener noreferrer">Reading Club 2000 on Facebook</a>
+                </blockquote>
+            </div>
+        </div>
+        <script>
+            window.fbAsyncInit = function () {
+                if (window.FB && window.FB.XFBML) {
+                    window.FB.XFBML.parse(document.getElementById('facebook-updates'));
+                }
+            };
+        </script>
+        <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1"></script>
     </section>
     <?php endif; ?>
 
