@@ -240,7 +240,7 @@ function active_gallery(int $limit = 12): array
     );
 }
 
-function published_trivia(int $limit = 8): array
+function published_trivia(?int $limit = 8): array
 {
     $items = fetch_all(
         "SELECT id AS trivia_id, question AS title,
@@ -260,10 +260,25 @@ function published_trivia(int $limit = 8): array
         'SELECT trivia_id, title, body, image_path, source, published_at
          FROM trivia
          WHERE status = :status
-         ORDER BY published_at DESC NULLS LAST, created_at DESC
+         ORDER BY published_at DESC NULLS LAST, created_at DESC, trivia_id DESC
          LIMIT :limit',
         ['status' => 'published', 'limit' => $limit]
     );
+}
+
+function daily_trivia(): array
+{
+    $items = published_trivia(null);
+    $count = count($items);
+    if ($count < 2) {
+        return $items;
+    }
+
+    $today = new DateTimeImmutable('today', new DateTimeZone('Asia/Manila'));
+    $day = intdiv($today->getTimestamp() + $today->getOffset(), 86400);
+    $start = ($day * 2) % $count;
+
+    return [$items[$start], $items[($start + 1) % $count]];
 }
 
 function active_donation_methods(): array

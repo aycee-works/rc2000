@@ -1,25 +1,27 @@
 <footer class="site-footer">
   <div class="footer-main">
+    <div class="footer-identity">
+      <a class="footer-brand" href="<?= e(app_url('public/home.php')) ?>" aria-label="Reading Club 2000 home">
+        <img class="brand-logo" src="<?= e(app_url('public/assets/images/logo.png')) ?>" alt="" width="38" height="38">
+        <span><strong>Reading Club 2000</strong><small>A neighborhood library built around sharing stories.</small></span>
+      </a>
+      <div class="footer-connect">
+        <nav aria-label="Footer navigation">
+          <a href="<?= e(app_url('public/about.php')) ?>">About the Club</a>
+          <a href="<?= e(app_url('public/contact.php')) ?>">Contact Us</a>
+          <a href="<?= e(app_url('public/inquiry.php')) ?>">Inquiries</a>
+          <a href="<?= e(app_url('public/home.php')) ?>#announcements">Announcements</a>
+          <a class="footer-facebook" href="https://www.facebook.com/ReadingClub2000" target="_blank" rel="noopener noreferrer">
+            <img src="<?= e(app_url('public/assets/images/icons/homefb_icon.png')) ?>" alt="" width="22" height="22"> Facebook
+          </a>
+        </nav>
+      </div>
+    </div>
     <section class="footer-contact" aria-labelledby="footer-feedback-title">
       <h2 id="footer-feedback-title">Give Us a Feedback</h2>
       <p>Tell us what you think about our website. Your feedback goes straight to our admins.</p>
       <button type="button" class="button button-gold" data-feedback-open>Give Us a Feedback</button>
     </section>
-    <a class="footer-brand" href="<?= e(app_url('public/home.php')) ?>" aria-label="Reading Club 2000 home">
-      <img class="brand-logo" src="<?= e(app_url('public/assets/images/logo.png')) ?>" alt="" width="38" height="38">
-      <span><strong>Reading Club 2000</strong><small>A neighborhood library built around sharing stories.</small></span>
-    </a>
-    <div class="footer-connect">
-      <nav aria-label="Footer navigation">
-        <a href="<?= e(app_url('public/about.php')) ?>">About the Club</a>
-        <a href="<?= e(app_url('public/contact.php')) ?>">Contact Us</a>
-        <a href="<?= e(app_url('public/inquiry.php')) ?>">Inquiries</a>
-        <a href="<?= e(app_url('public/home.php')) ?>#announcements">Announcements</a>
-      </nav>
-      <a class="footer-facebook" href="https://www.facebook.com/ReadingClub2000" target="_blank" rel="noopener noreferrer">
-        <img src="<?= e(app_url('public/assets/images/icons/homefb_icon.png')) ?>" alt="" width="22" height="22"> Facebook
-      </a>
-    </div>
     <div class="footer-bottom">
       <small>© <?= date('Y') ?> Reading Club 2000 Mang Nanie. All rights reserved. No part of this website may be copied, reproduced, or redistributed without written permission.</small>
       <details class="footer-terms">

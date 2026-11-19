@@ -41,13 +41,14 @@ if (is_post()) {
             if (upload_provided($_FILES['image']??null)) { $upload=save_uploaded_image($_FILES['image'],'campaigns'); if (!$upload['ok']) $errors[]=$upload['message']; else $imagePath=$upload['path']; }
             if (!$errors) {
                 $featured=isset($_POST['is_featured']);
+                $featuredDb=$featured?'true':'false';
                 $pdo->beginTransaction();
                 if ($featured) $pdo->exec('UPDATE rc2000_admin.campaigns SET is_featured=FALSE WHERE is_featured=TRUE');
                 if ($id>0) {
                     $sql='UPDATE rc2000_admin.campaigns SET title=?,description=?,goal_amount=?,status=?,is_featured=?'.($imagePath?',image_path=?':'').' WHERE id=?';
-                    $params=[$title,$description,$goal,$status,$featured]; if($imagePath)$params[]=$imagePath; $params[]=$id; $pdo->prepare($sql)->execute($params);
+                    $params=[$title,$description,$goal,$status,$featuredDb]; if($imagePath)$params[]=$imagePath; $params[]=$id; $pdo->prepare($sql)->execute($params);
                 } else {
-                    $pdo->prepare('INSERT INTO rc2000_admin.campaigns(title,description,goal_amount,status,is_featured,image_path,created_by) VALUES(?,?,?,?,?,?,?)')->execute([$title,$description,$goal,$status,$featured,$imagePath,current_admin()['id']??null]);
+                    $pdo->prepare('INSERT INTO rc2000_admin.campaigns(title,description,goal_amount,status,is_featured,image_path,created_by) VALUES(?,?,?,?,?,?,?)')->execute([$title,$description,$goal,$status,$featuredDb,$imagePath,current_admin()['id']??null]);
                 }
                 $pdo->commit(); flash('success','Campaign saved.'); redirect('admin/community.php#campaigns');
             }

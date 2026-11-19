@@ -300,7 +300,13 @@ page_start('Donate');
       <section class="form-card campaign-donation-page">
         <span class="eyebrow">Support reading in our community</span><h1>Make a campaign donation report</h1>
         <?php if ($featured): $campaignGoal=(float)$featured['goal_amount']; $campaignRaised=(float)$featured['raised']; $campaignPct=$campaignGoal ? min(100,(int)round($campaignRaised/$campaignGoal*100)) : 0; ?>
-          <article class="campaign-donation-summary"><h2><?= e($featured['title']) ?></h2><p><?= nl2br(e($featured['description'])) ?></p><div class="campaign-stats"><strong>₱<?= e(number_format($campaignRaised,2)) ?> raised</strong><span>of ₱<?= e(number_format($campaignGoal,2)) ?> goal</span></div><div class="campaign-progress"><span style="width:<?= $campaignPct ?>%"></span></div><strong><?= $campaignPct ?>% funded</strong></article>
+          <article class="campaign-donation-summary">
+            <h2><?= e($featured['title']) ?></h2>
+            <p><?= nl2br(e($featured['description'])) ?></p>
+            <div class="campaign-stats"><strong>₱<?= e(number_format($campaignRaised, 2)) ?> raised</strong> of ₱<?= e(number_format($campaignGoal, 2)) ?> goal</div>
+            <div class="campaign-progress" aria-hidden="true"><span style="width:<?= $campaignPct ?>%"></span></div>
+            <strong><?= $campaignPct ?>% funded</strong>
+          </article>
         <?php endif; ?>
         <?php if (!$campaigns): ?><p>No open campaigns are accepting reports right now.</p><?php elseif (!$methods): ?><p>Donation methods are not configured yet.</p><?php else: ?>
         <p class="lede">This form records a payment you have already sent. It does not process payments. Your report stays pending until an admin verifies it.</p>

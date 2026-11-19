@@ -1,6 +1,3 @@
-<?php
-$searchValue = trim((string) ($_GET['q'] ?? ''));
-?>
 <header class="site-header">
   <a class="brand" href="<?= e(app_url('public/home.php')) ?>" aria-label="Reading Club 2000 home">
     <img class="brand-logo" src="<?= e(app_url('public/assets/images/logo.png')) ?>" alt="" width="24" height="24">
@@ -14,11 +11,6 @@ $searchValue = trim((string) ($_GET['q'] ?? ''));
     <a href="<?= e(app_url('public/about.php')) ?>"<?= nav_active('about.php') ?>>About</a>
   </nav>
   <div class="nav-actions">
-    <form class="site-search" action="<?= e(app_url('public/explore.php')) ?>" method="get" role="search">
-      <label class="sr-only" for="site-search">Search</label>
-      <input id="site-search" type="search" name="q" placeholder="Search" value="<?= e($searchValue) ?>">
-      <button type="submit" aria-label="Search"><img src="<?= e(app_url('public/assets/images/icons/search_icon.png')) ?>" alt="" width="20" height="20"></button>
-    </form>
     <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false">
       <span data-theme-icon aria-hidden="true">☾</span><span data-theme-label>Dark mode</span>
     </button>
