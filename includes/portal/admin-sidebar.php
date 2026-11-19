@@ -23,8 +23,8 @@ $navItems = [
     <nav class="sidebar-nav" aria-label="Main">
         <?php foreach ($navItems as $key => [$label, $path]): ?>
             <a href="<?= e(url($path)) ?>"
-               class="nav-link<?= $key === $activeNav ? ' is-active' : '' ?>"
-               <?= $key === $activeNav ? 'aria-current="page"' : '' ?>><?= e($label) ?></a>
+               class="nav-link<?= $key === ($activeNav ?? '') ? ' is-active' : '' ?>"
+               <?= $key === ($activeNav ?? '') ? 'aria-current="page"' : '' ?>><?= e($label) ?></a>
         <?php endforeach; ?>
     </nav>
 

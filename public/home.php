@@ -43,7 +43,17 @@ if (empty($stories)) {
 // Retrieve published articles and announcements.
 $articles = published_content('article', 4);
 $announcements = published_content('announcement', 6);
-$trivia = published_trivia(5);
+$trivia = daily_trivia();
+$trivia = array_slice(array_merge($trivia, [
+    [
+        'title' => 'What is a book’s colophon?',
+        'body' => 'It is a note that gives details about how the book was produced, such as the typeface or printer.',
+    ],
+    [
+        'title' => 'What is a book’s spine?',
+        'body' => 'It is the edge of the binding where the pages are joined. The title is often printed there so it can be read on a shelf.',
+    ],
+]), 0, 2);
 $facebookPageUrl = facebook_page_url();
 $facebookLatestPostUrl = 'https://web.facebook.com/reel/2591073461400611/';
 
@@ -420,7 +430,7 @@ page_start('Home');
       </div>
     </div>
     <div class="trivia-list wide">
-      <?php if ($trivia): foreach ($trivia as $item): ?>
+      <?php foreach ($trivia as $item): ?>
         <article class="trivia-card">
           <div class="trivia-icon">?</div>
           <div>
@@ -431,15 +441,7 @@ page_start('Home');
             <?php endif; ?>
           </div>
         </article>
-      <?php endforeach; else: ?>
-        <article class="trivia-card">
-          <div class="trivia-icon">?</div>
-          <div>
-            <h3>Did you know?</h3>
-            <p>Reading for just a few minutes each day can introduce you to new ideas, places, and people.</p>
-          </div>
-        </article>
-      <?php endif; ?>
+      <?php endforeach; ?>
     </div>
   </section>
 
