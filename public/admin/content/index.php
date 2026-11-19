@@ -112,7 +112,7 @@ $extraJs   = ['content.js?v=' . filemtime(dirname(__DIR__, 3) . '/public/assets/
 require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
 ?>
 <header class="page-header">
-    <h1 class="page-title">Manage content</h1>
+    <h1 class="page-title">Manage Content</h1>
     <p class="page-subtitle">Update the public site and reading activities.</p>
 </header>
 
@@ -121,8 +121,8 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
 <?php endif; ?>
 
 <div class="content-tabs" role="tablist" aria-label="Content areas">
-    <button type="button" class="content-tab" id="website-content-tab" role="tab" aria-selected="false" aria-controls="website-content-panel" data-content-tab="website" tabindex="-1">Website content</button>
-    <button type="button" class="content-tab is-active" id="reading-activities-tab" role="tab" aria-selected="true" aria-controls="reading-activities-panel" data-content-tab="activities">Reading activities</button>
+    <button type="button" class="content-tab" id="website-content-tab" role="tab" aria-selected="false" aria-controls="website-content-panel" data-content-tab="website" tabindex="-1">Website Content</button>
+    <button type="button" class="content-tab is-active" id="reading-activities-tab" role="tab" aria-selected="true" aria-controls="reading-activities-panel" data-content-tab="activities">Reading Activities</button>
 </div>
 <div class="content-grid website-content-grid" id="website-content-panel" data-content-panel="website" role="tabpanel" aria-labelledby="website-content-tab" hidden>
 
@@ -152,10 +152,10 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
     <!-- Stories and articles -->
     <section class="panel" aria-labelledby="story-title">
         <div class="panel-header">
-            <h2 class="panel-title" id="story-title">Stories and articles</h2>
+            <h2 class="panel-title" id="story-title">Stories and Articles</h2>
             <span class="panel-buttons">
-                <a class="btn btn-maroon btn-sm" href="<?= e(form_url('story')) ?>">New story</a>
-                <a class="btn btn-light btn-sm" href="<?= e(form_url('story', 0, 'article')) ?>">New article</a>
+                <a class="btn btn-maroon btn-sm" href="<?= e(form_url('story')) ?>">New Story</a>
+                <a class="btn btn-light btn-sm" href="<?= e(form_url('story', 0, 'article')) ?>">New Article</a>
             </span>
         </div>
         <ul class="item-list">
@@ -178,7 +178,7 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
     <section class="panel" aria-labelledby="ann-title">
         <div class="panel-header">
             <h2 class="panel-title" id="ann-title">Announcements</h2>
-            <a class="btn btn-maroon btn-sm" href="<?= e(form_url('announcement')) ?>">New announcement</a>
+            <a class="btn btn-maroon btn-sm" href="<?= e(form_url('announcement')) ?>">New Announcement</a>
         </div>
         <ul class="item-list">
             <?php if (!$announcements): ?><li class="item-empty">No announcements yet.</li><?php endif; ?>
@@ -200,7 +200,7 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
     <section class="panel" aria-labelledby="triv-title">
         <div class="panel-header">
             <h2 class="panel-title" id="triv-title">Trivia</h2>
-            <a class="btn btn-maroon btn-sm" href="<?= e(form_url('trivia')) ?>">Add trivia</a>
+            <a class="btn btn-maroon btn-sm" href="<?= e(form_url('trivia')) ?>">Add Trivia</a>
         </div>
         <ul class="item-list">
             <?php if (!$trivia): ?><li class="item-empty">No trivia yet.</li><?php endif; ?>
@@ -219,7 +219,7 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
 <div class="content-grid reading-activities-grid" id="reading-activities-panel" data-content-panel="activities" role="tabpanel" aria-labelledby="reading-activities-tab">
     <?php if ($communityFeaturesAvailable): ?>
     <section class="panel activity-card" id="weekly-challenge" aria-labelledby="challenge-title">
-        <div class="panel-header activity-card-header"><h2 class="panel-title" id="challenge-title">Weekly reading challenge</h2><span class="activity-status <?= e(($activeChallenge['status'] ?? '') === 'published' ? 'is-published' : 'is-draft') ?>"><?= e($activeChallenge['status'] ?? 'Not scheduled') ?></span></div>
+        <div class="panel-header activity-card-header"><h2 class="panel-title" id="challenge-title">Weekly Reading Challenge</h2><span class="activity-status <?= e(($activeChallenge['status'] ?? '') === 'published' ? 'is-published' : 'is-draft') ?>"><?= e($activeChallenge['status'] ?? 'Not scheduled') ?></span></div>
         <div class="activity-feature">
             <?php if (!empty($activeChallenge['image_path'])): ?><img class="activity-art challenge-art" src="<?= e(url($activeChallenge['image_path'])) ?>" alt="Challenge artwork">
             <?php else: ?><div class="activity-art challenge-art placeholder-art" aria-hidden="true"><span>▤</span></div><?php endif; ?>
@@ -245,7 +245,7 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
     </section>
 
     <section class="panel activity-card" id="daily-quiz" aria-labelledby="quiz-title">
-        <div class="panel-header activity-card-header"><h2 class="panel-title" id="quiz-title">Daily five-question quiz</h2><span class="activity-status <?= e(($todayQuiz['status'] ?? '') === 'published' ? 'is-published' : 'is-draft') ?>"><?= e($todayQuiz['status'] ?? 'Not scheduled') ?></span></div>
+        <div class="panel-header activity-card-header"><h2 class="panel-title" id="quiz-title">Daily Five-question Quiz</h2><span class="activity-status <?= e(($todayQuiz['status'] ?? '') === 'published' ? 'is-published' : 'is-draft') ?>"><?= e($todayQuiz['status'] ?? 'Not scheduled') ?></span></div>
         <div class="activity-feature quiz-feature"><div class="activity-art quiz-art" aria-hidden="true"><svg viewBox="0 0 100 100" role="presentation"><rect x="17" y="10" width="66" height="80" rx="8" fill="#fff"/><g fill="none" stroke="#244666" stroke-width="3"><path d="M30 31l5 5 9-10M49 32h22M30 52l5 5 9-10M49 53h22M30 73l5 5 9-10M49 74h22"/></g></svg></div><div class="activity-feature-copy"><p><?= $todayQuiz ? 'A five-question quiz is scheduled for ' . e(format_date_short($todayQuiz['quiz_date'])) . '.' : 'Prepare a five-question quiz for the public site. You can create it now and schedule it for a future date.' ?></p></div></div>
         <div class="activity-card-actions"><button class="btn btn-maroon" type="button" data-editor-toggle="quiz-editor" data-open-label="<?= $todayQuiz ? 'Edit quiz' : 'Create quiz' ?>" data-close-label="Cancel" aria-controls="quiz-editor" aria-expanded="<?= $quizEditorOpen ? 'true' : 'false' ?>"><?= $quizEditorOpen ? 'Cancel' : ($todayQuiz ? 'Edit quiz' : 'Create quiz') ?></button></div>
         <div class="activity-editor" id="quiz-editor" <?= $quizEditorOpen ? '' : 'hidden' ?>>
@@ -275,20 +275,20 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
         </form></div>
     </section>
     <section class="panel community-content-panel activity-history" aria-labelledby="quiz-history-title"><div class="panel-header"><div><span class="activity-eyebrow">SCHEDULE AND RESULTS</span><h2 class="panel-title" id="quiz-history-title">Recent quizzes</h2></div></div>
-        <div class="table-wrap"><table class="data-table"><thead><tr><th>Date</th><th>Status</th><th>Entries</th><th>Weekly leaderboard</th><th>Action</th></tr></thead><tbody>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>Date</th><th>Status</th><th>Entries</th><th>Weekly Leaderboard</th><th>Action</th></tr></thead><tbody>
             <?php foreach ($quizRows as $quizRow): ?><tr><td><a href="<?= e(url('admin/content/index.php?quiz=' . (int) $quizRow['id'] . '#daily-quiz')) ?>"><?= e($quizRow['quiz_date']) ?></a></td><td><?= e($quizRow['status']) ?></td><td><?= (int) $quizRow['submissions'] ?></td><td><?php if (!$quizRow['posted'] && (int) $quizRow['submissions'] > 0): ?><form method="post" action="<?= e(url('admin/community.php')) ?>"><?= csrf_field() ?><input type="hidden" name="action" value="publish_leaderboard"><input type="hidden" name="quiz_id" value="<?= (int) $quizRow['id'] ?>"><button class="link-button" type="submit">Publish results</button></form><?php else: ?><?= !empty($quizRow['posted']) ? 'Published' : '—' ?><?php endif; ?></td></tr><?php endforeach; ?>
             <?php if (!$quizRows): ?><tr><td colspan="4" class="table-empty"><span aria-hidden="true">▤</span><br>No quizzes scheduled yet.</td></tr><?php endif; ?>
         </tbody></table></div>
     </section>
     <?php else: ?>
-    <section class="panel community-content-panel"><div class="panel-body"><h2>Weekly challenges and quizzes</h2><p>Run <code>database/community_features.sql</code> to enable these content tools.</p></div></section>
+    <section class="panel community-content-panel"><div class="panel-body"><h2>Weekly Challenges and Quizzes</h2><p>Run <code>database/community_features.sql</code> to enable these content tools.</p></div></section>
     <?php endif; ?>
 </div>
 
 <!-- Gallery add/edit popup -->
 <dialog id="gallery-dialog" class="dialog" aria-labelledby="gallery-dialog-title">
     <form id="gallery-form" novalidate>
-        <h2 class="dialog-title" id="gallery-dialog-title">Add image</h2>
+        <h2 class="dialog-title" id="gallery-dialog-title">Add Image</h2>
         <input type="hidden" name="id" value="0">
         <input type="hidden" name="version" value="">
 

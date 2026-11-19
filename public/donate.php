@@ -190,7 +190,7 @@ page_start('Donate');
     <?php render_alerts($errors); ?>
 
     <section class="howto">
-      <h3>How to donate</h3>
+      <h3>How to Donate</h3>
       <ol>
         <li>Use QR, bank transfer, or check, then fill out the donation form so we can thank you.</li>
         <li>You’ll get a confirmation after you submit.</li>
@@ -199,7 +199,7 @@ page_start('Donate');
 
     <?php if ($tab === 'money'): ?>
       <section class="form-card">
-        <h1>Monetary donation</h1>
+        <h1>Monetary Donation</h1>
         <p class="lede">After donating, please fill out this form so we can thank you. The amount is self-reported and recorded for transparency; it is not independently tracked through this form.</p>
 
         <div class="method-tabs" data-tabs>
@@ -298,7 +298,7 @@ page_start('Donate');
     <?php elseif ($tab === 'campaign'): ?>
       <?php $featured = featured_campaign(); ?>
       <section class="form-card campaign-donation-page">
-        <span class="eyebrow">Support reading in our community</span><h1>Make a campaign donation report</h1>
+        <span class="eyebrow">Support reading in our community</span><h1>Make a Campaign Donation Report</h1>
         <?php if ($featured): $campaignGoal=(float)$featured['goal_amount']; $campaignRaised=(float)$featured['raised']; $campaignPct=$campaignGoal ? min(100,(int)round($campaignRaised/$campaignGoal*100)) : 0; ?>
           <article class="campaign-donation-summary">
             <h2><?= e($featured['title']) ?></h2>

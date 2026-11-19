@@ -52,7 +52,7 @@ require dirname(__DIR__, 2) . '/includes/portal/admin-header.php';
 ?>
 <header class="page-header">
     <h1 class="page-title">Welcome, Admin<?= $adminFirstName !== '' ? ' ' . e($adminFirstName) : '' ?>!</h1>
-    <p class="page-subtitle">Overview of monetary donations and inquiries.</p>
+    <p class="page-subtitle">Overview of Monetary Donations and Inquiries.</p>
 </header>
 
 <?php if ($loadError): ?>
@@ -61,25 +61,25 @@ require dirname(__DIR__, 2) . '/includes/portal/admin-header.php';
 
 <section class="stat-grid stat-grid-4" id="stat-cards" aria-label="Overview">
     <article class="stat-card">
-        <div class="stat-label">Total donations</div>
+        <div class="stat-label">Total Donations</div>
         <div class="stat-value" data-stat="total_donations"><?= e($cards['total_donations']) ?></div>
         <div class="stat-sub" data-stat="total_donations_sub"><?= e($cards['total_donations_sub']) ?></div>
         <a class="stat-link" href="<?= e(url('admin/donations/index.php')) ?>">Review ›</a>
     </article>
     <article class="stat-card">
-        <div class="stat-label">Pending donations</div>
+        <div class="stat-label">Pending Donations</div>
         <div class="stat-value" data-stat="pending_donations"><?= e($cards['pending_donations']) ?></div>
         <div class="stat-sub" data-stat="pending_donations_sub"><?= e($cards['pending_donations_sub']) ?></div>
         <a class="stat-link" href="<?= e(url('admin/donations/index.php?status=pending')) ?>">Review ›</a>
     </article>
     <article class="stat-card">
-        <div class="stat-label">Pending inquiries</div>
+        <div class="stat-label">Pending Inquiries</div>
         <div class="stat-value" data-stat="pending_inquiries"><?= e($cards['pending_inquiries']) ?></div>
         <div class="stat-sub" data-stat="pending_inquiries_sub"><?= e($cards['pending_inquiries_sub']) ?></div>
         <a class="stat-link" href="<?= e(url('admin/inquiries/index.php?pending=1')) ?>">Review ›</a>
     </article>
     <article class="stat-card">
-        <div class="stat-label">Total monetary donations</div>
+        <div class="stat-label">Total Monetary Donations</div>
         <div class="stat-value" data-stat="monetary_total"><?= e($cards['monetary_total']) ?></div>
         <div class="stat-sub" data-stat="monetary_sub"><?= e($cards['monetary_sub']) ?></div>
         <a class="stat-link" href="<?= e(url('admin/donations/index.php?tab=monetary')) ?>">Review ›</a>
@@ -89,7 +89,7 @@ require dirname(__DIR__, 2) . '/includes/portal/admin-header.php';
 <div class="dashboard-lists">
     <section class="panel" aria-labelledby="pd-title">
         <div class="panel-header">
-            <h2 class="panel-title" id="pd-title">Pending donations</h2>
+            <h2 class="panel-title" id="pd-title">Pending Donations</h2>
             <a href="<?= e(url('admin/donations/index.php?status=pending')) ?>">View all</a>
         </div>
         <div class="table-wrap">
@@ -116,7 +116,7 @@ require dirname(__DIR__, 2) . '/includes/portal/admin-header.php';
 
     <section class="panel" aria-labelledby="pi-title">
         <div class="panel-header">
-            <h2 class="panel-title" id="pi-title">Pending inquiries</h2>
+            <h2 class="panel-title" id="pi-title">Pending Inquiries</h2>
             <a href="<?= e(url('admin/inquiries/index.php?pending=1')) ?>">View all</a>
         </div>
         <div class="table-wrap">

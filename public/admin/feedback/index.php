@@ -29,7 +29,7 @@ $activeNav = 'feedback';
 require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
 ?>
 <header class="page-header">
-    <h1 class="page-title">Website feedback</h1>
+    <h1 class="page-title">Website Feedback</h1>
     <p class="page-subtitle">Experiences and suggestions from visitors about the website.</p>
 </header>
 

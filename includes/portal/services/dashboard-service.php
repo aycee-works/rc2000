@@ -45,9 +45,9 @@ function dashboard_card_values(array $s): array
 {
     return [
         'total_donations'      => (string) $s['money_total'],
-        'total_donations_sub'  => 'Monetary donations',
+        'total_donations_sub'  => 'Monetary Donations',
         'pending_donations'    => (string) $s['money_pending'],
-        'pending_donations_sub'=> 'Awaiting review',
+        'pending_donations_sub'=> 'Awaiting Review',
         'pending_inquiries'    => (string) ($s['inquiry_open'] + $s['inquiry_progress']),
         'pending_inquiries_sub'=> $s['inquiry_open'] . ' open · ' . $s['inquiry_progress'] . ' in progress',
         'monetary_total'       => format_peso($s['money_verified']),

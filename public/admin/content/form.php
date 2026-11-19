@@ -48,7 +48,7 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
 ?>
 <header class="page-header">
     <h1 class="page-title"><?= e(ucfirst($pageTitle)) ?></h1>
-    <p class="page-subtitle"><a href="<?= e(url('admin/content/index.php')) ?>">&larr; Back to Manage content</a></p>
+    <p class="page-subtitle"><a href="<?= e(url('admin/content/index.php')) ?>">&larr; Back to Manage Content</a></p>
 </header>
 
 <section class="panel">
@@ -86,7 +86,7 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
         </div>
         <?php if ($entity === 'story'): ?>
             <div class="field">
-                <label class="field-label-sm" for="f-author">Author / attribution (optional)</label>
+                <label class="field-label-sm" for="f-author">Author / Attribution (optional)</label>
                 <input class="input" type="text" id="f-author" name="author" maxlength="120" value="<?= e($v('author')) ?>">
             </div>
         <?php endif; ?>

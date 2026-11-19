@@ -33,11 +33,11 @@ require dirname(__DIR__, 4) . '/includes/portal/superadmin-header.php';
 ?>
 <header class="page-header sa-page-head">
     <div>
-        <h1 class="page-title">Admin account management</h1>
+        <h1 class="page-title">Admin Account Management</h1>
         <p class="page-subtitle">Select an administrator to edit, reset the password, deactivate, or remove.</p>
     </div>
     <div class="sa-page-actions">
-        <a class="btn btn-maroon" href="<?= e(url('superadmin/admins/add.php')) ?>">+ Add admin</a>
+        <a class="btn btn-maroon" href="<?= e(url('superadmin/admins/add.php')) ?>">+ Add Admin</a>
     </div>
 </header>
 

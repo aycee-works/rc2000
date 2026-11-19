@@ -46,7 +46,7 @@ $announcements = published_content('announcement', 6);
 $trivia = daily_trivia();
 $trivia = array_slice(array_merge($trivia, [
     [
-        'title' => 'What is a book’s colophon?',
+        'title' => 'What is a Book’s Colophon?',
         'body' => 'It is a note that gives details about how the book was produced, such as the typeface or printer.',
     ],
     [
@@ -113,8 +113,8 @@ page_start('Home');
             </span>
 
             <h1>
-                Give a book<br>
-                a second story.
+                Give a Book<br>
+                a Second Story.
             </h1>
 
             <p>
@@ -135,7 +135,7 @@ page_start('Home');
                     class="button button-ghost"
                     href="<?= e(app_url('public/about.php')) ?>"
                 >
-                    Learn more
+                    Learn More
                 </a>
 
             </div>

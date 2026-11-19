@@ -57,8 +57,8 @@ $extraJs   = ['review-dialog.js', 'monetary-donations.js'];
 require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
 ?>
 <header class="page-header">
-    <h1 class="page-title">Manage donations</h1>
-<p class="page-subtitle">Review monetary donation submissions.</p>
+    <h1 class="page-title">Manage Donations</h1>
+<p class="page-subtitle">Review Monetary Donation Submissions.</p>
 </header>
 
 <?php if ($loadError): ?>
