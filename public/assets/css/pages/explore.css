@@ -37,6 +37,8 @@ html[data-theme="dark"] .page-hero.explore-hero { background-image:linear-gradie
 .explore-search { display:flex; align-items:center; width:min(100%,720px); margin:0 auto; gap:9px; padding:7px; border:1px solid #d9dfe2; border-radius:7px; background:#fff; }
 .explore-search input { flex:1 1 auto; min-width:0; border:0; padding:8px 10px; outline:0; }
 .explore-hero .explore-search .button { flex:0 0 auto; width:auto; }
+.explore-search .button { display:inline-flex; align-items:center; gap:7px; }
+.explore-search .button img { display:block; width:18px; height:18px; object-fit:contain; filter:brightness(0) invert(1); }
 .explore-categories { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:9px; margin-top:16px; }
 .explore-categories a { display:inline-flex; align-items:center; justify-content:center; min-height:36px; padding:7px 15px; border:1px solid var(--line); border-radius:99px; background:#fff; color:var(--ink); font-size:.82rem; font-weight:600; text-align:center; text-decoration:none; transition:background-color .15s,color .15s,border-color .15s; }
 .explore-categories a:hover,.explore-categories a:focus-visible { border-color:var(--red); background:var(--red); color:#fff; text-decoration:none; }

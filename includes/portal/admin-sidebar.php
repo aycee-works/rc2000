@@ -5,26 +5,25 @@
  */
 $admin = current_admin();
 $navItems = [
-    'dashboard' => ['Dashboard',        'admin/dashboard.php'],
-    'donations' => ['Manage Donations', 'admin/donations/index.php'],
-    'community' => ['Manage Campaigns', 'admin/community.php'],
-    'content'   => ['Manage Content',   'admin/content/index.php'],
-    'inquiries' => ['Manage Inquiries', 'admin/inquiries/index.php'],
-    'feedback'  => ['Website Feedback', 'admin/feedback/index.php'],
+    'dashboard' => ['Dashboard',        'admin/dashboard.php',        'dashboard.png'],
+    'donations' => ['Manage Donations', 'admin/donations/index.php',  'manage_donations.png'],
+    'community' => ['Manage Campaigns', 'admin/community.php',        'manage_campaigns.png'],
+    'content'   => ['Manage Content',   'admin/content/index.php',    'manage_content.png'],
+    'inquiries' => ['Manage Inquiries', 'admin/inquiries/index.php',  'manage_inquiries.png'],
+    'feedback'  => ['Website Feedback', 'admin/feedback/index.php',   'manage_feedback.png'],
 ];
 ?>
 <aside class="sidebar">
-    <button class="sidebar-reveal" type="button" aria-label="Open admin navigation" aria-expanded="false" data-sidebar-toggle><span aria-hidden="true">☰</span></button>
     <a class="sidebar-brand" href="<?= e(url('admin/dashboard.php')) ?>">
         <img src="<?= e(asset('images/logo.png')) ?>" alt="" width="26" height="26" onerror="this.style.display='none'">
         <span>Reading Club 2000</span>
     </a>
 
     <nav class="sidebar-nav" aria-label="Main">
-        <?php foreach ($navItems as $key => [$label, $path]): ?>
-            <a href="<?= e(url($path)) ?>"
+        <?php foreach ($navItems as $key => [$label, $path, $icon]): ?>
+            <a href="<?= e(url($path)) ?>" title="<?= e($label) ?>"
                class="nav-link<?= $key === ($activeNav ?? '') ? ' is-active' : '' ?>"
-               <?= $key === ($activeNav ?? '') ? 'aria-current="page"' : '' ?>><?= e($label) ?></a>
+               <?= $key === ($activeNav ?? '') ? 'aria-current="page"' : '' ?>><img class="nav-icon" src="<?= e(asset('images/icons/' . $icon)) ?>" alt="" aria-hidden="true" width="22" height="22"><span><?= e($label) ?></span></a>
         <?php endforeach; ?>
     </nav>
 
