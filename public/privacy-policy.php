@@ -31,19 +31,20 @@ page_start('Privacy Policy', ['class' => 'privacy-policy-page']);
           <li><strong>Inquiries:</strong> your name, email address, optional phone number, inquiry category, subject, and message.</li>
           <li><strong>Donation reports:</strong> your name and email address, optional contact details, donation amount and date, payment method, transaction reference, and any payment proof you upload. Book donation forms may also ask for book details and notes.</li>
           <li><strong>Website feedback:</strong> your name, email address, and feedback message.</li>
+          <li><strong>Daily quizzes:</strong> your answers are processed to calculate your score. Joining the leaderboard is optional; if you join, your username, email address, score, and quiz date are stored. Your username and score appear on the public leaderboard.</li>
+          <li><strong>Weekly reading challenge:</strong> if you vote, your choice is stored with a one-way hash derived from the connection IP address and browser user-agent to help prevent duplicate votes. The vote record stores the hash rather than those raw values.</li>
         </ul>
         <p>Please do not include passwords, full payment-card numbers, or other information that a form does not request.</p>
       </section>
 
       <section id="use">
         <h2>How information is used</h2>
-        <p>Reading Club 2000 administrators use submitted information to respond to inquiries and feedback, issue and track inquiry references, review donation reports, verify donations, and maintain the website and its records.</p>
+        <p>Reading Club 2000 administrators use submitted information to respond to inquiries and feedback, issue and track inquiry references, review donation reports, verify donations, calculate quiz scores, display leaderboard entries when a participant opts in, prevent duplicate challenge votes, and maintain the website and its records.</p>
       </section>
 
       <section id="facebook">
         <h2>Facebook and external services</h2>
-        <p>The website links to and may display public content from the Reading Club 2000 Facebook Page. When a Facebook embed or other third-party content loads, that provider may receive technical information from your browser under its own privacy policy.</p>
-        <p>If automatic Facebook post updates are enabled, the website may retrieve and temporarily store publicly available post details—such as text, publication date, image, and link—to show them in Community Updates. The website does not use Facebook Login for visitors and does not request access to private posts or visitors’ Facebook profiles for this purpose. Posts link back to Facebook, where Meta’s terms and privacy policy apply.</p>
+        <p>The Community Updates section displays a preview image that links to the Reading Club 2000 Facebook Page. The website does not embed Facebook content or automatically retrieve posts through the Meta Graph API. When you open the link, Facebook handles your visit under its own terms and privacy policy.</p>
         <p>Some pages may also include services such as Google Fonts, YouTube, or Google Maps. Those services handle information according to their own policies.</p>
       </section>
 
@@ -64,7 +65,8 @@ page_start('Privacy Policy', ['class' => 'privacy-policy-page']);
 
       <section id="requests">
         <h2>Your questions and requests</h2>
-        <p>For a question about this policy or a request concerning information you submitted, contact Reading Club 2000 through the <a href="<?= e(app_url('public/inquiry.php')) ?>">inquiry form</a> or the <a href="<?= e(app_url('public/contact.php')) ?>">Contact Us</a> page. Please include enough information for the administrators to locate your submission, and do not send passwords or payment-card details.</p>
+        <p>You may ask whether the website processes your personal information, request access to or correction of it, object to certain processing, or request erasure, blocking, or data portability where applicable. These rights may be subject to legal limits.</p>
+        <p>For a privacy question or request, contact Reading Club 2000 through the <a href="<?= e(app_url('public/inquiry.php')) ?>">inquiry form</a>. Include enough information for the administrators to locate your submission, and do not send passwords or payment-card details. You may also file a complaint with the National Privacy Commission.</p>
       </section>
 
       <section>

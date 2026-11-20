@@ -536,17 +536,14 @@ page_start('Home');
             </div>
             <a href="<?= e($facebookPageUrl) ?>" target="_blank" rel="noopener noreferrer">Visit our Facebook page →</a>
         </div>
-        <div class="facebook-page-embed">
-            <iframe
-                title="Reading Club 2000 Facebook updates"
-                src="https://www.facebook.com/plugins/page.php?href=<?= rawurlencode($facebookPageUrl) ?>&amp;tabs=timeline&amp;width=500&amp;height=620&amp;small_header=true&amp;adapt_container_width=true&amp;hide_cover=false&amp;show_facepile=false"
-                width="500"
-                height="620"
-                style="border:0;overflow:hidden"
-                scrolling="no"
-                frameborder="0"
-                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
-        </div>
+        <a class="facebook-post-preview" href="<?= e($facebookPageUrl) ?>" target="_blank" rel="noopener noreferrer" aria-label="Visit the Reading Club 2000 Facebook page">
+            <img
+                src="<?= e(app_url('public/assets/images/facebook-latest-post.png?v=2')) ?>"
+                alt="Reading Club 2000 Facebook Page preview with its book-filled cover photo and profile"
+                loading="lazy"
+            >
+            <span class="facebook-post-cta">Visit the Facebook page <span aria-hidden="true">↗</span></span>
+        </a>
     </section>
     <?php endif; ?>
 
