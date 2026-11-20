@@ -10,6 +10,7 @@ $navItems = [
     'community' => ['Manage Campaigns', 'admin/community.php',        'manage_campaigns.png'],
     'content'   => ['Manage Content',   'admin/content/index.php',    'manage_content.png'],
     'inquiries' => ['Manage Inquiries', 'admin/inquiries/index.php',  'manage_inquiries.png'],
+    'archive'   => ['Archive',          'admin/archive/index.php'],
     'feedback'  => ['Website Feedback', 'admin/feedback/index.php',   'manage_feedback.png'],
 ];
 ?>

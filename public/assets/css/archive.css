@@ -1,0 +1,59 @@
+/* Five summary cards */
+.archive-stats { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+@media (max-width: 1100px) {
+    .archive-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+    .archive-stats { grid-template-columns: 1fr; }
+}
+
+/* assets/css/archive.css - Archive page (admin and super admin) */
+
+.archive-stat { display: flex; align-items: center; gap: 14px; }
+.archive-stat-icon {
+    flex: 0 0 44px; width: 44px; height: 44px;
+    display: grid; place-items: center;
+    font-size: 20px; color: var(--color-navy);
+    background: var(--color-cream);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+}
+
+.archive-toolbar {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+}
+.archive-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.archive-tab {
+    padding: 8px 16px;
+    font-size: 13px; font-weight: 500;
+    color: var(--color-navy);
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+}
+.archive-tab:hover { text-decoration: none; background: var(--color-row-hover); }
+.archive-tab.is-active {
+    color: var(--color-white);
+    background: var(--color-maroon);
+    border-color: var(--color-maroon);
+}
+.archive-search-form { flex: 1 1 240px; max-width: 340px; }
+.archive-search { width: 100%; }
+
+.archive-type { font-weight: 600; white-space: nowrap; }
+.archive-record { max-width: 420px; }
+.archive-action { font-weight: 600; text-decoration: underline; }
+
+.archive-note {
+    margin: 0; padding: 12px 16px;
+    font-size: 12px; color: var(--color-muted);
+    border-top: 1px solid var(--color-border);
+}
+.archive-text { white-space: normal; }
+.archive-image { max-width: 100%; max-height: 240px; border-radius: var(--radius); }
+
+@media (max-width: 700px) {
+    .archive-search-form { max-width: none; flex-basis: 100%; }
+}

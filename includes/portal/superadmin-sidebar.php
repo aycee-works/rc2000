@@ -4,6 +4,7 @@ $navItems = [
     'dashboard' => ['Dashboard',        'superadmin/dashboard.php'],
     'admins'    => ['Admin Management', 'superadmin/admins/index.php'],
     'audit'     => ['Audit Logs',       'superadmin/audit-logs.php'],
+    'archive'   => ['Archive',          'superadmin/archive.php'],
 ];
 ?>
 <aside class="sidebar">
