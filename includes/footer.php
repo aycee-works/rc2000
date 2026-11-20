@@ -9,6 +9,7 @@
         <nav aria-label="Footer navigation">
           <a href="<?= e(app_url('public/about.php')) ?>">About the Club</a>
           <a href="<?= e(app_url('public/contact.php')) ?>">Contact Us</a>
+          <a href="<?= e(app_url('public/privacy-policy.php')) ?>">Privacy Policy</a>
           <a href="<?= e(app_url('public/inquiry.php')) ?>">Inquiries</a>
           <a href="<?= e(app_url('public/home.php')) ?>#announcements">Announcements</a>
           <a class="footer-facebook" href="https://www.facebook.com/ReadingClub2000" target="_blank" rel="noopener noreferrer">
