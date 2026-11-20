@@ -10,7 +10,7 @@ $navItems = [
     'community' => ['Manage Campaigns', 'admin/community.php',        'manage_campaigns.png'],
     'content'   => ['Manage Content',   'admin/content/index.php',    'manage_content.png'],
     'inquiries' => ['Manage Inquiries', 'admin/inquiries/index.php',  'manage_inquiries.png'],
-    'archive'   => ['Archive',          'admin/archive/index.php'],
+    'archive'   => ['Archive',          'admin/archive/index.php',    'archive.png'],
     'feedback'  => ['Website Feedback', 'admin/feedback/index.php',   'manage_feedback.png'],
 ];
 ?>
@@ -21,10 +21,20 @@ $navItems = [
     </a>
 
     <nav class="sidebar-nav" aria-label="Main">
-        <?php foreach ($navItems as $key => [$label, $path, $icon]): ?>
+        <?php foreach ($navItems as $key => $item):
+            $label    = $item[0];
+            $path     = $item[1];
+            $icon     = $item[2] ?? null;
+            $isActive = $key === ($activeNav ?? '');
+        ?>
             <a href="<?= e(url($path)) ?>" title="<?= e($label) ?>"
-               class="nav-link<?= $key === ($activeNav ?? '') ? ' is-active' : '' ?>"
-               <?= $key === ($activeNav ?? '') ? 'aria-current="page"' : '' ?>><img class="nav-icon" src="<?= e(asset('images/icons/' . $icon)) ?>" alt="" aria-hidden="true" width="22" height="22"><span><?= e($label) ?></span></a>
+               class="nav-link<?= $isActive ? ' is-active' : '' ?>"
+               <?= $isActive ? 'aria-current="page"' : '' ?>>
+                <?php if ($icon): ?>
+                    <img class="nav-icon" src="<?= e(asset('images/icons/' . $icon)) ?>" alt="" aria-hidden="true" width="22" height="22" onerror="this.style.visibility='hidden'">
+                <?php endif; ?>
+                <span><?= e($label) ?></span>
+            </a>
         <?php endforeach; ?>
     </nav>
 
