@@ -431,7 +431,7 @@ page_start('Home');
     <div class="trivia-list wide">
       <?php foreach ($trivia as $item): ?>
         <article class="trivia-card">
-          <div class="trivia-icon">?</div>
+          <div class="trivia-icon"><img src="<?= e(app_url('public/assets/images/icons/trivia.png')) ?>" alt="" aria-hidden="true" width="42" height="42"></div>
           <div>
             <h3><?= e($item['title'] ?: 'Did you know?') ?></h3>
             <p><?= nl2br(e($item['body'])) ?></p>
@@ -536,30 +536,17 @@ page_start('Home');
             </div>
             <a href="<?= e($facebookPageUrl) ?>" target="_blank" rel="noopener noreferrer">Visit our Facebook page →</a>
         </div>
-        <div id="fb-root"></div>
         <div class="facebook-page-embed">
-            <div class="fb-page"
-                 data-href="<?= e($facebookPageUrl) ?>"
-                 data-tabs="timeline"
-                 data-width="500"
-                 data-height="620"
-                 data-small-header="true"
-                 data-adapt-container-width="true"
-                 data-hide-cover="false"
-                 data-show-facepile="false">
-                <blockquote cite="<?= e($facebookPageUrl) ?>" class="fb-xfbml-parse-ignore">
-                    <a href="<?= e($facebookPageUrl) ?>" target="_blank" rel="noopener noreferrer">Reading Club 2000 on Facebook</a>
-                </blockquote>
-            </div>
+            <iframe
+                title="Reading Club 2000 Facebook updates"
+                src="https://www.facebook.com/plugins/page.php?href=<?= rawurlencode($facebookPageUrl) ?>&amp;tabs=timeline&amp;width=500&amp;height=620&amp;small_header=true&amp;adapt_container_width=true&amp;hide_cover=false&amp;show_facepile=false"
+                width="500"
+                height="620"
+                style="border:0;overflow:hidden"
+                scrolling="no"
+                frameborder="0"
+                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
         </div>
-        <script>
-            window.fbAsyncInit = function () {
-                if (window.FB && window.FB.XFBML) {
-                    window.FB.XFBML.parse(document.getElementById('facebook-updates'));
-                }
-            };
-        </script>
-        <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1"></script>
     </section>
     <?php endif; ?>
 

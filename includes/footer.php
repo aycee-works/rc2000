@@ -2,7 +2,7 @@
   <div class="footer-main">
     <div class="footer-identity">
       <a class="footer-brand" href="<?= e(app_url('public/home.php')) ?>" aria-label="Reading Club 2000 home">
-        <img class="brand-logo" src="<?= e(app_url('public/assets/images/logo.png')) ?>" alt="" width="38" height="38">
+        <img class="brand-logo" src="<?= e(app_url('public/assets/images/icons/logo.png')) ?>" alt="" width="38" height="38">
         <span><strong>Reading Club 2000</strong><small>A neighborhood library built around sharing stories.</small></span>
       </a>
       <div class="footer-connect">
@@ -32,7 +32,7 @@
           <li>Submitted feedback and inquiries may be reviewed by the Reading Club 2000 administrators.</li>
         </ol>
       </details>
-      <span class="footer-copyright">Copyright</span>
+      <span class="footer-copyright"><img src="<?= e(app_url('public/assets/images/icons/copyright.png')) ?>" alt="" aria-hidden="true" width="16" height="16"><span>Copyright</span></span>
     </div>
   </div>
 </footer>

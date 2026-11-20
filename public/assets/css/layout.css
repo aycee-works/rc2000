@@ -70,6 +70,8 @@
     .sidebar-reveal { display:none; }
     .sidebar-brand { padding: 0; }
     .sidebar-nav { flex-direction: row; flex-wrap: wrap; flex: 1; }
+    .sidebar-nav .nav-link { display: flex; align-items: center; gap: 8px; }
+    .sidebar-nav .nav-icon { width: 20px; height: 20px; object-fit: contain; }
     .sidebar-footer {
         margin-top: 0; padding: 0; border-top: 0;
         display: flex; gap: 12px; align-items: center;
@@ -77,40 +79,55 @@
     .admin-main { padding: 20px 16px 40px; }
 }
 
-/* Keep the admin workspace full width and reveal navigation from the left edge. */
+/* Keep the admin workspace full width and expand the icon rail on hover/focus. */
 @media (min-width: 901px) {
     body.admin-body:not(.superadmin-body) .admin-shell { display:block; }
+    body.admin-body:not(.superadmin-body) .admin-main { margin-left:64px; }
     body.admin-body:not(.superadmin-body) .sidebar {
         position:fixed;
         left:0;
         z-index:1000;
-        width:210px;
-        transform:translateX(calc(-100% + 22px));
-        transition:transform .22s ease, box-shadow .22s ease;
-        box-shadow:none;
+        width:64px;
+        padding:22px 8px 18px;
+        overflow:hidden;
+        transform:none;
+        transition:width .22s ease, box-shadow .22s ease;
+        box-shadow:1px 0 8px rgba(17,29,43,.08);
     }
-    body.admin-body:not(.superadmin-body) .sidebar-reveal {
-        position:absolute;
-        top:44%;
-        right:0;
-        width:22px;
-        height:58px;
-        padding:0;
-        border:0;
-        border-radius:0 6px 6px 0;
-        background:var(--color-maroon);
-        color:#fff;
-        font-size:17px;
-        cursor:pointer;
-        box-shadow:2px 1px 5px rgba(0,0,0,.18);
-    }
-    body.admin-body:not(.superadmin-body) .sidebar-reveal:focus-visible { outline:3px solid #d8ad47; outline-offset:2px; }
     body.admin-body:not(.superadmin-body) .sidebar:hover,
-    body.admin-body:not(.superadmin-body) .sidebar:focus-within {
-        transform:translateX(0);
-        box-shadow:8px 0 24px rgba(17,29,43,.2);
+    body.admin-body:not(.superadmin-body) .sidebar:focus-within,
+    body.admin-body:not(.superadmin-body) .sidebar.is-pinned-open {
+        width:262px;
+        box-shadow:8px 0 24px rgba(17,29,43,.18);
     }
-    body.admin-body:not(.superadmin-body) .sidebar.is-pinned-open { transform:translateX(0); box-shadow:8px 0 24px rgba(17,29,43,.2); }
+    body.admin-body:not(.superadmin-body) .sidebar-brand {
+        justify-content:center;
+        gap:10px;
+        padding:0 0 22px;
+        white-space:nowrap;
+    }
+    body.admin-body:not(.superadmin-body) .sidebar-brand span,
+    body.admin-body:not(.superadmin-body) .sidebar-nav .nav-link span,
+    body.admin-body:not(.superadmin-body) .sidebar-footer { visibility:hidden; opacity:0; transition:opacity .12s ease; }
+    body.admin-body:not(.superadmin-body) .sidebar-brand span,
+    body.admin-body:not(.superadmin-body) .sidebar-nav .nav-link span { width:0; overflow:hidden; }
+    body.admin-body:not(.superadmin-body) .sidebar:hover .sidebar-brand,
+    body.admin-body:not(.superadmin-body) .sidebar:focus-within .sidebar-brand { justify-content:flex-start; padding-inline:8px; }
+    body.admin-body:not(.superadmin-body) .sidebar:hover .sidebar-brand span,
+    body.admin-body:not(.superadmin-body) .sidebar:focus-within .sidebar-brand span,
+    body.admin-body:not(.superadmin-body) .sidebar:hover .sidebar-nav .nav-link span,
+    body.admin-body:not(.superadmin-body) .sidebar:focus-within .sidebar-nav .nav-link span,
+    body.admin-body:not(.superadmin-body) .sidebar:hover .sidebar-footer,
+    body.admin-body:not(.superadmin-body) .sidebar:focus-within .sidebar-footer { visibility:visible; opacity:1; }
+    body.admin-body:not(.superadmin-body) .sidebar:hover .sidebar-brand span,
+    body.admin-body:not(.superadmin-body) .sidebar:focus-within .sidebar-brand span,
+    body.admin-body:not(.superadmin-body) .sidebar:hover .sidebar-nav .nav-link span,
+    body.admin-body:not(.superadmin-body) .sidebar:focus-within .sidebar-nav .nav-link span { width:auto; }
+    body.admin-body:not(.superadmin-body) .sidebar-nav .nav-link { display:flex; align-items:center; justify-content:center; gap:12px; min-height:44px; padding:10px 0; white-space:nowrap; }
+    body.admin-body:not(.superadmin-body) .sidebar:hover .sidebar-nav .nav-link,
+    body.admin-body:not(.superadmin-body) .sidebar:focus-within .sidebar-nav .nav-link { justify-content:flex-start; padding-inline:12px; }
+    body.admin-body:not(.superadmin-body) .sidebar-nav .nav-icon { display:block; flex:0 0 22px; width:22px; height:22px; object-fit:contain; }
+    body.admin-body:not(.superadmin-body) .sidebar-nav .nav-link.is-active .nav-icon { filter:brightness(0) invert(1); }
 }
 
 @media (prefers-reduced-motion: reduce) {

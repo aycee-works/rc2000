@@ -1,6 +1,6 @@
 <header class="site-header">
   <a class="brand" href="<?= e(app_url('public/home.php')) ?>" aria-label="Reading Club 2000 home">
-    <img class="brand-logo" src="<?= e(app_url('public/assets/images/logo.png')) ?>" alt="" width="24" height="24">
+    <img class="brand-logo" src="<?= e(app_url('public/assets/images/icons/logo.png')) ?>" alt="" width="24" height="24">
     <span class="brand-name">Reading Club 2000</span>
   </a>
   <nav class="main-nav" aria-label="Main navigation">
@@ -12,7 +12,8 @@
   </nav>
   <div class="nav-actions">
     <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false">
-      <span data-theme-icon aria-hidden="true">☾</span><span data-theme-label>Dark mode</span>
+      <img data-theme-icon src="<?= e(app_url('public/assets/images/icons/theme-moon.svg')) ?>" data-light-src="<?= e(app_url('public/assets/images/icons/theme-moon.svg')) ?>" data-dark-src="<?= e(app_url('public/assets/images/icons/theme-sun.svg')) ?>" alt="" aria-hidden="true" width="24" height="24">
+      <span data-theme-label>Dark mode</span>
     </button>
   </div>
 </header>

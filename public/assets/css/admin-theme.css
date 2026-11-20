@@ -45,6 +45,7 @@ html[data-admin-theme="dark"] .sidebar-brand,
 html[data-admin-theme="dark"] .nav-link,
 html[data-admin-theme="dark"] .sidebar-user { color: var(--color-navy); }
 html[data-admin-theme="dark"] .nav-link.is-active { background: #35414e; color: #fff; }
+html[data-admin-theme="dark"] body.admin-body:not(.superadmin-body) .sidebar-nav .nav-icon { filter: brightness(0) invert(1); }
 html[data-admin-theme="dark"] .sidebar-footer { border-color: var(--color-border); }
 html[data-admin-theme="dark"] .stat-card,
 html[data-admin-theme="dark"] .panel,

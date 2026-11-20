@@ -7,7 +7,7 @@
       const dark = document.documentElement.dataset.theme === 'dark';
       themeToggle.setAttribute('aria-pressed', String(dark));
       themeToggle.setAttribute('aria-label', `Switch to ${dark ? 'light' : 'dark'} mode`);
-      themeIcon.textContent = dark ? '☀' : '☾';
+      themeIcon.src = dark ? themeIcon.dataset.darkSrc : themeIcon.dataset.lightSrc;
       themeLabel.textContent = dark ? 'Light mode' : 'Dark mode';
     };
     updateThemeButton();
