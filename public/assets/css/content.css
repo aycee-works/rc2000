@@ -42,7 +42,7 @@
 .activity-feature-copy h3 { margin:0 0 8px; color:var(--color-navy); font:600 18px var(--font-body); }
 .activity-feature-copy p { margin:0; color:var(--color-muted); font-size:14px; line-height:1.55; }
 .activity-facts { display:flex; flex-wrap:wrap; gap:10px 22px; margin-top:16px; padding-top:12px; border-top:1px solid var(--color-border); color:var(--color-ink); font-size:12px; }
-.activity-card-actions { display:flex; justify-content:flex-end; padding:0 22px 20px; }
+.activity-card-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:12px; padding:0 22px 20px; }
 .activity-card-actions .btn { min-width:148px; font-weight:700; }
 .activity-editor { padding:0 22px 20px; border-top:1px solid var(--color-border); }
 .activity-editor[hidden] { display:none !important; }
@@ -140,7 +140,7 @@
     .activity-feature { align-items:flex-start; gap:13px; padding:18px 16px 12px; }
     .activity-art { width:82px; height:82px; }
     .quiz-art svg { width:68px; height:68px; }
-    .activity-card-actions { padding:0 16px 16px; }
+    .activity-card-actions { gap:10px; padding:0 16px 16px; }
     .activity-editor { padding:0 16px 16px; }
     .quiz-option-maker { grid-template-columns:74px minmax(0,1fr) 58px; gap:6px; }
     .quiz-option-remove { font-size:10px; }
