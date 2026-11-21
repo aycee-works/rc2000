@@ -75,8 +75,8 @@ function archive_union_sql(): string
     UNION ALL
     SELECT 'challenge'::text, c.id,
            (c.title || ' · ' || (SELECT COUNT(*) FROM rc2000_admin.challenge_votes v WHERE v.challenge_id = c.id AND v.choice = 'accept')
-             || ' accept · ' || (SELECT COUNT(*) FROM rc2000_admin.challenge_votes v WHERE v.challenge_id = c.id AND v.choice = 'not_for_me')
-             || ' not for me')::text,
+             || ' joining · ' || (SELECT COUNT(*) FROM rc2000_admin.challenge_votes v WHERE v.challenge_id = c.id AND v.choice = 'not_for_me')
+             || ' not now')::text,
            (CASE WHEN c.status = 'closed' THEN 'closed' ELSE 'ended' END)::text,
            (CASE WHEN c.status = 'closed' THEN 'Closed' ELSE 'Ended' END)::text,
            c.ends_at
@@ -309,8 +309,8 @@ function archive_get_detail(PDO $pdo, string $type, int $id): ?array
         $d['fields'] = [
             ['Starts', format_datetime($row['starts_at'])],
             ['Ended', format_datetime($row['ends_at'])],
-            ['I accept', (string) (int) $row['accepts']],
-            ['Not for me', (string) (int) $row['declines']],
+            ['Joining', (string) (int) $row['accepts']],
+            ['Not now', (string) (int) $row['declines']],
             ['Total responses', (string) ((int) $row['accepts'] + (int) $row['declines'])],
         ];
         $d['body_label'] = 'Challenge prompt';
