@@ -423,10 +423,10 @@ page_start('Home', ['class' => 'home-page']);
       </div>
     </div>
     <div class="trivia-list">
-      <?php $triviaIcons = ['📚', '✨', '🪶', '🔎', '💡', '📖']; ?>
+      <?php $triviaIcons = ['books.svg', 'sparkles.svg', 'quill.svg', 'search-book.svg', 'lightbulb.svg', 'open-book.svg']; ?>
       <?php foreach ($trivia as $index => $item): $answerId = 'trivia-answer-' . $index; ?>
         <article class="trivia-card" data-trivia-card>
-          <div class="trivia-icon" aria-hidden="true"><?= e($triviaIcons[$index % count($triviaIcons)]) ?></div>
+          <div class="trivia-icon" aria-hidden="true"><img src="<?= e(app_url('public/assets/images/icons/trivia/' . $triviaIcons[$index % count($triviaIcons)])) ?>" alt="" width="48" height="48"></div>
           <div class="trivia-copy">
             <h3><?= e($item['title'] ?: 'Did you know?') ?></h3>
             <button class="trivia-answer-toggle" type="button" aria-expanded="false" aria-controls="<?= e($answerId) ?>" data-trivia-toggle>Show answer</button>
