@@ -217,7 +217,7 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
                 <li class="item-row">
                     <div class="item-main"><span class="item-title" title="<?= e($t['question']) ?>"><?= e($t['question']) ?></span></div>
                     <?= status_badge($t['status'], 'content') ?>
-                    <span class="item-actions"><a href="<?= e(form_url('trivia', (int) $t['id'])) ?>">Edit</a></span>
+                    <span class="item-actions"><a href="<?= e(form_url('trivia', (int) $t['id'])) ?>">Edit</a> · <?= toggle_button('trivia', $t) ?></span>
                 </li>
             <?php endforeach; ?>
         </ul>

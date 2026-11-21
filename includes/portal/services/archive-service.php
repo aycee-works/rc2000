@@ -21,6 +21,7 @@ function archive_type_labels(): array
         'article'      => 'Article',
         'announcement' => 'Announcement',
         'gallery'      => 'Gallery item',
+        'trivia'       => 'Trivia',
     ];
 }
 
@@ -31,7 +32,7 @@ function archive_groups(): array
         'inquiries'  => ['inquiry'],
         'activities' => ['quiz', 'leaderboard', 'challenge'],
         'campaigns'  => ['campaign'],
-        'content'    => ['story', 'article', 'announcement', 'gallery'],
+        'content'    => ['story', 'article', 'announcement', 'gallery', 'trivia'],
     ];
 }
 
@@ -104,7 +105,12 @@ function archive_union_sql(): string
     UNION ALL
     SELECT 'gallery'::text, g.id, g.title::text, 'archived'::text, 'Archived'::text, g.updated_at
     FROM rc2000_admin.gallery_images g
-    WHERE g.status = 'archived'";
+    WHERE g.status = 'archived'
+
+    UNION ALL
+    SELECT 'trivia'::text, t.id, t.question::text, 'archived'::text, 'Archived'::text, t.updated_at
+    FROM rc2000_admin.trivia t
+    WHERE t.status = 'archived'";
 }
 
 /** Status pill using the existing badge colours. */
@@ -139,6 +145,7 @@ function archive_manage_url(string $type, int $id): ?string
         'article'      => url('admin/content/form.php?entity=story&id=' . $id),
         'announcement' => url('admin/content/form.php?entity=announcement&id=' . $id),
         'gallery'      => url('admin/content/index.php'),
+        'trivia'       => url('admin/content/form.php?entity=trivia&id=' . $id),
     ][$type] ?? null;
 }
 
@@ -273,6 +280,20 @@ function archive_get_detail(PDO $pdo, string $type, int $id): ?array
             ['Average score', number_format((float) $stats['avg_score'], 1) . ' / 5'],
             ['Results published', $p->fetchColumn() ? 'Yes' : 'No'],
         ];
+    } elseif ($type === 'trivia') {
+        $q = $pdo->prepare('SELECT question, answer, explanation, updated_at FROM rc2000_admin.trivia WHERE id = ? AND status = \'archived\'');
+        $q->execute([$id]);
+        $row = $q->fetch();
+        if (!$row) { return null; }
+        $d['title'] = 'Trivia · ' . (string) $row['question'];
+        $d['fields'] = [
+            ['Answer', (string) $row['answer']],
+            ['Archived', format_datetime($row['updated_at'])],
+        ];
+        if (!empty($row['explanation'])) {
+            $d['body_label'] = 'Explanation';
+            $d['body'] = (string) $row['explanation'];
+        }
     } elseif ($type === 'leaderboard') {
         $l = $pdo->prepare(
             'SELECT p.week_start, p.posted_at, st.title, st.body,

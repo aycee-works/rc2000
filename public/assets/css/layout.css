@@ -44,7 +44,32 @@
     font-size: 12px;
 }
 .sidebar-user { color: var(--color-navy); margin-bottom: 2px; }
-.sidebar-footer .link-button { color: var(--color-muted); font-size: 14px; }
+body.admin-body:not(.superadmin-body) .sidebar-user {
+    margin-bottom: 8px;
+    color: var(--color-navy);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+body.admin-body:not(.superadmin-body) .sidebar-footer form { margin-top: 10px; }
+body.admin-body:not(.superadmin-body) .sidebar-footer .link-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 14px;
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--color-red);
+    color: #fff;
+    font: 600 15px var(--font-body);
+    cursor: pointer;
+    transition: background-color .15s ease, transform .15s ease;
+}
+body.admin-body:not(.superadmin-body) .sidebar-footer .link-button:hover { background: #a01a26; text-decoration: none; }
+body.admin-body:not(.superadmin-body) .sidebar-footer .link-button:active { transform: translateY(1px); }
+body.admin-body:not(.superadmin-body) .sidebar-footer .link-button:focus-visible { outline: 3px solid #d8ad47; outline-offset: 2px; }
 
 /* ---------- Main area ---------- */
 .admin-main {

@@ -5,7 +5,7 @@
   </a>
   <nav class="main-nav" aria-label="Main navigation">
     <a href="<?= e(app_url('public/home.php')) ?>"<?= nav_active('home.php') ?>>Home</a>
-    <a href="<?= e(app_url('public/explore.php')) ?>">Explore</a>
+    <a href="<?= e(app_url('public/explore.php')) ?>"<?= nav_active('explore.php') ?>>Explore</a>
     <a href="<?= e(app_url('public/donate.php')) ?>"<?= nav_active('donate.php') ?>>Donate</a>
     <a href="<?= e(app_url('public/inquiry.php')) ?>"<?= nav_active('inquiry.php') ?>>Inquiry</a>
     <a href="<?= e(app_url('public/about.php')) ?>"<?= nav_active('about.php') ?>>About</a>
