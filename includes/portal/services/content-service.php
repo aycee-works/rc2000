@@ -5,7 +5,6 @@
  *   gallery images, stories + articles (one table, `type` column), announcements, trivia.
  *
  * Visibility: only status 'published' is public. 'draft' and 'archived' are hidden.
- * Trivia only has draft / published.
  * Files are removed only AFTER the database change has committed.
  *
  * Every save function returns:
@@ -24,7 +23,7 @@ function content_entities(): array
         'gallery'      => ['table' => 'gallery_images', 'label' => 'image',        'statuses' => ['draft', 'published', 'archived'], 'file_col' => 'file_path',  'dated' => false],
         'story'        => ['table' => 'stories',        'label' => 'story',        'statuses' => ['draft', 'published', 'archived'], 'file_col' => 'cover_path', 'dated' => true],
         'announcement' => ['table' => 'announcements',  'label' => 'announcement', 'statuses' => ['draft', 'published', 'archived'], 'file_col' => 'image_path', 'dated' => true],
-        'trivia'       => ['table' => 'trivia',         'label' => 'trivia entry', 'statuses' => ['draft', 'published'],             'file_col' => null,         'dated' => false],
+        'trivia'       => ['table' => 'trivia',         'label' => 'trivia entry', 'statuses' => ['draft', 'published', 'archived'], 'file_col' => null,         'dated' => false],
     ];
 }
 

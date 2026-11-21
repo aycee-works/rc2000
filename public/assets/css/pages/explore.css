@@ -33,7 +33,7 @@ body:has(.history-panel) .gallery-grid.mosaic figcaption { padding: 7px 9px; bac
 html[data-theme="dark"] .page-hero.explore-hero { background-image:linear-gradient(110deg,rgba(17,27,36,.88),rgba(17,27,36,.78) 58%,rgba(17,27,36,.68)),url('../../images/explore_banner.jpg'); }
 .explore-hero .section { width:min(100%,1120px); max-width:none; margin:0 auto; padding:76px 24px; text-align:center; }
 .explore-hero h1 { margin:8px 0 7px; font-size:clamp(2.4rem,5vw,4rem); }
-.page-hero.explore-hero p { max-width:none; margin:0 auto 22px; color:var(--muted); }
+.page-hero.explore-hero .section > p { display:block; width:100%; max-width:none; margin:0 auto 22px; color:var(--muted); text-align:center !important; }
 .explore-search { display:flex; align-items:center; width:min(100%,720px); margin:0 auto; gap:9px; padding:7px; border:1px solid #d9dfe2; border-radius:7px; background:#fff; }
 .explore-search input { flex:1 1 auto; min-width:0; border:0; padding:8px 10px; outline:0; }
 .explore-hero .explore-search .button { flex:0 0 auto; width:auto; }

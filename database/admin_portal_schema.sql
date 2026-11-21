@@ -240,7 +240,7 @@ CREATE TABLE IF NOT EXISTS trivia (
     answer      VARCHAR(255) NOT NULL,
     explanation TEXT         NULL,
     status      VARCHAR(20)  NOT NULL DEFAULT 'draft'
-                CONSTRAINT chk_trivia_status CHECK (status IN ('draft', 'published')),
+                CONSTRAINT chk_trivia_status CHECK (status IN ('draft', 'published', 'archived')),
     created_by  INTEGER      NULL REFERENCES admins(id) ON DELETE SET NULL,
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()

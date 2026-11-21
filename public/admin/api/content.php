@@ -8,7 +8,7 @@
  *     story_save          id (0 = new), type (story|article), title, body, author, status,
  *                         published_date (YYYY-MM-DD, optional), version, image (cover), remove_image (1)
  *     announcement_save   id (0 = new), title, body, status, published_date, version, image, remove_image
- *     trivia_save         id (0 = new), question, answer, explanation, status (draft|published), version
+ *     trivia_save         id (0 = new), question, answer, explanation, status (draft|published|archived), version
  *     set_status          entity (gallery|story|announcement|trivia), id, status
  *     delete              entity, id
  *   Response: {success, message, data:{id}}

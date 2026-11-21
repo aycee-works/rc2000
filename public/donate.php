@@ -2,7 +2,8 @@
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/community.php';
 
-$tab = in_array($_GET['tab'] ?? '', ['money', 'campaign', 'status'], true) ? (string) $_GET['tab'] : 'money';
+$tab = in_array($_GET['tab'] ?? '', ['money', 'campaign', 'status', 'receipt'], true) ? (string) $_GET['tab'] : 'money';
+$donationReceipt = $_SESSION['donation_receipt'] ?? null;
 
 $methods = active_donation_methods();
 $errors = [];
@@ -47,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!required_text($old['transaction_reference'], 100)) $errors[] = 'Please enter a transaction reference or check number (100 characters maximum).';
         $contact = trim($old['contact_info']);
         if ($contact !== '' && !preg_match('/^[0-9+() \-]{7,30}$/', $contact)) $errors[] = 'Contact number may only contain digits, spaces, + ( ) and - (up to 30 characters).';
-        $campaign = fetch_one("SELECT id FROM rc2000_admin.campaigns WHERE id = :id AND status = 'open'", ['id' => $campaignId]);
+        $campaign = fetch_one("SELECT id, title FROM rc2000_admin.campaigns WHERE id = :id AND status = 'open'", ['id' => $campaignId]);
         if (!$campaign) $errors[] = 'Please choose an open campaign.';
         $methodId = (int) $old['donation_method_id'];
         $selectedMethod = null;
@@ -60,8 +61,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = db()->prepare("INSERT INTO rc2000_admin.monetary_donations (reference_no, donor_name, donor_email, donor_contact, reported_amount, payment_method, transaction_ref, proof_path, campaign_id) VALUES ('MD-' || lpad(nextval('rc2000_admin.monetary_donation_seq')::text, 4, '0'), :name, :email, :contact, :amount, :method, :reference, :proof, :campaign) RETURNING reference_no");
                 $stmt->execute(['name' => $name, 'email' => strtolower(trim($old['donor_email'])), 'contact' => $contact ?: null, 'amount' => number_format((float) $old['amount_reported'], 2, '.', ''), 'method' => $methodName, 'reference' => $old['transaction_reference'], 'proof' => $proof, 'campaign' => $campaignId]);
                 $trackingId = (string) $stmt->fetchColumn();
-                flash_set('success', 'Donation report received. Tracking ID: ' . $trackingId . '. It will appear as verified only after admin review.');
-                redirect('/public/donate.php?tab=status&reference=' . rawurlencode($trackingId));
+                $_SESSION['donation_receipt'] = [
+                    'reference' => $trackingId,
+                    'name' => $name,
+                    'email' => strtolower(trim($old['donor_email'])),
+                    'amount' => number_format((float) $old['amount_reported'], 2, '.', ''),
+                    'method' => $methodName,
+                    'transaction_reference' => $old['transaction_reference'],
+                    'payment_date' => $old['payment_date'],
+                    'campaign' => (string) ($campaign['title'] ?? ''),
+                    'submitted_at' => date('c'),
+                ];
+                redirect('/public/donate.php?tab=receipt');
             } catch (Throwable $error) {
                 error_log('Campaign donation report failed: ' . $error->getMessage());
                 $errors[] = 'We could not save your campaign donation report yet. Please try again.';
@@ -145,8 +156,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 $trackingId = (string) $portal->fetchColumn();
                 $pdo->commit();
-                flash_set('success', 'Donation report received. Tracking ID: ' . $trackingId . '. It will appear as verified only after admin review.');
-                redirect('/public/donate.php?tab=status&reference=' . rawurlencode($trackingId));
+                $_SESSION['donation_receipt'] = [
+                    'reference' => $trackingId,
+                    'name' => $donorName,
+                    'email' => strtolower(trim($old['donor_email'])),
+                    'amount' => number_format((float) $old['amount_reported'], 2, '.', ''),
+                    'method' => (string) $method,
+                    'transaction_reference' => $old['transaction_reference'],
+                    'payment_date' => $old['payment_date'],
+                    'campaign' => '',
+                    'submitted_at' => date('c'),
+                ];
+                redirect('/public/donate.php?tab=receipt');
             } catch (PDOException $error) {
                 if (isset($pdo) && $pdo->inTransaction()) {
                     $pdo->rollBack();
@@ -197,7 +218,31 @@ page_start('Donate');
       </ol>
     </section>
 
-    <?php if ($tab === 'money'): ?>
+    <?php if ($tab === 'receipt'): ?>
+      <section class="form-card submission-receipt">
+        <?php if (is_array($donationReceipt)): ?>
+          <p class="eyebrow">Donation confirmation</p>
+          <h1>Thank you for your donation report</h1>
+          <p class="lede">Keep this receipt. Your report is pending until reviewed by an administrator.</p>
+          <dl class="receipt-details">
+            <div><dt>Tracking ID</dt><dd><?= e((string) $donationReceipt['reference']) ?></dd></div>
+            <div><dt>Donor</dt><dd><?= e((string) $donationReceipt['name']) ?></dd></div>
+            <div><dt>Email</dt><dd><?= e((string) $donationReceipt['email']) ?></dd></div>
+            <div><dt>Reported amount</dt><dd>₱<?= e(number_format((float) $donationReceipt['amount'], 2)) ?></dd></div>
+            <div><dt>Payment method</dt><dd><?= e((string) $donationReceipt['method']) ?></dd></div>
+            <div><dt>Transaction reference</dt><dd><?= e((string) $donationReceipt['transaction_reference']) ?></dd></div>
+            <div><dt>Payment date</dt><dd><?= e(date('M j, Y g:i A', strtotime((string) $donationReceipt['payment_date']))) ?></dd></div>
+            <?php if (!empty($donationReceipt['campaign'])): ?><div><dt>Campaign</dt><dd><?= e((string) $donationReceipt['campaign']) ?></dd></div><?php endif; ?>
+            <div><dt>Submitted</dt><dd><?= e(date('M j, Y g:i A', strtotime((string) $donationReceipt['submitted_at']))) ?></dd></div>
+          </dl>
+          <p>To check your donation status later, use the tracking ID above and the email you submitted.</p>
+          <div class="receipt-actions"><button class="button" type="button" onclick="window.print()">Print receipt</button><a class="button button-secondary" href="<?= e(app_url('public/donate.php?tab=status')) ?>">Track donation</a></div>
+        <?php else: ?>
+          <h1>No recent donation receipt</h1><p>Submit a donation report to get a printable receipt and tracking ID.</p>
+          <a class="button" href="<?= e(app_url('public/donate.php?tab=money')) ?>">Make a donation report</a>
+        <?php endif; ?>
+      </section>
+    <?php elseif ($tab === 'money'): ?>
       <section class="form-card">
         <h1>Monetary Donation</h1>
         <p class="lede">After donating, please fill out this form so we can thank you. The amount is self-reported and recorded for transparency; it is not independently tracked through this form.</p>

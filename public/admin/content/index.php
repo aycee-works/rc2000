@@ -35,7 +35,7 @@ $challengeEditId = 0;
 $challengeEditorOpen = isset($_GET['challenge']) || isset($_GET['new_challenge']);
 $quizEditorOpen = isset($_GET['quiz']) || isset($_GET['new_quiz']);
 $quizEditId = (int) ($_GET['quiz'] ?? 0);
-$quizFormDate = date('Y-m-d');
+$quizFormDate = isset($_GET['new_quiz']) ? date('Y-m-d', strtotime('+1 day')) : date('Y-m-d');
 $quizFormStatus = 'published';
 $quizFormQuestions = array_fill(0, 5, ['question' => '', 'options' => ['', ''], 'correct' => 0]);
 $todayQuiz = null;
@@ -58,7 +58,16 @@ try {
         }
     }
     $pastChallengeRows = array_values(array_filter($challengeRows, static fn($row) => (int) $row['id'] !== (int) ($activeChallenge['id'] ?? 0)));
-    $todayStmt = $pdo->query('SELECT id, quiz_date, status FROM rc2000_admin.daily_quizzes WHERE quiz_date=CURRENT_DATE LIMIT 1');
+    if (isset($_GET['new_quiz'])) {
+        $usedDates = $pdo->query("SELECT quiz_date::text FROM rc2000_admin.daily_quizzes WHERE quiz_date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Manila')::date")->fetchAll(PDO::FETCH_COLUMN);
+        $usedDates = array_fill_keys($usedDates, true);
+        $candidateDate = new DateTimeImmutable('tomorrow', new DateTimeZone('Asia/Manila'));
+        while (isset($usedDates[$candidateDate->format('Y-m-d')])) {
+            $candidateDate = $candidateDate->modify('+1 day');
+        }
+        $quizFormDate = $candidateDate->format('Y-m-d');
+    }
+    $todayStmt = $pdo->query("SELECT id, quiz_date, status FROM rc2000_admin.daily_quizzes WHERE quiz_date=(CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Manila')::date LIMIT 1");
     $todayQuiz = $todayStmt->fetch() ?: null;
     if ($quizEditId === 0 && $todayQuiz && !isset($_GET['new_quiz'])) { $quizEditId = (int) $todayQuiz['id']; }
     if ($quizEditId > 0) {
@@ -208,7 +217,7 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
                 <li class="item-row">
                     <div class="item-main"><span class="item-title" title="<?= e($t['question']) ?>"><?= e($t['question']) ?></span></div>
                     <?= status_badge($t['status'], 'content') ?>
-                    <span class="item-actions"><a href="<?= e(form_url('trivia', (int) $t['id'])) ?>">Edit</a></span>
+                    <span class="item-actions"><a href="<?= e(form_url('trivia', (int) $t['id'])) ?>">Edit</a> · <?= toggle_button('trivia', $t) ?></span>
                 </li>
             <?php endforeach; ?>
         </ul>
@@ -224,7 +233,7 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
             <?php if (!empty($activeChallenge['image_path'])): ?><img class="activity-art challenge-art" src="<?= e(url($activeChallenge['image_path'])) ?>" alt="Challenge artwork">
             <?php else: ?><div class="activity-art challenge-art placeholder-art" aria-hidden="true"><span>▤</span></div><?php endif; ?>
             <div class="activity-feature-copy"><h3><?= e($activeChallenge['title'] ?? 'No challenge scheduled') ?></h3><p><?= e($activeChallenge['prompt'] ?? 'Create a weekly prompt to invite the community to read together.') ?></p>
-                <div class="activity-facts"><?php if (!empty($activeChallenge['starts_at'])): ?><span>▢ &nbsp;<?= e(format_date_short($activeChallenge['starts_at'])) ?> – <?= e(format_date_short($activeChallenge['ends_at'])) ?></span><?php endif; ?><span>♧ &nbsp;<?= (int) ($activeChallenge['accepts'] ?? 0) ?> I accept &nbsp;·&nbsp; <?= (int) ($activeChallenge['declines'] ?? 0) ?> Not for me</span></div>
+                <div class="activity-facts"><?php if (!empty($activeChallenge['starts_at'])): ?><span>▢ &nbsp;<?= e(format_date_short($activeChallenge['starts_at'])) ?> – <?= e(format_date_short($activeChallenge['ends_at'])) ?></span><?php endif; ?><span>♧ &nbsp;<?= (int) ($activeChallenge['accepts'] ?? 0) ?> joining &nbsp;·&nbsp; <?= (int) ($activeChallenge['declines'] ?? 0) ?> not now</span></div>
             </div>
         </div>
         <div class="activity-card-actions"><button class="btn btn-maroon" type="button" data-editor-toggle="challenge-editor" data-open-label="Edit challenge" data-close-label="Cancel" aria-controls="challenge-editor" aria-expanded="<?= $challengeEditorOpen ? 'true' : 'false' ?>"><?= $challengeEditorOpen ? 'Cancel' : ($challengeEditId ? 'Edit challenge' : 'Create challenge') ?></button></div>
@@ -241,17 +250,20 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
             <label>Visibility<select name="status"><option value="published" <?= ($activeChallenge['status'] ?? 'published') === 'published' ? 'selected' : '' ?>>Publish</option><option value="draft" <?= ($activeChallenge['status'] ?? '') === 'draft' ? 'selected' : '' ?>>Save draft</option></select></label>
             <button class="btn btn-maroon" type="submit">Save challenge</button>
         </form></div>
-        <?php if ($pastChallengeRows): ?><div class="activity-previous"><button class="link-button" type="button" data-editor-toggle="previous-challenges" data-open-label="Previous challenges (<?= count($pastChallengeRows) ?>)" data-close-label="Hide previous challenges" aria-controls="previous-challenges" aria-expanded="false">Previous challenges (<?= count($pastChallengeRows) ?>)</button><div id="previous-challenges" hidden><div class="table-wrap"><table class="data-table"><thead><tr><th>Challenge</th><th>Dates</th><th>Responses</th><th>Action</th></tr></thead><tbody><?php foreach ($pastChallengeRows as $challengeRow): ?><tr><td><?= e($challengeRow['title']) ?> · <?= e($challengeRow['status']) ?></td><td><?= e(format_date_short($challengeRow['starts_at'])) ?>–<?= e(format_date_short($challengeRow['ends_at'])) ?></td><td><?= (int) $challengeRow['accepts'] ?> accept · <?= (int) $challengeRow['declines'] ?> not for me</td><td><a href="<?= e(url('admin/content/index.php?challenge=' . (int) $challengeRow['id'] . '#weekly-challenge')) ?>">Edit</a></td></tr><?php endforeach; ?></tbody></table></div></div></div><?php endif; ?>
+        <?php if ($pastChallengeRows): ?><div class="activity-previous"><button class="link-button" type="button" data-editor-toggle="previous-challenges" data-open-label="Previous challenges (<?= count($pastChallengeRows) ?>)" data-close-label="Hide previous challenges" aria-controls="previous-challenges" aria-expanded="false">Previous challenges (<?= count($pastChallengeRows) ?>)</button><div id="previous-challenges" hidden><div class="table-wrap"><table class="data-table"><thead><tr><th>Challenge</th><th>Dates</th><th>Responses</th><th>Action</th></tr></thead><tbody><?php foreach ($pastChallengeRows as $challengeRow): ?><tr><td><?= e($challengeRow['title']) ?> · <?= e($challengeRow['status']) ?></td><td><?= e(format_date_short($challengeRow['starts_at'])) ?>–<?= e(format_date_short($challengeRow['ends_at'])) ?></td><td><?= (int) $challengeRow['accepts'] ?> joining · <?= (int) $challengeRow['declines'] ?> not now</td><td><a href="<?= e(url('admin/content/index.php?challenge=' . (int) $challengeRow['id'] . '#weekly-challenge')) ?>">Edit</a></td></tr><?php endforeach; ?></tbody></table></div></div></div><?php endif; ?>
     </section>
 
     <section class="panel activity-card" id="daily-quiz" aria-labelledby="quiz-title">
-        <div class="panel-header activity-card-header"><h2 class="panel-title" id="quiz-title">Daily Five-question Quiz</h2><span class="activity-status <?= e(($todayQuiz['status'] ?? '') === 'published' ? 'is-published' : 'is-draft') ?>"><?= e($todayQuiz['status'] ?? 'Not scheduled') ?></span></div>
+        <div class="panel-header activity-card-header"><h2 class="panel-title" id="quiz-title">Daily Quiz</h2><span class="activity-status <?= e(($todayQuiz['status'] ?? '') === 'published' ? 'is-published' : 'is-draft') ?>"><?= e($todayQuiz['status'] ?? 'Not scheduled') ?></span></div>
         <div class="activity-feature quiz-feature"><div class="activity-art quiz-art" aria-hidden="true"><svg viewBox="0 0 100 100" role="presentation"><rect x="17" y="10" width="66" height="80" rx="8" fill="#fff"/><g fill="none" stroke="#244666" stroke-width="3"><path d="M30 31l5 5 9-10M49 32h22M30 52l5 5 9-10M49 53h22M30 73l5 5 9-10M49 74h22"/></g></svg></div><div class="activity-feature-copy"><p><?= $todayQuiz ? 'A five-question quiz is scheduled for ' . e(format_date_short($todayQuiz['quiz_date'])) . '.' : 'Prepare a five-question quiz for the public site. You can create it now and schedule it for a future date.' ?></p></div></div>
-        <div class="activity-card-actions"><button class="btn btn-maroon" type="button" data-editor-toggle="quiz-editor" data-open-label="<?= $todayQuiz ? 'Edit quiz' : 'Create quiz' ?>" data-close-label="Cancel" aria-controls="quiz-editor" aria-expanded="<?= $quizEditorOpen ? 'true' : 'false' ?>"><?= $quizEditorOpen ? 'Cancel' : ($todayQuiz ? 'Edit quiz' : 'Create quiz') ?></button></div>
+        <div class="activity-card-actions">
+            <button class="btn btn-maroon" type="button" data-editor-toggle="quiz-editor" data-open-label="<?= $todayQuiz ? 'Edit today’s quiz' : 'Create today’s quiz' ?>" data-close-label="Cancel" aria-controls="quiz-editor" aria-expanded="<?= $quizEditorOpen ? 'true' : 'false' ?>"><?= $quizEditorOpen ? 'Cancel' : ($todayQuiz ? 'Edit today’s quiz' : 'Create today’s quiz') ?></button>
+            <a class="btn btn-light" href="<?= e(url('admin/content/index.php?new_quiz=1#daily-quiz')) ?>">Create scheduled quiz</a>
+        </div>
         <div class="activity-editor" id="quiz-editor" <?= $quizEditorOpen ? '' : 'hidden' ?>>
         <form class="panel-body community-form" method="post" action="<?= e(url('admin/community.php')) ?>">
             <?= csrf_field() ?><input type="hidden" name="action" value="save_quiz"><input type="hidden" name="id" value="<?= (int) $quizEditId ?>">
-            <label>Quiz date<input type="date" name="quiz_date" required value="<?= e($quizFormDate) ?>"></label>
+            <label>Quiz date<input type="date" name="quiz_date" required value="<?= e($quizFormDate) ?>"><small>Each date has its own quiz. Future published quizzes will appear automatically on their scheduled Manila date.</small></label>
             <div class="quiz-question-maker" data-quiz-question-maker>
                 <?php foreach ($quizFormQuestions as $questionIndex => $quizQuestion): ?>
                 <fieldset class="quiz-question-editor" data-question-editor>

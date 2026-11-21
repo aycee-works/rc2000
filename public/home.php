@@ -410,14 +410,14 @@ page_start('Home');
             <?php if (!empty($challenge['image_path']) && media_file_exists($challenge['image_path'])): ?><img src="<?= e(media_url($challenge['image_path'])) ?>" alt="<?= e($challenge['title']) ?>" loading="lazy"><?php endif; ?>
             <div class="challenge-copy"><h3><?= e($challenge['title']) ?></h3><p><?= nl2br(e($challenge['prompt'])) ?></p>
                 <?php if ($challengeNotice !== ''): ?><p class="challenge-notice" role="status"><?= e($challengeNotice) ?></p><?php endif; ?>
-                <form method="post" class="challenge-vote-form"><?= csrf_field() ?><input type="hidden" name="action" value="challenge_vote"><input type="hidden" name="challenge_id" value="<?= (int) $challenge['id'] ?>"><button class="button challenge-accept" name="choice" value="accept">I accept</button><button class="button button-outline" name="choice" value="not_for_me">Not for me</button></form>
-                <div class="challenge-results"><div class="challenge-donut" style="--vote-percent:<?= $acceptPct ?>%"><span><?= $acceptPct ?>%</span></div><div><strong>Community response</strong><p><span><?= (int) $challenge['accept_count'] ?> accept</span><span><?= (int) $challenge['decline_count'] ?> not for me</span></p></div></div>
+                <form method="post" class="challenge-vote-form"><?= csrf_field() ?><input type="hidden" name="action" value="challenge_vote"><input type="hidden" name="challenge_id" value="<?= (int) $challenge['id'] ?>"><button class="button challenge-accept challenge-vote-button challenge-vote-button--like" name="choice" value="accept"><img src="<?= e(app_url('public/assets/images/icons/challenge-like.png')) ?>" alt="" aria-hidden="true">I'm in</button><button class="button button-outline challenge-vote-button challenge-vote-button--dislike" name="choice" value="not_for_me"><img src="<?= e(app_url('public/assets/images/icons/challenge-dislike.png')) ?>" alt="" aria-hidden="true">Not now</button></form>
+                <div class="challenge-results"><div class="challenge-donut" style="--vote-percent:<?= $acceptPct ?>%"><span><?= $acceptPct ?>%</span></div><div><strong>Community response</strong><p><span><?= (int) $challenge['accept_count'] ?> joining</span><span><?= (int) $challenge['decline_count'] ?> not now</span></p></div></div>
             </div>
         </div>
     </section>
     <?php endif; ?>
 
-    <?php if ($quizToday): ?><section class="section quiz-callout"><span class="eyebrow">Daily quiz</span><h2>Five questions, one at a time</h2><p>Take today’s reading quiz and see how you rank in the community.</p><a class="button" href="<?= e(app_url('public/daily-quiz.php')) ?>">Take today’s quiz →</a></section><?php endif; ?>
+    <?php if ($quizToday): ?><section class="section quiz-callout"><span class="eyebrow">Daily quiz</span><h2>Five questions, one at a time</h2><a class="button" href="<?= e(app_url('public/daily-quiz.php')) ?>">Take today’s quiz →</a></section><?php endif; ?>
 
 
     <!-- TRIVIA -->
@@ -496,13 +496,6 @@ page_start('Home');
 
             </div>
 
-            <a
-                class="see-all"
-                href="<?= e(app_url('public/explore.php')) ?>"
-            >
-                See all →
-            </a>
-
             <div class="carousel-controls">
 
                 <button
@@ -536,17 +529,14 @@ page_start('Home');
             </div>
             <a href="<?= e($facebookPageUrl) ?>" target="_blank" rel="noopener noreferrer">Visit our Facebook page →</a>
         </div>
-        <div class="facebook-page-embed">
-            <iframe
-                title="Reading Club 2000 Facebook updates"
-                src="https://www.facebook.com/plugins/page.php?href=<?= rawurlencode($facebookPageUrl) ?>&amp;tabs=timeline&amp;width=500&amp;height=620&amp;small_header=true&amp;adapt_container_width=true&amp;hide_cover=false&amp;show_facepile=false"
-                width="500"
-                height="620"
-                style="border:0;overflow:hidden"
-                scrolling="no"
-                frameborder="0"
-                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
-        </div>
+        <a class="facebook-post-preview" href="<?= e($facebookPageUrl) ?>" target="_blank" rel="noopener noreferrer" aria-label="Visit the Reading Club 2000 Facebook page">
+            <img
+                src="<?= e(app_url('public/assets/images/facebook-latest-post.png?v=2')) ?>"
+                alt="Reading Club 2000 Facebook Page preview with its book-filled cover photo and profile"
+                loading="lazy"
+            >
+            <span class="facebook-post-cta">Visit the Facebook page <span aria-hidden="true">↗</span></span>
+        </a>
     </section>
     <?php endif; ?>
 

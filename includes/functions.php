@@ -136,6 +136,18 @@ function fetch_one(string $sql, array $params = []): ?array
 
 function published_content(string $type, int $limit = 6): array
 {
+    if ($type === 'announcement') {
+        return fetch_all(
+            "SELECT id AS content_id, 'announcement' AS content_type, title, body,
+                    image_path AS cover_image_path, NULL::varchar AS author_name, published_at
+             FROM rc2000_admin.announcements
+             WHERE status = :status
+             ORDER BY published_at DESC NULLS LAST, created_at DESC, id DESC
+             LIMIT :limit",
+            ['status' => 'published', 'limit' => $limit]
+        );
+    }
+
     if (in_array($type, ['story', 'featured_story', 'article'], true)) {
     $portalType = $type === 'article' ? 'article' : 'story';
 

@@ -45,7 +45,8 @@ function daily_quiz(): ?array
         return fetch_one(
             "SELECT q.id, q.quiz_date
              FROM rc2000_admin.daily_quizzes q
-             WHERE q.status = 'published' AND q.quiz_date = CURRENT_DATE
+             WHERE q.status = 'published'
+               AND q.quiz_date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Manila')::date
              LIMIT 1"
         );
     } catch (Throwable $e) {
