@@ -417,7 +417,7 @@ page_start('Home');
     </section>
     <?php endif; ?>
 
-    <?php if ($quizToday): ?><section class="section quiz-callout"><span class="eyebrow">Daily quiz</span><h2>Five questions, one at a time</h2><p>Take today’s reading quiz and see how you rank in the community.</p><a class="button" href="<?= e(app_url('public/daily-quiz.php')) ?>">Take today’s quiz →</a></section><?php endif; ?>
+    <?php if ($quizToday): ?><section class="section quiz-callout"><span class="eyebrow">Daily quiz</span><h2>Five questions, one at a time</h2><a class="button" href="<?= e(app_url('public/daily-quiz.php')) ?>">Take today’s quiz →</a></section><?php endif; ?>
 
 
     <!-- TRIVIA -->

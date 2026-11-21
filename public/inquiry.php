@@ -2,9 +2,10 @@
 require_once __DIR__ . '/../includes/functions.php';
 
 $view = $_GET['view'] ?? 'submit';
-if (!in_array($view, ['submit', 'status'], true)) {
+if (!in_array($view, ['submit', 'status', 'receipt'], true)) {
     $view = 'submit';
 }
+$inquiryReceipt = $_SESSION['inquiry_receipt'] ?? null;
 
 $errors = [];
 $statusResult = null;
@@ -70,8 +71,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'message' => $message,
                 ]);
                 $ticket = (string) $stmt->fetchColumn();
-                flash_set('success', 'Ticket submitted. Save this number to check status: ' . $ticket);
-                redirect('/public/inquiry.php?view=status');
+                $_SESSION['inquiry_receipt'] = [
+                    'reference' => $ticket,
+                    'name' => $old['sender_name'],
+                    'email' => $old['sender_email'],
+                    'category' => $category,
+                    'subject' => $old['subject'],
+                    'message' => $message,
+                    'submitted_at' => date('c'),
+                ];
+                redirect('/public/inquiry.php?view=receipt');
             } catch (Throwable $error) {
                 $errors[] = 'We could not save your ticket yet. Please try again when the database is available.';
             }
@@ -152,7 +161,28 @@ page_start('Inquiry');
 
   <?php render_alerts($errors); ?>
 
-  <?php if ($view === 'submit'): ?>
+  <?php if ($view === 'receipt'): ?>
+    <section class="form-card framed submission-receipt">
+      <?php if (is_array($inquiryReceipt)): ?>
+        <p class="eyebrow">Inquiry confirmation</p>
+        <h2>Your inquiry was submitted</h2>
+        <p>Keep this receipt. Use the ticket number, your name, and email to check its status later.</p>
+        <dl class="receipt-details">
+          <div><dt>Ticket number</dt><dd><?= e((string) $inquiryReceipt['reference']) ?></dd></div>
+          <div><dt>Name</dt><dd><?= e((string) $inquiryReceipt['name']) ?></dd></div>
+          <div><dt>Email</dt><dd><?= e((string) $inquiryReceipt['email']) ?></dd></div>
+          <div><dt>Category</dt><dd><?= e((string) $inquiryReceipt['category']) ?></dd></div>
+          <div><dt>Subject</dt><dd><?= e((string) $inquiryReceipt['subject']) ?></dd></div>
+          <div><dt>Submitted</dt><dd><?= e(date('M j, Y g:i A', strtotime((string) $inquiryReceipt['submitted_at']))) ?></dd></div>
+          <div class="receipt-message"><dt>Message</dt><dd><?= nl2br(e((string) $inquiryReceipt['message'])) ?></dd></div>
+        </dl>
+        <div class="receipt-actions"><button class="button" type="button" onclick="window.print()">Print confirmation</button><a class="button button-secondary" href="<?= e(app_url('public/inquiry.php?view=status')) ?>">Check inquiry status</a></div>
+      <?php else: ?>
+        <h2>No recent inquiry receipt</h2><p>Submit an inquiry to receive a printable confirmation and ticket number.</p>
+        <a class="button" href="<?= e(app_url('public/inquiry.php?view=submit')) ?>">Submit an inquiry</a>
+      <?php endif; ?>
+    </section>
+  <?php elseif ($view === 'submit'): ?>
     <section class="form-card framed" data-reveal>
       <form method="post">
         <?= csrf_field() ?>
