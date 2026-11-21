@@ -74,6 +74,23 @@
     });
   });
 
+  const scrollToAnnouncements = () => {
+    if (window.location.hash !== '#announcements') return;
+    const section = document.getElementById('announcements');
+    if (!section) return;
+    const header = document.querySelector('.site-header');
+    const stickyHeaderHeight = header && getComputedStyle(header).position === 'sticky'
+      ? header.getBoundingClientRect().height
+      : 0;
+    const visibleCenter = stickyHeaderHeight + (window.innerHeight - stickyHeaderHeight) / 2;
+    const sectionCenter = window.scrollY + section.getBoundingClientRect().top + section.getBoundingClientRect().height / 2;
+    window.scrollTo({ top: sectionCenter - visibleCenter, behavior: 'smooth' });
+  };
+  if (window.location.hash === '#announcements') {
+    window.addEventListener('load', scrollToAnnouncements, { once: true });
+  }
+  window.addEventListener('hashchange', scrollToAnnouncements);
+
   document.querySelectorAll('[data-quiz-steps]').forEach((form) => {
     const steps = [...form.querySelectorAll('[data-quiz-step]')];
     const progress = form.querySelector('[data-quiz-progress]');

@@ -60,6 +60,6 @@
     </form>
   </div>
 </dialog>
-<script src="<?= e(app_url('public/assets/js/site.js?v=5')) ?>"></script>
+<script src="<?= e(app_url('public/assets/js/site.js?v=7')) ?>"></script>
 </body>
 </html>

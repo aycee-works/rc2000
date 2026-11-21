@@ -762,10 +762,12 @@ html[data-theme="dark"] .testimonial p { color: var(--ink); }
 .home-page .hero h1 { margin:0 0 2px; }
 .home-page .hero-copy > p { margin:2px 0 1em; }
 .home-page .announcement-band { align-items: start; }
+.home-page #announcements { scroll-margin-top:112px; }
 .home-page .announcement-slider { padding-top: 18px; }
-.home-page .announcement { padding-block: 14px; }
+.home-page .announcement { padding:14px 78px; }
 .home-page .announcement-slider { position:relative; }
-.home-page .announcement-slider .carousel-track { padding-inline:78px; }
+.home-page .announcement-slider .carousel-track { grid-auto-columns:100%; column-gap:0; padding-inline:0; scrollbar-width:none; }
+.home-page .announcement-slider .carousel-track::-webkit-scrollbar { display:none; }
 .home-page .carousel-controls { position:absolute; inset:50% 0 auto; display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0; transform:translateY(-50%); pointer-events:none; }
 .home-page .carousel-controls button { display:grid; width:42px; height:42px; padding:0; place-items:center; border:0; border-radius:50%; background:transparent; cursor:pointer; pointer-events:auto; }
 .home-page .carousel-controls button img { width:100%; height:100%; object-fit:contain; }
@@ -799,7 +801,7 @@ html[data-theme="dark"] .home-page .trivia-card:nth-child(even) { background:var
   .site-header { min-height:0; }
   .site-header .brand { font-size:1.25rem; }
   .site-header .brand-logo { width:44px !important; height:44px !important; max-width:44px !important; }
-  .home-page .announcement-slider .carousel-track { padding-inline:62px; }
+  .home-page .announcement { padding-inline:62px; }
   .home-page .trivia-card { gap:14px; padding:16px; }
   .home-page .trivia-icon { flex-basis:60px; width:60px; height:60px; font-size:2rem; }
   .home-page .trivia-copy { padding:2px; }
