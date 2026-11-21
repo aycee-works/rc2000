@@ -496,13 +496,6 @@ page_start('Home');
 
             </div>
 
-            <a
-                class="see-all"
-                href="<?= e(app_url('public/explore.php')) ?>"
-            >
-                See all →
-            </a>
-
             <div class="carousel-controls">
 
                 <button
