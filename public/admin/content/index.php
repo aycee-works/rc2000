@@ -35,7 +35,7 @@ $challengeEditId = 0;
 $challengeEditorOpen = isset($_GET['challenge']) || isset($_GET['new_challenge']);
 $quizEditorOpen = isset($_GET['quiz']) || isset($_GET['new_quiz']);
 $quizEditId = (int) ($_GET['quiz'] ?? 0);
-$quizFormDate = date('Y-m-d');
+$quizFormDate = isset($_GET['new_quiz']) ? date('Y-m-d', strtotime('+1 day')) : date('Y-m-d');
 $quizFormStatus = 'published';
 $quizFormQuestions = array_fill(0, 5, ['question' => '', 'options' => ['', ''], 'correct' => 0]);
 $todayQuiz = null;
@@ -58,7 +58,16 @@ try {
         }
     }
     $pastChallengeRows = array_values(array_filter($challengeRows, static fn($row) => (int) $row['id'] !== (int) ($activeChallenge['id'] ?? 0)));
-    $todayStmt = $pdo->query('SELECT id, quiz_date, status FROM rc2000_admin.daily_quizzes WHERE quiz_date=CURRENT_DATE LIMIT 1');
+    if (isset($_GET['new_quiz'])) {
+        $usedDates = $pdo->query("SELECT quiz_date::text FROM rc2000_admin.daily_quizzes WHERE quiz_date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Manila')::date")->fetchAll(PDO::FETCH_COLUMN);
+        $usedDates = array_fill_keys($usedDates, true);
+        $candidateDate = new DateTimeImmutable('tomorrow', new DateTimeZone('Asia/Manila'));
+        while (isset($usedDates[$candidateDate->format('Y-m-d')])) {
+            $candidateDate = $candidateDate->modify('+1 day');
+        }
+        $quizFormDate = $candidateDate->format('Y-m-d');
+    }
+    $todayStmt = $pdo->query("SELECT id, quiz_date, status FROM rc2000_admin.daily_quizzes WHERE quiz_date=(CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Manila')::date LIMIT 1");
     $todayQuiz = $todayStmt->fetch() ?: null;
     if ($quizEditId === 0 && $todayQuiz && !isset($_GET['new_quiz'])) { $quizEditId = (int) $todayQuiz['id']; }
     if ($quizEditId > 0) {
@@ -247,11 +256,14 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
     <section class="panel activity-card" id="daily-quiz" aria-labelledby="quiz-title">
         <div class="panel-header activity-card-header"><h2 class="panel-title" id="quiz-title">Daily Five-question Quiz</h2><span class="activity-status <?= e(($todayQuiz['status'] ?? '') === 'published' ? 'is-published' : 'is-draft') ?>"><?= e($todayQuiz['status'] ?? 'Not scheduled') ?></span></div>
         <div class="activity-feature quiz-feature"><div class="activity-art quiz-art" aria-hidden="true"><svg viewBox="0 0 100 100" role="presentation"><rect x="17" y="10" width="66" height="80" rx="8" fill="#fff"/><g fill="none" stroke="#244666" stroke-width="3"><path d="M30 31l5 5 9-10M49 32h22M30 52l5 5 9-10M49 53h22M30 73l5 5 9-10M49 74h22"/></g></svg></div><div class="activity-feature-copy"><p><?= $todayQuiz ? 'A five-question quiz is scheduled for ' . e(format_date_short($todayQuiz['quiz_date'])) . '.' : 'Prepare a five-question quiz for the public site. You can create it now and schedule it for a future date.' ?></p></div></div>
-        <div class="activity-card-actions"><button class="btn btn-maroon" type="button" data-editor-toggle="quiz-editor" data-open-label="<?= $todayQuiz ? 'Edit quiz' : 'Create quiz' ?>" data-close-label="Cancel" aria-controls="quiz-editor" aria-expanded="<?= $quizEditorOpen ? 'true' : 'false' ?>"><?= $quizEditorOpen ? 'Cancel' : ($todayQuiz ? 'Edit quiz' : 'Create quiz') ?></button></div>
+        <div class="activity-card-actions">
+            <button class="btn btn-maroon" type="button" data-editor-toggle="quiz-editor" data-open-label="<?= $todayQuiz ? 'Edit today’s quiz' : 'Create today’s quiz' ?>" data-close-label="Cancel" aria-controls="quiz-editor" aria-expanded="<?= $quizEditorOpen ? 'true' : 'false' ?>"><?= $quizEditorOpen ? 'Cancel' : ($todayQuiz ? 'Edit today’s quiz' : 'Create today’s quiz') ?></button>
+            <a class="btn btn-light" href="<?= e(url('admin/content/index.php?new_quiz=1#daily-quiz')) ?>">Create scheduled quiz</a>
+        </div>
         <div class="activity-editor" id="quiz-editor" <?= $quizEditorOpen ? '' : 'hidden' ?>>
         <form class="panel-body community-form" method="post" action="<?= e(url('admin/community.php')) ?>">
             <?= csrf_field() ?><input type="hidden" name="action" value="save_quiz"><input type="hidden" name="id" value="<?= (int) $quizEditId ?>">
-            <label>Quiz date<input type="date" name="quiz_date" required value="<?= e($quizFormDate) ?>"></label>
+            <label>Quiz date<input type="date" name="quiz_date" required value="<?= e($quizFormDate) ?>"><small>Each date has its own quiz. Future published quizzes will appear automatically on their scheduled Manila date.</small></label>
             <div class="quiz-question-maker" data-quiz-question-maker>
                 <?php foreach ($quizFormQuestions as $questionIndex => $quizQuestion): ?>
                 <fieldset class="quiz-question-editor" data-question-editor>

@@ -81,7 +81,51 @@ if (is_post()) {
                 if($correct===false||$correct<0||$correct>=count($options)){$errors[]='Choose the correct answer for question '.($n+1).'.';break;}
                 $parsed[]=[$question,$options,$correct];
             }
-            if(!$errors){$pdo->beginTransaction();$pdo->prepare("INSERT INTO rc2000_admin.daily_quizzes(quiz_date,status,created_by) VALUES(?,?,?) ON CONFLICT(quiz_date) DO UPDATE SET status=EXCLUDED.status, updated_at=now()")->execute([$date,$status,current_admin()['id']??null]);$stmt=$pdo->prepare('SELECT id FROM rc2000_admin.daily_quizzes WHERE quiz_date=?');$stmt->execute([$date]);$quizId=(int)$stmt->fetchColumn();$pdo->prepare('DELETE FROM rc2000_admin.daily_quiz_questions WHERE quiz_id=?')->execute([$quizId]);$insert=$pdo->prepare('INSERT INTO rc2000_admin.daily_quiz_questions(quiz_id,question_order,question,options,correct_option) VALUES(?,?,?,?,?)');foreach($parsed as $i=>$q)$insert->execute([$quizId,$i+1,$q[0],json_encode($q[1],JSON_UNESCAPED_UNICODE),$q[2]]);$pdo->commit();flash('success','Five-question quiz saved.');redirect('admin/content/index.php#daily-quiz');}
+            $quizId = (int) post_str('id');
+            $dateValue = DateTimeImmutable::createFromFormat('!Y-m-d', $date);
+            if (!$dateValue || $dateValue->format('Y-m-d') !== $date) {
+                $errors[] = 'Choose a valid quiz date.';
+            }
+            if (!$errors) {
+                try {
+                    $pdo->beginTransaction();
+                    if ($quizId > 0) {
+                        $existing = $pdo->prepare('SELECT id FROM rc2000_admin.daily_quizzes WHERE id=? FOR UPDATE');
+                        $existing->execute([$quizId]);
+                        if (!$existing->fetchColumn()) {
+                            throw new RuntimeException('That quiz could not be found. Create a new quiz instead.');
+                        }
+                        $duplicate = $pdo->prepare('SELECT 1 FROM rc2000_admin.daily_quizzes WHERE quiz_date=? AND id<>?');
+                        $duplicate->execute([$date, $quizId]);
+                        if ($duplicate->fetchColumn()) {
+                            throw new RuntimeException('A quiz is already scheduled for that date. Choose another date.');
+                        }
+                        $pdo->prepare('UPDATE rc2000_admin.daily_quizzes SET quiz_date=?, status=?, updated_at=now() WHERE id=?')->execute([$date, $status, $quizId]);
+                    } else {
+                        $create = $pdo->prepare('INSERT INTO rc2000_admin.daily_quizzes(quiz_date,status,created_by) VALUES(?,?,?) RETURNING id');
+                        $create->execute([$date, $status, current_admin()['id'] ?? null]);
+                        $quizId = (int) $create->fetchColumn();
+                    }
+                    $pdo->prepare('DELETE FROM rc2000_admin.daily_quiz_questions WHERE quiz_id=?')->execute([$quizId]);
+                    $insert = $pdo->prepare('INSERT INTO rc2000_admin.daily_quiz_questions(quiz_id,question_order,question,options,correct_option) VALUES(?,?,?,?,?)');
+                    foreach ($parsed as $i => $q) {
+                        $insert->execute([$quizId, $i + 1, $q[0], json_encode($q[1], JSON_UNESCAPED_UNICODE), $q[2]]);
+                    }
+                    $pdo->commit();
+                    flash('success', 'Five-question quiz saved.');
+                    redirect('admin/content/index.php#daily-quiz');
+                } catch (Throwable $saveError) {
+                    if ($pdo->inTransaction()) {
+                        $pdo->rollBack();
+                    }
+                    error_log('Quiz save failed: ' . $saveError->getMessage());
+                    $errors[] = $saveError instanceof RuntimeException
+                        ? $saveError->getMessage()
+                        : ((string) $saveError->getCode() === '23505'
+                            ? 'A quiz is already scheduled for that date. Choose another date.'
+                            : 'The quiz could not be saved. Please try again.');
+                }
+            }
         } elseif ($action==='publish_leaderboard') {
             $quizId=(int)post_str('quiz_id');$dateStmt=$pdo->prepare('SELECT quiz_date FROM rc2000_admin.daily_quizzes WHERE id=?');$dateStmt->execute([$quizId]);$quizDate=(string)$dateStmt->fetchColumn();$weekStart=$quizDate?date('Y-m-d',strtotime('monday this week',strtotime($quizDate))):'';$weekEnd=$weekStart?date('Y-m-d',strtotime($weekStart.' +7 days')):'';
             $exists=$pdo->prepare('SELECT 1 FROM rc2000_admin.quiz_leaderboard_posts WHERE week_start=?');$exists->execute([$weekStart]);if($exists->fetchColumn())$errors[]='A leaderboard post already exists for this week.';
@@ -97,7 +141,14 @@ if (is_post()) {
     } catch (Throwable $e) { if($pdo->inTransaction())$pdo->rollBack();error_log('Community admin action failed: '.$e->getMessage());$errors[]='The change could not be saved. Check that database/community_features.sql has been applied.'; }
     if ($errors && in_array($action, ['save_challenge', 'save_quiz', 'publish_leaderboard'], true)) {
         flash('error', implode(' ', $errors));
-        redirect('admin/content/index.php' . ($action === 'save_challenge' ? '#weekly-challenge' : '#daily-quiz'));
+        if ($action === 'save_challenge') {
+            redirect('admin/content/index.php#weekly-challenge');
+        }
+        if ($action === 'save_quiz') {
+            $quizReturn = $quizId > 0 ? '?quiz=' . $quizId : '?new_quiz=1';
+            redirect('admin/content/index.php' . $quizReturn . '#daily-quiz');
+        }
+        redirect('admin/content/index.php#daily-quiz');
     }
 }
 

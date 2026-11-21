@@ -58,7 +58,7 @@ function archive_union_sql(): string
            (CASE WHEN q.status = 'closed' THEN 'Closed' ELSE 'Ended' END)::text,
            q.quiz_date::timestamptz
     FROM rc2000_admin.daily_quizzes q
-    WHERE q.status = 'closed' OR (q.status = 'published' AND q.quiz_date < CURRENT_DATE)
+    WHERE q.status = 'closed' OR (q.status = 'published' AND q.quiz_date < (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Manila')::date)
 
     UNION ALL
     SELECT 'leaderboard'::text, p.quiz_id,
