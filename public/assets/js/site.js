@@ -9,6 +9,9 @@
       themeToggle.setAttribute('aria-label', `Switch to ${dark ? 'light' : 'dark'} mode`);
       themeIcon.src = dark ? themeIcon.dataset.darkSrc : themeIcon.dataset.lightSrc;
       themeLabel.textContent = dark ? 'Light mode' : 'Dark mode';
+      document.querySelectorAll('[data-theme-image]').forEach((image) => {
+        image.src = dark ? image.dataset.darkSrc : image.dataset.lightSrc;
+      });
     };
     updateThemeButton();
     themeToggle.addEventListener('click', () => {
@@ -41,6 +44,17 @@
     });
     root.querySelector('[data-next]')?.addEventListener('click', () => {
       track.scrollBy({ left: step(), behavior: 'smooth' });
+    });
+  });
+
+  document.querySelectorAll('[data-trivia-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const answer = document.getElementById(button.getAttribute('aria-controls'));
+      if (!answer) return;
+      const expanded = button.getAttribute('aria-expanded') === 'true';
+      button.setAttribute('aria-expanded', String(!expanded));
+      answer.hidden = expanded;
+      button.textContent = expanded ? 'Show answer' : 'Hide answer';
     });
   });
 

@@ -105,7 +105,7 @@ if ($quiz) {
 page_start('Daily quiz', ['class' => 'daily-quiz-page']);
 ?>
 <main class="section quiz-page">
-  <header class="quiz-page-header"><span class="eyebrow">Reading together · daily quiz</span><h1>Five Questions, One at a Time</h1><p>Answer all five questions to reveal your score. Joining the leaderboard is optional.</p></header>
+  <header class="quiz-page-header"><a class="quiz-home-link" href="<?= e(app_url('public/home.php')) ?>">← Back to Home</a><span class="eyebrow">Daily quiz</span><h1>RC2000 ࣼ Daily Quiz</h1><p>Answer five questions to reveal your score. Joining the leaderboard is optional.</p></header>
   <?php render_alerts($errors); ?>
   <?php if ($result): ?>
     <section class="quiz-result" aria-live="polite"><span class="eyebrow">Quiz complete · your score</span><div class="quiz-result-score"><?= (int) $result['score'] ?>/5</div><h2><?= !empty($result['joined']) ? 'Thanks for joining the leaderboard, ' . e((string) $result['username']) . '!' : 'Here is your result.' ?></h2><p>You answered <?= (int) $result['score'] ?> out of 5 questions correctly.</p><p>Quiz date: <?= e(date('M j, Y', strtotime((string) $quiz['quiz_date']))) ?></p></section>

@@ -97,7 +97,7 @@ $homeImageUrl = static function (string $filename): ?string {
 
 $heroImage = $homeImageUrl($homeImages['banner']);
 
-page_start('Home');
+page_start('Home', ['class' => 'home-page']);
 ?>
 
 <main>
@@ -108,18 +108,13 @@ page_start('Home');
 
         <div class="hero-copy" data-reveal>
 
-            <span class="eyebrow">
-                Reading Club 2000 · Makati
-            </span>
-
             <h1>
                 Give a Book<br>
                 a Second Story.
             </h1>
 
             <p>
-                Borrow, donate, and take books with your neighborhood
-                reading club — started by Mang Nanie in Barangay La Paz.
+                Started by Mang Nanie in Barangay La Paz.
             </p>
 
             <div class="button-row">
@@ -424,20 +419,23 @@ page_start('Home');
        <section class="section tinted" id="trivia" data-reveal>
     <div class="section-heading">
       <div>
-        <span class="eyebrow">A little something to learn</span>
         <h2>Daily Trivia</h2>
       </div>
     </div>
-    <div class="trivia-list wide">
-      <?php foreach ($trivia as $item): ?>
-        <article class="trivia-card">
-          <div class="trivia-icon"><img src="<?= e(app_url('public/assets/images/icons/trivia.png')) ?>" alt="" aria-hidden="true" width="42" height="42"></div>
-          <div>
+    <div class="trivia-list">
+      <?php $triviaIcons = ['📚', '✨', '🪶', '🔎', '💡', '📖']; ?>
+      <?php foreach ($trivia as $index => $item): $answerId = 'trivia-answer-' . $index; ?>
+        <article class="trivia-card" data-trivia-card>
+          <div class="trivia-icon" aria-hidden="true"><?= e($triviaIcons[$index % count($triviaIcons)]) ?></div>
+          <div class="trivia-copy">
             <h3><?= e($item['title'] ?: 'Did you know?') ?></h3>
-            <p><?= nl2br(e($item['body'])) ?></p>
-            <?php if (!empty($item['source'])): ?>
-              <small>Source: <?= e($item['source']) ?></small>
-            <?php endif; ?>
+            <button class="trivia-answer-toggle" type="button" aria-expanded="false" aria-controls="<?= e($answerId) ?>" data-trivia-toggle>Show answer</button>
+            <div class="trivia-answer" id="<?= e($answerId) ?>" hidden>
+              <p><?= nl2br(e($item['body'])) ?></p>
+              <?php if (!empty($item['source'])): ?>
+                <small>Source: <?= e($item['source']) ?></small>
+              <?php endif; ?>
+            </div>
           </div>
         </article>
       <?php endforeach; ?>
@@ -471,10 +469,9 @@ page_start('Home');
                                 <?= e($item['title'] ?? 'Announcement') ?>
                             </h3>
 
+                            <?php $announcementBody = (string) ($item['body'] ?? ''); ?>
                             <p>
-                                <?= e(
-                                    excerpt($item['body'] ?? '', 280)
-                                ) ?>
+                                <?= e(excerpt($announcementBody, 280)) ?><?php if (mb_strlen(trim(preg_replace('/\s+/', ' ', $announcementBody) ?? $announcementBody)) > 280): ?> <a class="announcement-read-more" href="<?= e(app_url('public/announcements.php#announcement-' . (int) ($item['content_id'] ?? 0))) ?>">Read more</a><?php endif; ?>
                             </p>
 
                         </article>
@@ -503,7 +500,7 @@ page_start('Home');
                     data-prev
                     aria-label="Previous announcement"
                 >
-                    ←
+                    <img data-theme-image src="<?= e(app_url('public/assets/images/icons/left-arrow-light.png')) ?>" data-light-src="<?= e(app_url('public/assets/images/icons/left-arrow-light.png')) ?>" data-dark-src="<?= e(app_url('public/assets/images/icons/left-arrow-dark.png')) ?>" alt="" aria-hidden="true">
                 </button>
 
                 <button
@@ -511,11 +508,10 @@ page_start('Home');
                     data-next
                     aria-label="Next announcement"
                 >
-                    →
+                    <img data-theme-image src="<?= e(app_url('public/assets/images/icons/arrow-light.png')) ?>" data-light-src="<?= e(app_url('public/assets/images/icons/arrow-light.png')) ?>" data-dark-src="<?= e(app_url('public/assets/images/icons/arrow-dark.png')) ?>" alt="" aria-hidden="true">
                 </button>
 
             </div>
-
         </div>
 
     </section>

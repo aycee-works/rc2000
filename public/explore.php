@@ -43,7 +43,7 @@ page_start('Explore');
                 <input id="explore-query" type="search" name="q" placeholder="Search stories and articles" value="<?= e($query) ?>">
                 <button class="button" type="submit"><img src="<?= e(app_url('public/assets/images/icons/search_icon.png')) ?>" alt="" aria-hidden="true" width="18" height="18"> Search</button>
             </form>
-            <nav class="explore-categories" aria-label="Explore sections"><a href="#stories">Stories</a><a href="#articles">Articles</a><a href="#gallery">Gallery</a><a href="<?= e(app_url('public/daily-quiz.php')) ?>">Daily quiz</a></nav>
+            <nav class="explore-categories" aria-label="Explore sections"><a href="#stories">Stories</a><a href="#articles">Articles</a><a href="#gallery">Gallery</a><a href="<?= e(app_url('public/daily-quiz.php')) ?>">Daily quiz</a><a href="<?= e(app_url('public/announcements.php')) ?>">Announcements</a></nav>
         </div>
     </section>
 

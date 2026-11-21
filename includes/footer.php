@@ -7,8 +7,7 @@
       </a>
       <div class="footer-connect">
         <nav aria-label="Footer navigation">
-          <a href="<?= e(app_url('public/about.php')) ?>">About the Club</a>
-          <a href="<?= e(app_url('public/contact.php')) ?>">Contact Us</a>
+          <a href="<?= e(app_url('public/about.php')) ?>">About us</a>
           <a href="<?= e(app_url('public/privacy-policy.php')) ?>">Privacy Policy</a>
           <a href="<?= e(app_url('public/inquiry.php')) ?>">Inquiries</a>
           <a href="<?= e(app_url('public/home.php')) ?>#announcements">Announcements</a>
@@ -24,7 +23,7 @@
       <button type="button" class="button button-gold" data-feedback-open>Give Us a Feedback</button>
     </section>
     <div class="footer-bottom">
-      <small>© <?= date('Y') ?> Reading Club 2000 Mang Nanie. All rights reserved. No part of this website may be copied, reproduced, or redistributed without written permission.</small>
+      <small>© 2026 Reading Club 2000 by Mang Nanie</small>
       <details class="footer-terms">
         <summary>Terms and Conditions</summary>
         <ol>
@@ -33,7 +32,6 @@
           <li>Submitted feedback and inquiries may be reviewed by the Reading Club 2000 administrators.</li>
         </ol>
       </details>
-      <span class="footer-copyright"><img src="<?= e(app_url('public/assets/images/icons/copyright.png')) ?>" alt="" aria-hidden="true" width="16" height="16"><span>Copyright</span></span>
     </div>
   </div>
 </footer>
@@ -62,6 +60,6 @@
     </form>
   </div>
 </dialog>
-<script src="<?= e(app_url('public/assets/js/site.js?v=4')) ?>"></script>
+<script src="<?= e(app_url('public/assets/js/site.js?v=5')) ?>"></script>
 </body>
 </html>
