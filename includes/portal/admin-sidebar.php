@@ -43,7 +43,11 @@ $navItems = [
     </nav>
 
     <div class="sidebar-footer">
-        <div class="sidebar-user"><?= e($admin['name'] ?? '') ?></div>
+        <div class="sidebar-user">
+            <img class="profile-icon profile-icon-light" src="<?= e(asset('images/icons/profile-light.png')) ?>" alt="" aria-hidden="true" width="20" height="20">
+            <img class="profile-icon profile-icon-dark" src="<?= e(asset('images/icons/profile-dark.png')) ?>" alt="" aria-hidden="true" width="20" height="20">
+            <span><?= e($admin['name'] ?? '') ?></span>
+        </div>
         <form method="post" action="<?= e(url('admin/logout.php')) ?>">
             <?= csrf_field() ?>
             <button type="submit" class="link-button">Log Out</button>
