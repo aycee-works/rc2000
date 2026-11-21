@@ -114,7 +114,7 @@ page_start('Home', ['class' => 'home-page']);
             </h1>
 
             <p>
-                Started by Mang Nanie in Barangay La Paz.
+                Discover the joy of reading at Reading Club 2000, a community library founded by Mang Nanie in Barangay La Paz, Makati, where everyone is welcome to read, borrow, and take home books for free or donate books to share with others.
             </p>
 
             <div class="button-row">

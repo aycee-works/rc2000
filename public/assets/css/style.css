@@ -4,7 +4,7 @@
 @import url('pages/donate.css?v=4');
 @import url('pages/inquiry.css?v=2');
 @import url('pages/about.css');
-@import url('pages/privacy-policy.css');
+@import url('pages/privacy-policy.css?v=4');
 
 
 :root {
@@ -755,16 +755,19 @@ html[data-theme="dark"] .contact-grid .visit-card p,
 html[data-theme="dark"] .testimonial p { color: var(--ink); }
 
 /* Homepage refinements: consistent surfaces, tighter hero copy, and revealable trivia. */
-.home-page .site-header { min-height: 96px; padding-block: 16px; }
-.home-page .site-header .brand { gap: 14px; font-size: 1.7rem; }
-.home-page .site-header .brand-logo { width: 54px !important; height: 54px !important; max-width: 54px !important; }
+.site-header { min-height: 96px; padding-block: 16px; }
+.site-header .brand { gap: 14px; font-size: 1.7rem; }
+.site-header .brand-logo { width: 54px !important; height: 54px !important; max-width: 54px !important; }
+.site-header .main-nav { transform:translateX(-44px); }
 .home-page .hero h1 { margin:0 0 2px; }
 .home-page .hero-copy > p { margin:2px 0 1em; }
 .home-page .announcement-band { align-items: start; }
 .home-page .announcement-slider { padding-top: 18px; }
 .home-page .announcement { padding-block: 14px; }
-.home-page .carousel-controls { display:flex; justify-content:flex-end; gap:10px; margin-top:14px; }
-.home-page .carousel-controls button { display:grid; width:42px; height:42px; padding:0; place-items:center; border:0; border-radius:50%; background:transparent; cursor:pointer; }
+.home-page .announcement-slider { position:relative; }
+.home-page .announcement-slider .carousel-track { padding-inline:78px; }
+.home-page .carousel-controls { position:absolute; inset:50% 0 auto; display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0; transform:translateY(-50%); pointer-events:none; }
+.home-page .carousel-controls button { display:grid; width:42px; height:42px; padding:0; place-items:center; border:0; border-radius:50%; background:transparent; cursor:pointer; pointer-events:auto; }
 .home-page .carousel-controls button img { width:100%; height:100%; object-fit:contain; }
 .home-page .announcement-read-more { display:inline; margin-left:4px; color:var(--text-accent); font-weight:700; white-space:nowrap; text-decoration:none; }
 .home-page .announcement-read-more:hover { text-decoration:underline; }
@@ -778,8 +781,6 @@ html[data-theme="dark"] .home-page .trivia-card:nth-child(even) { background:var
 .home-page .trivia-copy { min-width:0; max-width:680px; padding:4px 6px; }
 .home-page .trivia-copy h3 { margin:0 0 12px; font-size:clamp(1.12rem,2vw,1.4rem); }
 .home-page .trivia-answer-toggle { display:inline-flex; align-items:center; gap:12px; padding:9px 15px; border:1px solid var(--red); border-radius:999px; background:var(--red); color:#fff; box-shadow:0 3px 8px rgba(23,52,73,.12); font:700 .88rem 'DM Sans',Arial,sans-serif; cursor:pointer; transition:background-color .18s ease,transform .18s ease,box-shadow .18s ease; }
-.home-page .trivia-answer-toggle::after { content:'⌄'; display:inline-block; font-size:1rem; line-height:1; transition:transform .18s ease; }
-.home-page .trivia-answer-toggle[aria-expanded="true"]::after { transform:rotate(180deg); }
 .home-page .trivia-answer-toggle:hover { transform:translateY(-1px); background:var(--red-deep); box-shadow:0 5px 12px rgba(23,52,73,.17); }
 .home-page .trivia-answer-toggle:focus-visible { outline:3px solid var(--gold); outline-offset:3px; }
 .home-page .trivia-answer { max-width:650px; margin-top:14px; padding:14px 16px; border-left:3px solid var(--gold); border-radius:0 6px 6px 0; background:var(--surface-soft); }
@@ -795,12 +796,16 @@ html[data-theme="dark"] .home-page .trivia-card:nth-child(even) { background:var
 .quiz-home-link:hover { text-decoration:underline; }
 .quiz-page-header h1 { white-space:normal; }
 @media(max-width:700px) {
-  .home-page .site-header { min-height:0; }
-  .home-page .site-header .brand { font-size:1.25rem; }
-  .home-page .site-header .brand-logo { width:44px !important; height:44px !important; max-width:44px !important; }
+  .site-header { min-height:0; }
+  .site-header .brand { font-size:1.25rem; }
+  .site-header .brand-logo { width:44px !important; height:44px !important; max-width:44px !important; }
+  .home-page .announcement-slider .carousel-track { padding-inline:62px; }
   .home-page .trivia-card { gap:14px; padding:16px; }
   .home-page .trivia-icon { flex-basis:60px; width:60px; height:60px; font-size:2rem; }
   .home-page .trivia-copy { padding:2px; }
+}
+@media(max-width:900px) {
+  .site-header .main-nav { transform:none; }
 }
 @media(max-width:420px) {
   .home-page .trivia-card { flex-direction:column; }
@@ -1301,7 +1306,5 @@ body.home-page #trivia .trivia-answer-toggle {
   cursor:pointer;
   transition:background-color .18s ease,transform .18s ease,box-shadow .18s ease;
 }
-body.home-page #trivia .trivia-answer-toggle::after { content:'⌄'; display:inline-block; font-size:1rem; line-height:1; transition:transform .18s ease; }
-body.home-page #trivia .trivia-answer-toggle[aria-expanded="true"]::after { transform:rotate(180deg); }
 body.home-page #trivia .trivia-answer-toggle:hover { background:#69091a !important; transform:translateY(-1px); box-shadow:0 6px 14px rgba(23,52,73,.2); }
 body.home-page #trivia .trivia-answer-toggle:focus-visible { outline:3px solid #e8c56b; outline-offset:3px; }

@@ -3,7 +3,8 @@
 }
 
 .privacy-policy-hero {
-  max-width: 900px;
+  width: 100%;
+  max-width: calc(240px + clamp(24px, 5vw, 64px) + 760px);
   margin: 0 auto;
   padding: clamp(52px, 8vw, 92px) 0 34px;
 }
