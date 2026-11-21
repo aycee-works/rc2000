@@ -127,7 +127,7 @@
     body.admin-body:not(.superadmin-body) .sidebar:hover .sidebar-nav .nav-link,
     body.admin-body:not(.superadmin-body) .sidebar:focus-within .sidebar-nav .nav-link { justify-content:flex-start; padding-inline:12px; }
     body.admin-body:not(.superadmin-body) .sidebar-nav .nav-icon { display:block; flex:0 0 22px; width:22px; height:22px; object-fit:contain; }
-    body.admin-body:not(.superadmin-body) .sidebar-nav .nav-link.is-active .nav-icon { filter:brightness(0) invert(1); }
+    body.admin-body:not(.superadmin-body) .sidebar-nav .nav-link.is-active .nav-icon-light { filter:brightness(0) invert(1); }
 }
 
 @media (prefers-reduced-motion: reduce) {
