@@ -31,6 +31,7 @@ $emailValue = is_post() ? post_str('email') : '';
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow, noarchive">
     <title>Admin Portal | Reading Club 2000</title>
     <link rel="icon" href="<?= e(asset('images/logo.png')) ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -76,6 +77,7 @@ $emailValue = is_post() ? post_str('email') : '';
                 <button type="submit" class="btn btn-dark btn-block">Log in</button>
                 <p class="login-footnote">Authorized personnel only.</p>
             </form>
+            <a class="login-home-link" href="<?= e(url('public/home.php')) ?>">← Go back to home</a>
         </div>
     </section>
 </div>

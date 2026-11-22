@@ -89,6 +89,8 @@
 .sa-forgot a { color: var(--color-navy); }
 .sa-login-box .btn-block { padding: 15px 18px; font-size: 16px; }
 .sa-footnote { margin: 18px 0 0; text-align: center; font-size: 13px; color: var(--color-muted); }
+.sa-login-home { display: block; margin-top: 18px; text-align: center; font-size: 13px; font-weight: 500; color: var(--color-navy); }
+.sa-login-home:hover { color: var(--color-maroon); }
 .sa-login-box .login-notice { margin: 0 0 18px; padding: 10px 12px; font-size: 13px; color: #25496f; background: #e4ecf4; border-radius: var(--radius); }
 .sa-login-box .flash { font-size: 14px; }
 
