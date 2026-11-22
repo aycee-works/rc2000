@@ -44,25 +44,18 @@ if (!$content) {
     exit;
 }
 
-$type = (string) ($content['content_type'] ?? 'story');
 $title = (string) ($content['title'] ?? 'Untitled');
 $body = (string) ($content['body'] ?? '');
 $cover = (string) ($content['cover_image_path'] ?? '');
 $author = (string) ($content['author_name'] ?? '');
 $publishedAt = $content['published_at'] ?? null;
 
-$pageTitle = $type === 'article' ? 'Article' : 'Story';
-
 page_start($title);
 ?>
 
-<main>
-    <section class="page-hero red">
+<main class="explore-reading-page">
+    <section class="page-hero explore-reading-hero">
         <div class="section narrow">
-            <p class="eyebrow">
-                <?= e($pageTitle) ?>
-            </p>
-
             <h1><?= e($title) ?></h1>
 
             <?php if ($author !== ''): ?>
@@ -77,7 +70,7 @@ page_start($title);
         </div>
     </section>
 
-    <section class="section narrow">
+    <section class="section explore-reading-section">
         <?php if ($cover !== '' && media_file_exists($cover)): ?>
             <img
                 src="<?= e(media_url($cover)) ?>"

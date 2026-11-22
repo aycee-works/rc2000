@@ -108,6 +108,28 @@
   font-weight: 600;
 }
 
+html[data-theme="dark"] .privacy-policy-hero h1,
+html[data-theme="dark"] .privacy-policy-nav strong,
+html[data-theme="dark"] .privacy-policy-content h2,
+html[data-theme="dark"] .privacy-policy-content strong {
+  color: var(--text-strong);
+}
+
+html[data-theme="dark"] .privacy-policy-nav,
+html[data-theme="dark"] .privacy-policy-content {
+  background: var(--surface);
+}
+
+html[data-theme="dark"] .privacy-policy-hero .privacy-policy-updated,
+html[data-theme="dark"] .privacy-policy-nav a {
+  color: var(--muted);
+}
+
+html[data-theme="dark"] .privacy-policy-nav a:hover,
+html[data-theme="dark"] .privacy-policy-content a {
+  color: var(--text-accent);
+}
+
 @media (max-width: 760px) {
   .privacy-policy-layout {
     grid-template-columns: minmax(0, 1fr);

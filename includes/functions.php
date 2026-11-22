@@ -189,44 +189,35 @@ return $items;
 function search_published_content(string $query, int $limit = 20): array
 {
     $term = '%' . mb_strtolower(trim($query)) . '%';
-    $adminStories = fetch_all(
-        'SELECT id AS content_id, type AS content_type, title, body,
+    $params = [
+        'status' => 'published',
+        'q1' => $term,
+        'q2' => $term,
+        'limit' => $limit,
+    ];
+    $items = fetch_all(
+        "SELECT id AS content_id, type AS content_type, title, body,
                 cover_path AS cover_image_path, author AS author_name, published_at
          FROM rc2000_admin.stories
-         WHERE status = :status AND (LOWER(title) LIKE :q1 OR LOWER(body) LIKE :q2)
-         ORDER BY published_at DESC NULLS LAST, created_at DESC
-         LIMIT :limit',
-        ['status' => 'published', 'q1' => $term, 'q2' => $term, 'limit' => $limit]
-    );
-    $adminAnnouncements = fetch_all(
-        "SELECT id AS content_id, 'announcement' AS content_type, title, body,
-                image_path AS cover_image_path, NULL::varchar AS author_name, published_at
-         FROM rc2000_admin.announcements
-         WHERE status = :status AND (LOWER(title) LIKE :q1 OR LOWER(body) LIKE :q2)
-         ORDER BY published_at DESC NULLS LAST, created_at DESC
-         LIMIT :limit",
-        ['status' => 'published', 'q1' => $term, 'q2' => $term, 'limit' => $limit]
-    );
-    if ($adminStories || $adminAnnouncements) {
-        $items = array_merge($adminStories, $adminAnnouncements);
-        usort($items, static function (array $a, array $b): int {
-            return strtotime((string) ($b['published_at'] ?? '')) <=> strtotime((string) ($a['published_at'] ?? ''));
-        });
-        return array_slice($items, 0, $limit);
-    }
-
-    return fetch_all(
-        'SELECT content_id, content_type, title, body, cover_image_path, author_name, published_at
-         FROM content
-         WHERE status = :status
+         WHERE status = :status AND type IN ('story', 'article')
            AND (LOWER(title) LIKE :q1 OR LOWER(body) LIKE :q2)
-         ORDER BY published_at DESC NULLS LAST, created_at DESC
-         LIMIT :limit',
-        ['status' => 'published', 'q1' => $term, 'q2' => $term, 'limit' => $limit]
+         ORDER BY published_at DESC NULLS LAST, created_at DESC, id DESC
+         LIMIT :limit",
+        $params
+    );
+
+    return $items ?: fetch_all(
+        "SELECT content_id, content_type, title, body, cover_image_path, author_name, published_at
+         FROM content
+         WHERE status = :status AND content_type IN ('story', 'article')
+           AND (LOWER(title) LIKE :q1 OR LOWER(body) LIKE :q2)
+         ORDER BY published_at DESC NULLS LAST, created_at DESC, content_id DESC
+         LIMIT :limit",
+        $params
     );
 }
 
-function active_gallery(int $limit = 12): array
+function active_gallery(?int $limit = 12): array
 {
     // The admin portal owns the current gallery records. Keep the legacy
     // public table as a fallback for sites that have not installed the portal.
@@ -234,22 +225,22 @@ function active_gallery(int $limit = 12): array
         'SELECT id AS image_id, file_path AS image_path, caption, title AS alt_text
          FROM rc2000_admin.gallery_images
          WHERE status = :status
-         ORDER BY sort_order, id
-         LIMIT :limit',
-        ['status' => 'published', 'limit' => $limit]
+         ORDER BY created_at DESC, id DESC',
+        ['status' => 'published']
     );
-    if ($images) {
-        return $images;
-    }
-
-    return fetch_all(
+    $images = $images ?: fetch_all(
         'SELECT image_id, image_path, caption, alt_text
          FROM public.gallery_images
          WHERE is_active = TRUE
-         ORDER BY display_order, image_id
-         LIMIT :limit',
-        ['limit' => $limit]
+         ORDER BY created_at DESC, image_id DESC'
     );
+
+    $images = array_values(array_filter(
+        $images,
+        static fn (array $image): bool => media_file_exists($image['image_path'])
+    ));
+
+    return array_slice($images, 0, $limit);
 }
 
 function published_trivia(?int $limit = 8): array
