@@ -1,12 +1,12 @@
 <?php
-// staff-console/login.php - Super Admin Portal login page
+// superadmin/login.php - Super Admin Portal login page
 require_once dirname(__DIR__, 3) . '/includes/portal/bootstrap.php';
 
 $error = null;
 
 try {
     if (superadmin_session_is_valid()) {
-        redirect('staff-console/dashboard.php');
+        redirect('superadmin/dashboard.php');
     }
 
     if (is_post()) {
@@ -15,7 +15,7 @@ try {
         $password = $_POST['password'] ?? '';
         $error = admin_login(post_str('email'), is_string($password) ? $password : '', 'super_admin');
         if ($error === null) {
-            redirect('staff-console/dashboard.php');
+            redirect('superadmin/dashboard.php');
         }
     }
 } catch (Throwable $e) {
@@ -59,7 +59,7 @@ $emailValue = is_post() ? post_str('email') : '';
             <?php endif; ?>
             <?php render_flash_messages(); ?>
 
-            <form method="post" action="<?= e(url('staff-console/login.php')) ?>" autocomplete="on" novalidate>
+            <form method="post" action="<?= e(url('superadmin/login.php')) ?>" autocomplete="on" novalidate>
                 <?= csrf_field() ?>
 
                 <label class="sa-label" for="email">Administrator email</label>

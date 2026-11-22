@@ -12,7 +12,7 @@
 function is_superadmin_request(): bool
 {
     $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
-    return preg_match('#/(?:staff-console|super_admin)(?:/|$)#', $scriptName) === 1;
+    return preg_match('#/(?:superadmin|staff-console|super_admin)(?:/|$)#', $scriptName) === 1;
 }
 
 function enforce_superadmin_ip_allowlist(): void
@@ -216,7 +216,7 @@ function require_superadmin_portal(bool $api = false): void
             flash('info', 'Your session has ended. Please log in again.');
         }
     }
-    redirect('staff-console/login.php');
+    redirect('superadmin/login.php');
 }
 
 /** Too many recent failures for this email or IP? */

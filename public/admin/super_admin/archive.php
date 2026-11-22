@@ -1,5 +1,5 @@
 <?php
-// staff-console/archive.php - Archive: read-only view for the super admin
+// superadmin/archive.php - Archive: read-only view for the super admin
 require_once dirname(__DIR__, 3) . '/includes/portal/bootstrap.php';
 require_once dirname(__DIR__, 3) . '/includes/portal/services/archive-service.php';
 
@@ -11,7 +11,7 @@ try {
 }
 
 $filters = archive_filters_from_request();
-$archive = archive_page_data($filters) + ['filters' => $filters, 'base' => 'staff-console/archive.php', 'can_manage' => false];
+$archive = archive_page_data($filters) + ['filters' => $filters, 'base' => 'superadmin/archive.php', 'can_manage' => false];
 
 $pageTitle = 'Archive';
 $activeNav = 'archive';

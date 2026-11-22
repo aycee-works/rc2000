@@ -1,5 +1,5 @@
 <?php
-// staff-console/logout.php - log out (POST + CSRF so other sites cannot log the super admin out)
+// superadmin/logout.php - log out (POST + CSRF so other sites cannot log the super admin out)
 require_once dirname(__DIR__, 3) . '/includes/portal/bootstrap.php';
 
 if (is_post() && csrf_is_valid()) {
@@ -10,4 +10,4 @@ if (is_post() && csrf_is_valid()) {
     start_secure_session();
     flash('success', 'You have been logged out.');
 }
-redirect('staff-console/login.php');
+redirect('superadmin/login.php');

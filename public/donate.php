@@ -112,72 +112,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $proof = store_upload('proof_of_payment', 'proofs', $errors, false);
 
         if (!$errors) {
-            try {
-                $pdo = db();
-                $pdo->beginTransaction();
-                $stmt = $pdo->prepare(
-                    'INSERT INTO public.monetary_donations
-                        (donor_name, contact_info, donation_method_id, amount_reported, transaction_reference, payment_date, proof_of_payment_path)
-                     VALUES
-                        (:donor_name, :contact_info, :donation_method_id, :amount_reported, :transaction_reference, :payment_date, :proof_of_payment_path)'
-                );
-                $stmt->execute([
-                    'donor_name' => $donorName,
-                    'contact_info' => $old['contact_info'] !== '' ? $old['contact_info'] : null,
-                    'donation_method_id' => $methodId,
-                    'amount_reported' => number_format((float) $old['amount_reported'], 2, '.', ''),
-                    'transaction_reference' => $old['transaction_reference'],
-                    'payment_date' => date('c', strtotime($old['payment_date'])),
-                    'proof_of_payment_path' => $proof,
-                ]);
-                $method = null;
-                foreach ($methods as $availableMethod) {
-                    if ((int) $availableMethod['donation_method_id'] === $methodId) {
-                        $method = trim($availableMethod['method_name'] . ' · ' . $availableMethod['payment_provider']);
-                        break;
-                    }
+            $method = null;
+            foreach ($methods as $availableMethod) {
+                if ((int) $availableMethod['donation_method_id'] === $methodId) {
+                    $method = mb_substr(trim($availableMethod['method_name'] . ' · ' . $availableMethod['payment_provider']), 0, 40);
+                    break;
                 }
-                $portal = $pdo->prepare(
-                    "INSERT INTO rc2000_admin.monetary_donations
-                        (reference_no, donor_name, donor_email, donor_contact, reported_amount, payment_method, transaction_ref, proof_path)
-                     VALUES
-                        ('MD-' || lpad(nextval('rc2000_admin.monetary_donation_seq')::text, 4, '0'), :donor_name, :donor_email, :donor_contact, :reported_amount, :payment_method, :transaction_ref, :proof_path)
-                     RETURNING reference_no"
+            }
+            $pdo = db();
+            try {
+                $duplicate = $pdo->prepare(
+                    'SELECT 1 FROM rc2000_admin.monetary_donations
+                     WHERE payment_method = :payment_method AND transaction_ref = :transaction_ref
+                     LIMIT 1'
                 );
-                $contact = trim($old['contact_info']);
-                $portal->execute([
-                    'donor_name' => $donorName,
-                    'donor_email' => strtolower(trim($old['donor_email'])),
-                    'donor_contact' => preg_match('/^[0-9+() \\-]{7,30}$/', $contact) ? $contact : null,
-                    'reported_amount' => number_format((float) $old['amount_reported'], 2, '.', ''),
-                    'payment_method' => mb_substr((string) $method, 0, 40),
-                    'transaction_ref' => $old['transaction_reference'],
-                    'proof_path' => $proof,
-                ]);
-                $trackingId = (string) $portal->fetchColumn();
-                $pdo->commit();
-                $_SESSION['donation_receipt'] = [
-                    'reference' => $trackingId,
-                    'name' => $donorName,
-                    'email' => strtolower(trim($old['donor_email'])),
-                    'amount' => number_format((float) $old['amount_reported'], 2, '.', ''),
-                    'method' => (string) $method,
-                    'transaction_reference' => $old['transaction_reference'],
-                    'payment_date' => $old['payment_date'],
-                    'campaign' => '',
-                    'submitted_at' => date('c'),
-                ];
-                redirect('/public/donate.php?tab=receipt');
+                $duplicate->execute(['payment_method' => $method, 'transaction_ref' => $old['transaction_reference']]);
+                if ($duplicate->fetchColumn()) {
+                    $errors[] = 'That transaction reference was already recorded for this method.';
+                } else {
+                    $pdo->beginTransaction();
+                    $portal = $pdo->prepare(
+                        "INSERT INTO rc2000_admin.monetary_donations
+                            (reference_no, donor_name, donor_email, donor_contact, reported_amount, payment_method, transaction_ref, proof_path)
+                         VALUES
+                            ('MD-' || lpad(nextval('rc2000_admin.monetary_donation_seq')::text, 4, '0'), :donor_name, :donor_email, :donor_contact, :reported_amount, :payment_method, :transaction_ref, :proof_path)
+                         RETURNING reference_no"
+                    );
+                    $contact = trim($old['contact_info']);
+                    $portal->execute([
+                        'donor_name' => $donorName,
+                        'donor_email' => strtolower(trim($old['donor_email'])),
+                        'donor_contact' => preg_match('/^[0-9+() \\-]{7,30}$/', $contact) ? $contact : null,
+                        'reported_amount' => number_format((float) $old['amount_reported'], 2, '.', ''),
+                        'payment_method' => $method,
+                        'transaction_ref' => $old['transaction_reference'],
+                        'proof_path' => $proof,
+                    ]);
+                    $trackingId = (string) $portal->fetchColumn();
+                    $pdo->commit();
+                    $_SESSION['donation_receipt'] = [
+                        'reference' => $trackingId,
+                        'name' => $donorName,
+                        'email' => strtolower(trim($old['donor_email'])),
+                        'amount' => number_format((float) $old['amount_reported'], 2, '.', ''),
+                        'method' => (string) $method,
+                        'transaction_reference' => $old['transaction_reference'],
+                        'payment_date' => $old['payment_date'],
+                        'campaign' => '',
+                        'submitted_at' => date('c'),
+                    ];
+                    redirect('/public/donate.php?tab=receipt');
+                }
             } catch (PDOException $error) {
                 if (isset($pdo) && $pdo->inTransaction()) {
                     $pdo->rollBack();
                 }
                 error_log('Monetary donation save failed: ' . $error->getMessage());
-                if (str_contains($error->getMessage(), 'uq_monetary_method_reference')) {
-                    $errors[] = 'That transaction reference was already recorded for this method.';
-                } else {
-                    $errors[] = 'We could not save your report yet. Please try again when the database is available.';
-                }
+                $errors[] = 'We could not save your report yet. Please try again when the database is available.';
             } catch (Throwable $error) {
                 if (isset($pdo) && $pdo->inTransaction()) {
                     $pdo->rollBack();
