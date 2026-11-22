@@ -19,6 +19,25 @@ body:has(.donate-layout) .form-card { width: min(100%, 960px); margin-left: auto
 body:has(.donate-layout) .howto { background: var(--white); border: 1px solid var(--line); border-left: 3px solid var(--gold); padding: 16px 20px; }
 body:has(.donate-layout) .form-card { padding: 24px; box-shadow: none; }
 body:has(.donate-layout) .form-card.framed { border: 1px solid #8bb8ca; background: #dcebf1; }
+body:has(.donate-layout) .donation-howto-page { max-width: 960px; }
+body:has(.donate-layout) .donation-howto-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }
+body:has(.donate-layout) .donation-howto-grid article,
+body:has(.donate-layout) .donation-howto-next-step { padding: 18px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface, #fff); }
+body:has(.donate-layout) .donation-howto-page h2 { margin: 0 0 10px; font-size: 1.15rem; }
+body:has(.donate-layout) .donation-howto-page p,
+body:has(.donate-layout) .donation-howto-page li { color: var(--muted, #667085); line-height: 1.6; }
+body:has(.donate-layout) .donation-howto-page ul { padding-left: 22px; }
+body:has(.donate-layout) .donation-howto-next-step .button { display: inline-flex; margin-top: 6px; text-decoration: none; }
+body:has(.donate-layout) .qr-card { width: min(100%, 360px); margin: 20px auto 28px; }
+body:has(.donate-layout) .qr-expand { display: grid; justify-items: center; gap: 9px; width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface, #fff); color: var(--muted, #667085); cursor: zoom-in; font: inherit; }
+body:has(.donate-layout) .qr-expand img { display: block; width: min(100%, 320px); max-width: 320px; max-height: 360px; object-fit: contain; }
+body:has(.donate-layout) .qr-expand span { font-size: .8rem; }
+body:has(.donate-layout) .qr-expand:hover { border-color: var(--gold); }
+.qr-viewer { position: fixed; width: fit-content; max-width: min(92vw, 760px); max-height: 92vh; padding: 44px 20px 18px; overflow: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface, #fff); color: var(--ink); box-shadow: 0 20px 70px #0005; }
+.qr-viewer::backdrop { background: #07111de0; }
+.qr-viewer img { display: block; width: min(76vw, 560px); max-width: 100%; max-height: 76vh; margin: 0 auto; object-fit: contain; image-rendering: auto; }
+.qr-viewer p { margin: 12px 0 0; color: var(--muted); text-align: center; }
+.qr-viewer-close { position: absolute; top: 8px; right: 10px; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 50%; background: var(--surface, #fff); color: var(--ink); font-size: 1.4rem; line-height: 1; cursor: pointer; }
 body:has(.donate-layout) form { gap: 16px; }
 body:has(.donate-layout) .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 body:has(.donate-layout) .form-card label { min-width: 0; }
@@ -41,6 +60,7 @@ body:has(.donate-layout) .payment-date-label img { display: block; width: 18px; 
 @media (max-width: 560px) {
   body:has(.donate-layout) .form-card { padding: 18px; }
   body:has(.donate-layout) .form-grid { grid-template-columns: minmax(0, 1fr); }
+  body:has(.donate-layout) .donation-howto-grid { grid-template-columns: minmax(0, 1fr); }
 }
 .campaign-payment-methods { margin:20px 0; }
 .campaign-payment-methods h2 { font-size:1.25rem; }
