@@ -8,7 +8,6 @@ $adminName = $admin['full_name'] ?? 'Admin';
   <nav>
     <a href="/admin/index.php">Dashboard</a>
     <a href="/admin/content.php">Content</a>
-    <a href="/admin/donations.php">Book donations</a>
     <a href="/admin/monetary.php">Monetary donations</a>
     <a href="/admin/inquiries.php">Inquiries</a>
     <a href="/admin/gallery.php">Gallery</a>

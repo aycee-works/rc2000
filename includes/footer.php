@@ -22,9 +22,10 @@
 
       <nav class="footer-column footer-connect" aria-label="Footer navigation">
         <a href="<?= e(app_url('public/about.php')) ?>">About us</a>
-        <a href="<?= e(app_url('public/privacy-policy.php')) ?>">Privacy Policy</a>
         <a href="<?= e(app_url('public/inquiry.php')) ?>">Inquiries</a>
         <a href="<?= e(app_url('public/home.php')) ?>#announcements">Announcements</a>
+        <a href="<?= e(app_url('public/privacy-policy.php')) ?>">Privacy Policy</a>
+        <a href="<?= e(app_url('public/donate.php')) ?>">Donation</a>
         <a class="footer-facebook" href="https://www.facebook.com/ReadingClub2000" target="_blank" rel="noopener noreferrer">
           <img src="<?= e(app_url('public/assets/images/icons/homefb_icon.png')) ?>" alt="" width="32" height="32"> Facebook
         </a>

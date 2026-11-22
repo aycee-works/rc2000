@@ -164,7 +164,6 @@ function archive_manage_url(string $type, int $id): ?string
 {
     return [
         'inquiry'      => url('admin/inquiries/index.php?id=' . $id),
-        'book_donation' => url('admin/donations/index.php?tab=book&id=' . $id),
         'monetary_donation' => url('admin/donations/index.php?id=' . $id),
         'quiz'         => url('admin/content/index.php?quiz=' . $id . '#daily-quiz'),
         'challenge'    => url('admin/content/index.php?challenge=' . $id . '#weekly-challenge'),
