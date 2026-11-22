@@ -60,10 +60,20 @@ if (is_post()) {
             if($prompt===''||mb_strlen($prompt)>3000)$errors[]='Add the challenge prompt (3,000 characters maximum).';
             if(!$start||!$end||strtotime($end)<=strtotime($start))$errors[]='Choose a valid start and end time.';
             $imagePath=null; if(upload_provided($_FILES['image']??null)){ $upload=save_uploaded_image($_FILES['image'],'challenges'); if(!$upload['ok'])$errors[]=$upload['message'];else$imagePath=$upload['path']; }
+            $challengeStatus=in_array(post_str('status'),['draft','published','closed'],true)?post_str('status'):'published';
             if(!$errors){
-                if($id>0){$sql='UPDATE rc2000_admin.challenge_posts SET title=?,prompt=?,starts_at=?,ends_at=?,status=?,'.($imagePath?'image_path=?,':'').' updated_at=now() WHERE id=?';$params=[$title,$prompt,date('c',strtotime($start)),date('c',strtotime($end)),post_str('status')==='draft'?'draft':'published'];if($imagePath)$params[]=$imagePath;$params[]=$id;$pdo->prepare($sql)->execute($params);}
-                else $pdo->prepare('INSERT INTO rc2000_admin.challenge_posts(title,prompt,image_path,starts_at,ends_at,status,created_by) VALUES(?,?,?,?,?,?,?)')->execute([$title,$prompt,$imagePath,date('c',strtotime($start)),date('c',strtotime($end)),post_str('status')==='draft'?'draft':'published',current_admin()['id']??null]);
+                if($id>0){$sql='UPDATE rc2000_admin.challenge_posts SET title=?,prompt=?,starts_at=?,ends_at=?,status=?,'.($imagePath?'image_path=?,':'').' updated_at=now() WHERE id=?';$params=[$title,$prompt,date('c',strtotime($start)),date('c',strtotime($end)),$challengeStatus];if($imagePath)$params[]=$imagePath;$params[]=$id;$pdo->prepare($sql)->execute($params);}
+                else $pdo->prepare('INSERT INTO rc2000_admin.challenge_posts(title,prompt,image_path,starts_at,ends_at,status,created_by) VALUES(?,?,?,?,?,?,?)')->execute([$title,$prompt,$imagePath,date('c',strtotime($start)),date('c',strtotime($end)),$challengeStatus,current_admin()['id']??null]);
                 flash('success','Weekly challenge saved.');redirect('admin/content/index.php#weekly-challenge');
+            }
+        } elseif ($action==='archive_challenge') {
+            $challengeId=(int)post_str('id');
+            if($challengeId<1)$errors[]='Select a weekly challenge to archive.';
+            else{
+                $stmt=$pdo->prepare("UPDATE rc2000_admin.challenge_posts SET status='closed' WHERE id=? RETURNING id");
+                $stmt->execute([$challengeId]);
+                if(!$stmt->fetchColumn())$errors[]='That weekly challenge could not be found.';
+                else{flash('success','Weekly challenge archived.');redirect('admin/content/index.php#weekly-challenge');}
             }
         } elseif ($action==='save_quiz') {
             $date=post_str('quiz_date')?:date('Y-m-d'); $status=post_str('quiz_status')==='published'?'published':'draft';
@@ -139,9 +149,9 @@ if (is_post()) {
             if(!$errors){$stmt=$pdo->prepare('SELECT d.*,c.title AS campaign_title FROM rc2000_admin.monetary_donations d LEFT JOIN rc2000_admin.campaigns c ON c.id=d.campaign_id WHERE d.id=?');$stmt->execute([$id]);$row=$stmt->fetch();if(!$row)$errors[]='Donation report not found.';else{$pdo->prepare('UPDATE rc2000_admin.monetary_donations SET status=?,verified_amount=?,verification_note=?,admin_message=?,verified_by=?,verified_at=now() WHERE id=?')->execute([$decision,$decision==='verified'?$amount:null,post_str('verification_note')?:null,$message?:null,(int)(current_admin()['id']??0)?:null,$id]);$row['status_label']=$decision==='verified'?'Donation verified':'Donation not verified';$emailStatus='not_configured';$emailedAt=null;if($message!==''){try{if(community_send_donation_email($row,$message)){$emailStatus='sent';$emailedAt=date('c');}else$emailStatus='not_configured';}catch(Throwable $e){error_log('Donation update email failed: '.$e->getMessage());$emailStatus='failed';}}$pdo->prepare('UPDATE rc2000_admin.monetary_donations SET email_status=?,emailed_at=? WHERE id=?')->execute([$emailStatus,$emailedAt,$id]);flash('success',$emailStatus==='sent'?'Donation reviewed and email sent.':'Donation review saved. Email status: '.$emailStatus.'.');redirect('admin/community.php#reports');}}
         }
     } catch (Throwable $e) { if($pdo->inTransaction())$pdo->rollBack();error_log('Community admin action failed: '.$e->getMessage());$errors[]='The change could not be saved. Check that database/community_features.sql has been applied.'; }
-    if ($errors && in_array($action, ['save_challenge', 'save_quiz', 'publish_leaderboard'], true)) {
+    if ($errors && in_array($action, ['save_challenge', 'archive_challenge', 'save_quiz', 'publish_leaderboard'], true)) {
         flash('error', implode(' ', $errors));
-        if ($action === 'save_challenge') {
+        if (in_array($action, ['save_challenge', 'archive_challenge'], true)) {
             redirect('admin/content/index.php#weekly-challenge');
         }
         if ($action === 'save_quiz') {

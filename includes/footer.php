@@ -1,5 +1,30 @@
 <footer class="site-footer">
   <div class="footer-main">
+    <section class="footer-contact" aria-labelledby="footer-feedback-title">
+      <h2 id="footer-feedback-title">
+        <svg class="footer-feedback-icon" viewBox="0 0 56 48" fill="none" aria-hidden="true">
+          <path d="M9 5.5h38a5.5 5.5 0 0 1 5.5 5.5v19a5.5 5.5 0 0 1-5.5 5.5H25L11 45l2.7-9.5H9A5.5 5.5 0 0 1 3.5 30V11A5.5 5.5 0 0 1 9 5.5Z" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/>
+          <circle cx="17" cy="21" r="2.4" fill="currentColor"/>
+          <circle cx="28" cy="21" r="2.4" fill="currentColor"/>
+          <circle cx="39" cy="21" r="2.4" fill="currentColor"/>
+        </svg>
+        <span>Send Us a Feedback</span>
+      </h2>
+      <p>Tell us what you think about our website. Your feedback goes straight to our admins.</p>
+      <button type="button" class="button button-gold footer-feedback-button" data-feedback-open>
+        <span>Give Us Feedback</span><span class="footer-feedback-arrow" aria-hidden="true">→</span>
+      </button>
+    </section>
+    <div class="footer-bottom">
+      <details class="footer-terms">
+        <summary>Terms and Conditions</summary>
+        <ol>
+          <li>Use this website respectfully and provide accurate information when submitting forms.</li>
+          <li>All website content belongs to Reading Club 2000 or its respective contributors.</li>
+          <li>Submitted feedback and inquiries may be reviewed by the Reading Club 2000 administrators.</li>
+        </ol>
+      </details>
+    </div>
     <div class="footer-identity">
       <a class="footer-brand" href="<?= e(app_url('public/home.php')) ?>" aria-label="Reading Club 2000 home">
         <img class="brand-logo" src="<?= e(app_url('public/assets/images/icons/logo.png')) ?>" alt="" width="38" height="38">
@@ -16,22 +41,7 @@
           </a>
         </nav>
       </div>
-    </div>
-    <section class="footer-contact" aria-labelledby="footer-feedback-title">
-      <h2 id="footer-feedback-title">Send Us a Feedback</h2>
-      <p>Tell us what you think about our website. Your feedback will greatly help us improve your experience and make our website better for everyone.</p>
-      <button type="button" class="button button-gold" data-feedback-open>Submit Feedback</button>
-    </section>
-    <div class="footer-bottom">
-      <small>© 2026 Reading Club 2000 by Mang Nanie</small>
-      <details class="footer-terms">
-        <summary>Terms and Conditions</summary>
-        <ol>
-          <li>Use this website respectfully and provide accurate information when submitting forms.</li>
-          <li>All website content belongs to Reading Club 2000 or its respective contributors.</li>
-          <li>Submitted feedback and inquiries may be reviewed by the Reading Club 2000 administrators.</li>
-        </ol>
-      </details>
+      <small class="footer-copyright">© 2026 Reading Club 2000 by Mang Nanie</small>
     </div>
   </div>
 </footer>

@@ -1312,3 +1312,85 @@ body.home-page #trivia .trivia-answer-toggle {
 }
 body.home-page #trivia .trivia-answer-toggle:hover { background:#69091a !important; transform:translateY(-1px); box-shadow:0 6px 14px rgba(23,52,73,.2); }
 body.home-page #trivia .trivia-answer-toggle:focus-visible { outline:3px solid #e8c56b; outline-offset:3px; }
+
+/* Full-width feedback callout in the shared public footer. */
+.footer-main {
+  display: flex;
+  flex-direction: column;
+}
+.footer-contact {
+  width: 100%;
+  padding: clamp(36px, 4.3vw, 76px) 0 clamp(34px, 3.4vw, 60px);
+  border-bottom: 1px solid rgba(255,255,255,.24);
+}
+.footer-contact h2 {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2.1vw, 32px);
+  margin: 0 0 clamp(14px, 1.5vw, 26px);
+  font-size: clamp(2rem, 3.35vw, 4.35rem);
+  line-height: 1.12;
+}
+.footer-feedback-icon {
+  display: block;
+  flex: 0 0 auto;
+  width: clamp(42px, 4vw, 72px);
+  height: auto;
+  color: #f0cc77;
+}
+.footer-contact p {
+  max-width: 1500px;
+  margin: 0 0 clamp(22px, 2.3vw, 40px);
+  color: #fffaf0;
+  font-size: clamp(1rem, 1.8vw, 1.75rem);
+  line-height: 1.5;
+}
+.footer-feedback-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 1.5vw, 26px);
+  min-height: clamp(58px, 5vw, 104px);
+  padding: 12px clamp(22px, 2.2vw, 46px);
+  border-radius: 9px;
+  font-size: clamp(1.05rem, 1.8vw, 2rem);
+  font-weight: 700;
+}
+.footer-feedback-arrow {
+  font-size: 1.3em;
+  line-height: 1;
+}
+.footer-bottom {
+  display: block;
+  width: 100%;
+  padding: clamp(20px, 1.7vw, 30px) 0 clamp(26px, 2vw, 36px);
+  border: 0;
+}
+.footer-terms { max-width: none; }
+.footer-bottom .footer-terms summary {
+  color: #fffaf0;
+  font-size: clamp(1rem, 1.45vw, 1.55rem);
+  line-height: 1.4;
+}
+.footer-terms ol { font-size: .9rem; }
+.footer-identity {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px 24px;
+  padding: 20px 0 16px;
+  border-top: 1px solid rgba(255,255,255,.18);
+}
+.footer-copyright {
+  grid-column: 1 / -1;
+  color: #cbd8dd;
+  font-size: .82rem;
+}
+@media (max-width: 700px) {
+  .footer-contact { padding: 34px 0 30px; }
+  .footer-contact h2 { gap: 12px; font-size: clamp(1.8rem, 8vw, 2.8rem); }
+  .footer-feedback-icon { width: 42px; }
+  .footer-contact p { font-size: 1rem; }
+  .footer-feedback-button { min-height: 56px; }
+  .footer-identity { grid-template-columns: 1fr; }
+  .footer-copyright { grid-column: auto; }
+}

@@ -527,7 +527,10 @@ page_start('Home', ['class' => 'home-page']);
         </div>
         <a class="facebook-post-preview" href="<?= e($facebookPageUrl) ?>" target="_blank" rel="noopener noreferrer" aria-label="Visit the Reading Club 2000 Facebook page">
             <img
-                src="<?= e(app_url('public/assets/images/facebook-latest-post.png?v=2')) ?>"
+                data-theme-image
+                src="<?= e(app_url('public/assets/images/facebook-latest-post-light.png?v=1')) ?>"
+                data-light-src="<?= e(app_url('public/assets/images/facebook-latest-post-light.png?v=1')) ?>"
+                data-dark-src="<?= e(app_url('public/assets/images/facebook-latest-post-dark.png?v=1')) ?>"
                 alt="Reading Club 2000 Facebook Page preview with its book-filled cover photo and profile"
                 loading="lazy"
             >
