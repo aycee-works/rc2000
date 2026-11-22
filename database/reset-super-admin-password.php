@@ -45,9 +45,9 @@ if (!$id) {
 if (stripos(PHP_OS, 'WIN') === 0) {
     echo "(Note: on Windows the password is visible while typing. Clear the screen afterwards.)\n";
 }
-$password = ask('New password (min ' . MIN_PASSWORD_LENGTH . ' characters): ', true);
-if (strlen($password) < MIN_PASSWORD_LENGTH) {
-    exit('Password must be at least ' . MIN_PASSWORD_LENGTH . " characters. Nothing was changed.\n");
+$password = ask('New password (min ' . SUPERADMIN_MIN_PASSWORD_LENGTH . ' characters): ', true);
+if (!superadmin_password_meets_policy($password)) {
+    exit('Password must be at least ' . SUPERADMIN_MIN_PASSWORD_LENGTH . " characters and at most 72 bytes. Nothing was changed.\n");
 }
 $pdo->prepare('UPDATE admins SET password_hash = ? WHERE id = ?')->execute([password_hash($password, PASSWORD_DEFAULT), $id]);
 $pdo->prepare('DELETE FROM login_attempts WHERE email = ?')->execute([$email]);

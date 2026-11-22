@@ -1,5 +1,5 @@
 <?php
-// superadmin/admins/add.php - Add admin account
+// staff-console/admins/add.php - Add admin account
 require_once dirname(__DIR__, 4) . '/includes/portal/bootstrap.php';
 require_once dirname(__DIR__, 4) . '/includes/portal/services/admin-account-service.php';
 
@@ -28,7 +28,7 @@ if (is_post()) {
         if ($r['ok']) {
             $_SESSION['sa_secret'] = $r['secret'];
             flash('success', 'Admin account created.');
-            redirect('superadmin/admins/manage.php?id=' . (int) $r['id']);
+            redirect('staff-console/admins/manage.php?id=' . (int) $r['id']);
         }
         $errors = $r['errors'] ?? [];
         $formError = $errors ? null : $r['message'];
@@ -43,7 +43,7 @@ $pageTitle = 'Add admin';
 $activeNav = 'admins';
 require dirname(__DIR__, 4) . '/includes/portal/superadmin-header.php';
 ?>
-<nav class="sa-crumbs" aria-label="Breadcrumb"><a href="<?= e(url('superadmin/admins/index.php')) ?>">Admin accounts</a> &gt; Add admin</nav>
+<nav class="sa-crumbs" aria-label="Breadcrumb"><a href="<?= e(url('staff-console/admins/index.php')) ?>">Admin accounts</a> &gt; Add admin</nav>
 <header class="page-header">
     <h1 class="page-title">Add admin account</h1>
     <p class="page-subtitle">Create a new administrator who can manage the website.</p>
@@ -51,7 +51,7 @@ require dirname(__DIR__, 4) . '/includes/portal/superadmin-header.php';
 
 <?php if ($formError): ?><div class="flash flash-error" role="alert"><span><?= e($formError) ?></span></div><?php endif; ?>
 
-<form method="post" action="<?= e(url('superadmin/admins/add.php')) ?>" class="sa-card" novalidate>
+<form method="post" action="<?= e(url('staff-console/admins/add.php')) ?>" class="sa-card" novalidate>
     <?= csrf_field() ?>
     <div class="sa-card-body">
         <h2 class="sa-card-title">Account details</h2>
@@ -99,7 +99,7 @@ require dirname(__DIR__, 4) . '/includes/portal/superadmin-header.php';
         <p class="review-hint">Email is not set up for this system, so nothing is emailed. After creating the account you will see the link (or the temporary password) once, to give to the administrator yourself. A temporary password must be changed at first login.</p>
     </div>
     <div class="sa-card-foot">
-        <a class="btn btn-light" href="<?= e(url('superadmin/admins/index.php')) ?>">Cancel</a>
+        <a class="btn btn-light" href="<?= e(url('staff-console/admins/index.php')) ?>">Cancel</a>
         <button type="submit" class="btn btn-maroon">+ Create account</button>
     </div>
 </form>

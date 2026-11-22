@@ -2,10 +2,11 @@ Options -Indexes
 RewriteEngine On
 
 # Keep the site's project-root URLs working while admin code lives under public/.
+RewriteRule ^(?:superadmin|(?:public/)?admin/+super_admin)(?:/|$) - [R=404,L,NC]
+RewriteRule ^staff-console/?$ public/admin/super_admin/index.php [END,QSA]
+RewriteRule ^staff-console/(.*)$ public/admin/super_admin/$1 [END,QSA]
 RewriteRule ^admin/?$ public/admin/index.php [L,QSA]
 RewriteRule ^admin/(.*)$ public/admin/$1 [L,QSA]
-RewriteRule ^superadmin/?$ public/admin/super_admin/index.php [L,QSA]
-RewriteRule ^superadmin/(.*)$ public/admin/super_admin/$1 [L,QSA]
 RewriteRule ^assets/(.*)$ public/assets/$1 [L]
 RewriteRule ^uploads/(.*)$ public/uploads/$1 [L]
 RewriteRule ^api/public/(.*)$ public/api/public/$1 [L,QSA]

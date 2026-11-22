@@ -1,5 +1,5 @@
 <?php
-// superadmin/audit-logs.php - Audit logs: review administrative activity with filters
+// staff-console/audit-logs.php - Audit logs: review administrative activity with filters
 require_once dirname(__DIR__, 3) . '/includes/portal/bootstrap.php';
 require_once dirname(__DIR__, 3) . '/includes/portal/services/audit-service.php';
 
@@ -25,7 +25,7 @@ try {
 $hasFilters = $f['q'] !== '' || $f['admin'] !== '' || $f['module'] !== '' || $f['activity'] !== '' || $f['range'] !== '';
 $pageUrl = function (array $p): string {
     $p = array_filter($p, fn($v) => $v !== '' && $v !== null && $v !== 1);
-    return url('superadmin/audit-logs.php') . ($p ? '?' . http_build_query($p) : '');
+    return url('staff-console/audit-logs.php') . ($p ? '?' . http_build_query($p) : '');
 };
 $base = ['q' => $f['q'], 'admin' => $f['admin'], 'module' => $f['module'], 'activity' => $f['activity'], 'range' => $f['range']];
 
@@ -40,7 +40,7 @@ require dirname(__DIR__, 3) . '/includes/portal/superadmin-header.php';
 
 <?php if ($loadError): ?><div class="flash flash-error" role="alert"><span><?= e($loadError) ?></span></div><?php endif; ?>
 
-<form class="filter-bar audit-filters" method="get" action="<?= e(url('superadmin/audit-logs.php')) ?>">
+<form class="filter-bar audit-filters" method="get" action="<?= e(url('staff-console/audit-logs.php')) ?>">
     <input class="input filter-search" type="search" name="q" value="<?= e($f['q']) ?>" placeholder="Search activity" maxlength="100" aria-label="Search activity">
     <select class="select" name="admin" aria-label="Administrator">
         <option value="">Administrator</option>

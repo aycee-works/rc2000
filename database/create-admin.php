@@ -55,10 +55,19 @@ $email = mb_strtolower(ask('Email: '));
 if (stripos(PHP_OS, 'WIN') === 0) {
     echo "(Note: on Windows the password is visible while typing. Clear the screen afterwards.)\n";
 }
-$password = ask('Password (min ' . MIN_PASSWORD_LENGTH . ' characters): ', true);
+$role = $count === 0 ? 'super_admin' : 'admin';
+if ($count > 0 && strtolower(ask('Make this a super admin? (yes/no): ')) === 'yes') {
+    $role = 'super_admin';
+}
+
+$minimum = $role === 'super_admin' ? SUPERADMIN_MIN_PASSWORD_LENGTH : MIN_PASSWORD_LENGTH;
+$password = ask('Password (min ' . $minimum . ' characters): ', true);
 
 if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit("Please provide a name and a valid email.\n");
+}
+if ($role === 'super_admin' && !superadmin_password_meets_policy($password)) {
+    exit('Password must be at least ' . SUPERADMIN_MIN_PASSWORD_LENGTH . " characters and at most 72 bytes.\n");
 }
 if (strlen($password) < MIN_PASSWORD_LENGTH) {
     exit('Password must be at least ' . MIN_PASSWORD_LENGTH . " characters.\n");

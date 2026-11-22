@@ -21,4 +21,7 @@ header('X-Frame-Options: SAMEORIGIN');
 header('Referrer-Policy: same-origin');
 header('X-Robots-Tag: noindex, nofollow, noarchive');
 
+if (is_superadmin_request()) {
+    enforce_superadmin_ip_allowlist();
+}
 start_secure_session();

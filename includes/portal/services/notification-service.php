@@ -56,7 +56,7 @@ function portal_notification_item(array $row, string $role): array
         if ($message === '') {
             $message = 'Review the recent activity log.';
         }
-        $href = url('superadmin/audit-logs.php');
+        $href = url('staff-console/audit-logs.php');
     }
 
     return [

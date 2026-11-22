@@ -1,5 +1,5 @@
 <?php
-// superadmin/admins/manage.php?id=..&tab=edit|reset|danger - manage one administrator account
+// staff-console/admins/manage.php?id=..&tab=edit|reset|danger - manage one administrator account
 require_once dirname(__DIR__, 4) . '/includes/portal/bootstrap.php';
 require_once dirname(__DIR__, 4) . '/includes/portal/services/admin-account-service.php';
 
@@ -12,7 +12,7 @@ try {
 
 $id  = (int) ($_POST['id'] ?? $_GET['id'] ?? 0);
 $tab = in_array($_POST['tab'] ?? $_GET['tab'] ?? '', ['edit', 'reset', 'danger'], true) ? ($_POST['tab'] ?? $_GET['tab']) : 'edit';
-$self = fn(string $t = 'edit') => 'superadmin/admins/manage.php?id=' . $id . '&tab=' . $t;
+$self = fn(string $t = 'edit') => 'staff-console/admins/manage.php?id=' . $id . '&tab=' . $t;
 
 $errors = [];
 $formError = null;
@@ -23,7 +23,7 @@ try {
     $admin = $id > 0 ? get_admin_account($pdo, $id) : null;
     if (!$admin) {
         flash('error', 'That administrator account was not found. It may have been removed.');
-        redirect('superadmin/admins/index.php');
+        redirect('staff-console/admins/index.php');
     }
 
     if (is_post()) {
@@ -48,7 +48,7 @@ try {
             redirect($self('danger'));
         } elseif ($do === 'remove') {
             $r = remove_admin_account($pdo, $superId, $id, post_str('confirm_email'));
-            if ($r['ok']) { flash('success', $r['message']); redirect('superadmin/admins/index.php'); }
+            if ($r['ok']) { flash('success', $r['message']); redirect('staff-console/admins/index.php'); }
             $formError = $r['message'];
             $tab = 'danger';
         }
@@ -58,7 +58,7 @@ try {
     $admin = $admin ?? null;
     if (!$admin) {
         flash('error', 'The account could not be loaded. Please try again.');
-        redirect('superadmin/admins/index.php');
+        redirect('staff-console/admins/index.php');
     }
     $formError = 'Something went wrong. Please try again.' . dev_detail($e);
 }
@@ -79,7 +79,7 @@ $activeNav = 'admins';
 $extraJs   = ['superadmin.js'];
 require dirname(__DIR__, 4) . '/includes/portal/superadmin-header.php';
 ?>
-<nav class="sa-crumbs" aria-label="Breadcrumb"><a href="<?= e(url('superadmin/admins/index.php')) ?>">Admin accounts</a> &gt; Manage</nav>
+<nav class="sa-crumbs" aria-label="Breadcrumb"><a href="<?= e(url('staff-console/admins/index.php')) ?>">Admin accounts</a> &gt; Manage</nav>
 
 <section class="sa-card sa-account-head">
     <div>
@@ -117,7 +117,7 @@ require dirname(__DIR__, 4) . '/includes/portal/superadmin-header.php';
 
     <div>
     <?php if ($tab === 'edit'): ?>
-        <form method="post" action="<?= e(url('superadmin/admins/manage.php')) ?>" class="sa-card" novalidate>
+        <form method="post" action="<?= e(url('staff-console/admins/manage.php')) ?>" class="sa-card" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="do" value="edit"><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="tab" value="edit">
             <input type="hidden" name="version" value="<?= e($v['version']) ?>">
@@ -140,13 +140,13 @@ require dirname(__DIR__, 4) . '/includes/portal/superadmin-header.php';
                 </div>
             </div>
             <div class="sa-card-foot">
-                <a class="btn btn-light" href="<?= e(url('superadmin/admins/index.php')) ?>">Cancel</a>
+                <a class="btn btn-light" href="<?= e(url('staff-console/admins/index.php')) ?>">Cancel</a>
                 <button type="submit" class="btn btn-maroon">Save changes</button>
             </div>
         </form>
 
     <?php elseif ($tab === 'reset'): ?>
-        <form method="post" action="<?= e(url('superadmin/admins/manage.php')) ?>" class="sa-card">
+        <form method="post" action="<?= e(url('staff-console/admins/manage.php')) ?>" class="sa-card">
             <?= csrf_field() ?>
             <input type="hidden" name="do" value="reset"><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="tab" value="reset">
             <div class="sa-card-body">
@@ -157,7 +157,7 @@ require dirname(__DIR__, 4) . '/includes/portal/superadmin-header.php';
                 <p class="review-hint">Email is not set up, so the link is shown to you once to pass on. Creating a new link cancels any earlier unused one.</p>
             </div>
             <div class="sa-card-foot">
-                <a class="btn btn-light" href="<?= e(url('superadmin/admins/index.php')) ?>">Cancel</a>
+                <a class="btn btn-light" href="<?= e(url('staff-console/admins/index.php')) ?>">Cancel</a>
                 <button type="submit" class="btn btn-maroon"<?= $admin['is_active'] ? '' : ' disabled title="Reactivate the account first"' ?>>Create reset link</button>
             </div>
         </form>
@@ -175,7 +175,7 @@ require dirname(__DIR__, 4) . '/includes/portal/superadmin-header.php';
                             ? 'Signs the admin out and blocks login until reactivated. Account and activity history are kept.'
                             : 'This account is deactivated and cannot log in. Reactivating lets the administrator log in again.' ?></p>
                     </div>
-                    <form method="post" action="<?= e(url('superadmin/admins/manage.php')) ?>"
+                    <form method="post" action="<?= e(url('staff-console/admins/manage.php')) ?>"
                           data-confirm="<?= $admin['is_active'] ? 'Deactivate this account? The administrator will be signed out.' : 'Reactivate this account?' ?>">
                         <?= csrf_field() ?>
                         <input type="hidden" name="do" value="<?= $admin['is_active'] ? 'deactivate' : 'reactivate' ?>">
@@ -195,7 +195,7 @@ require dirname(__DIR__, 4) . '/includes/portal/superadmin-header.php';
         </section>
 
         <dialog class="dialog" id="remove-dialog" aria-labelledby="remove-title">
-            <form method="post" action="<?= e(url('superadmin/admins/manage.php')) ?>">
+            <form method="post" action="<?= e(url('staff-console/admins/manage.php')) ?>">
                 <?= csrf_field() ?>
                 <input type="hidden" name="do" value="remove"><input type="hidden" name="id" value="<?= $id ?>">
                 <h2 class="dialog-title" id="remove-title">Remove this account?</h2>

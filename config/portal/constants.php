@@ -42,3 +42,11 @@ const LOGIN_WINDOW_MINUTES = 15;
 const SESSION_IDLE_SECONDS = 7200; // 2 hours
 
 const MIN_PASSWORD_LENGTH = 10;
+const SUPERADMIN_MIN_PASSWORD_LENGTH = 16;
+const SUPERADMIN_IDLE_SECONDS = 900;
+const SUPERADMIN_LOGIN_MAX_ATTEMPTS = 3;
+
+function superadmin_password_meets_policy(string $password): bool
+{
+    return mb_strlen($password, 'UTF-8') >= SUPERADMIN_MIN_PASSWORD_LENGTH && strlen($password) <= 72;
+}

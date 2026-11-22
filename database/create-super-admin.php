@@ -52,19 +52,19 @@ $email = mb_strtolower(ask('Email: '));
 if (stripos(PHP_OS, 'WIN') === 0) {
     echo "(Note: on Windows the password is visible while typing. Clear the screen afterwards.)\n";
 }
-$password = ask('Password (min ' . MIN_PASSWORD_LENGTH . ' characters): ', true);
+$password = ask('Password (min ' . SUPERADMIN_MIN_PASSWORD_LENGTH . ' characters): ', true);
 
 if ($name === '' || mb_strlen($name) > 100 || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit("Please provide a name (up to 100 characters) and a valid email.\n");
 }
-if (strlen($password) < MIN_PASSWORD_LENGTH) {
-    exit('Password must be at least ' . MIN_PASSWORD_LENGTH . " characters.\n");
+if (!superadmin_password_meets_policy($password)) {
+    exit('Password must be at least ' . SUPERADMIN_MIN_PASSWORD_LENGTH . " characters and at most 72 bytes.\n");
 }
 
 try {
     $stmt = $pdo->prepare("INSERT INTO admins (name, email, password_hash, role) VALUES (?, ?, ?, 'super_admin')");
     $stmt->execute([$name, $email, password_hash($password, PASSWORD_DEFAULT)]);
-    echo "Done. Created the super admin account for {$email}.\nLog in at /superadmin/login.php\n";
+    echo "Done. Created the super admin account for {$email}.\nLog in at /staff-console/login.php\n";
 } catch (PDOException $e) {
     if ($e->getCode() === '23505') {
         exit("An account with that email already exists. Nothing was changed.\n");

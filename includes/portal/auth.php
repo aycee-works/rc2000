@@ -9,6 +9,30 @@
  * Hiding a menu item is never enough; every page/endpoint checks on the server.
  */
 
+function is_superadmin_request(): bool
+{
+    $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+    return preg_match('#/(?:staff-console|super_admin)(?:/|$)#', $scriptName) === 1;
+}
+
+function enforce_superadmin_ip_allowlist(): void
+{
+    $allowed = getenv('RC2000_SUPERADMIN_ALLOWED_IPS');
+    if ($allowed === false || trim($allowed) === '') {
+        return;
+    }
+
+    $client = inet_pton(client_ip());
+    foreach (explode(',', $allowed) as $address) {
+        if ($client !== false && $client === inet_pton(trim($address))) {
+            return;
+        }
+    }
+
+    http_response_code(403);
+    exit('Access denied.');
+}
+
 function start_secure_session(): void
 {
     if (session_status() === PHP_SESSION_ACTIVE) {
@@ -17,10 +41,7 @@ function start_secure_session(): void
     $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
     // Each portal has its OWN session cookie, so being logged in (or out) on the Admin Portal
     // never affects the Super Admin Portal in the same browser, and the other way round.
-    $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
-    $isSuper = strpos($scriptName, '/superadmin/') !== false
-        || strpos($scriptName, '/super_admin/') !== false;
-    session_name($isSuper ? 'rc2000_super' : 'rc2000_admin');
+    session_name(is_superadmin_request() ? 'rc2000_super' : 'rc2000_admin');
     session_set_cookie_params([
         'lifetime' => 0,
         'path'     => '/',
@@ -71,13 +92,14 @@ function admin_security_columns_ready(): bool
  * deactivated admin is kicked out immediately, and so "sign out of active sessions"
  * (sessions_valid_after) takes effect on the next click.
  */
-function admin_session_is_valid(): bool
+function admin_session_is_valid(bool $recordActivity = true): bool
 {
     if (empty($_SESSION['admin_id'])) {
         return false;
     }
     $last = $_SESSION['last_activity'] ?? 0;
-    if (time() - $last > SESSION_IDLE_SECONDS) {
+    $idleTimeout = is_superadmin_request() ? SUPERADMIN_IDLE_SECONDS : SESSION_IDLE_SECONDS;
+    if (time() - $last >= $idleTimeout) {
         return false;
     }
     try {
@@ -101,7 +123,9 @@ function admin_session_is_valid(): bool
         error_log('Session check failed: ' . $e->getMessage());
         return false;
     }
-    $_SESSION['last_activity'] = time();
+    if ($recordActivity) {
+        $_SESSION['last_activity'] = time();
+    }
     return true;
 }
 
@@ -192,24 +216,24 @@ function require_superadmin_portal(bool $api = false): void
             flash('info', 'Your session has ended. Please log in again.');
         }
     }
-    redirect('superadmin/login.php');
+    redirect('staff-console/login.php');
 }
 
 /** Too many recent failures for this email or IP? */
-function login_is_throttled(string $email): bool
+function login_is_throttled(string $email, int $maxAttempts): bool
 {
     $sql = 'SELECT COUNT(*) FROM login_attempts
             WHERE (email = ? OR ip_address = ?)
               AND attempted_at > (NOW() - INTERVAL \'' . (int) LOGIN_WINDOW_MINUTES . ' minutes\')';
     $stmt = db()->prepare($sql);
-    $stmt->execute([$email, client_ip()]);
-    return (int) $stmt->fetchColumn() >= LOGIN_MAX_ATTEMPTS;
+    $stmt->execute([mb_substr($email, 0, 150), client_ip()]);
+    return (int) $stmt->fetchColumn() >= $maxAttempts;
 }
 
 function login_record_failure(string $email): void
 {
     $stmt = db()->prepare('INSERT INTO login_attempts (email, ip_address) VALUES (?, ?)');
-    $stmt->execute([$email, client_ip()]);
+    $stmt->execute([mb_substr($email, 0, 150), client_ip()]);
 }
 
 /**
@@ -226,7 +250,9 @@ function admin_login(string $email, string $password, ?string $requiredRole = nu
         return 'Please enter your email and password.';
     }
 
-    if (login_is_throttled($email)) {
+    $isSuper = $requiredRole === 'super_admin';
+    $maxAttempts = $isSuper ? SUPERADMIN_LOGIN_MAX_ATTEMPTS : LOGIN_MAX_ATTEMPTS;
+    if (login_is_throttled($email, $maxAttempts)) {
         return 'Too many failed attempts. Please wait ' . LOGIN_WINDOW_MINUTES . ' minutes and try again.';
     }
 
@@ -243,6 +269,10 @@ function admin_login(string $email, string $password, ?string $requiredRole = nu
     if (!$admin || !$valid || !$roleOk || (int) $admin['is_active'] !== 1) {
         login_record_failure($email);
         return 'Incorrect email or password.';
+    }
+
+    if ($isSuper && !superadmin_password_meets_policy($password)) {
+        return 'Your password needs to be updated. Contact the system owner to reset it.';
     }
 
     // Success: new session ID prevents session fixation

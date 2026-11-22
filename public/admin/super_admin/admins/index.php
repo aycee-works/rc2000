@@ -1,5 +1,5 @@
 <?php
-// superadmin/admins/index.php - Admin account management: list, search, filter
+// staff-console/admins/index.php - Admin account management: list, search, filter
 require_once dirname(__DIR__, 4) . '/includes/portal/bootstrap.php';
 require_once dirname(__DIR__, 4) . '/includes/portal/services/admin-account-service.php';
 
@@ -24,20 +24,20 @@ try {
     $loadError = 'The administrator list could not be loaded. Check the database connection and that database/super-admin.sql was run.' . dev_detail($e);
 }
 $hasFilters = $filters['q'] !== '' || $filters['status'] !== '';
-$pageUrl = fn(array $p) => url('superadmin/admins/index.php') . ($p ? '?' . http_build_query(array_filter($p, fn($v) => $v !== '' && $v !== null)) : '');
+$pageUrl = fn(array $p) => url('staff-console/admins/index.php') . ($p ? '?' . http_build_query(array_filter($p, fn($v) => $v !== '' && $v !== null)) : '');
 
 $pageTitle = 'Admin Management';
 $activeNav = 'admins';
 $extraJs   = ['superadmin.js'];
 require dirname(__DIR__, 4) . '/includes/portal/superadmin-header.php';
 ?>
-<header class="page-header sa-page-head">
+<header class="page-header sa-admin-list-header">
     <div>
         <h1 class="page-title">Admin Account Management</h1>
         <p class="page-subtitle">Select an administrator to edit, reset the password, deactivate, or remove.</p>
     </div>
-    <div class="sa-page-actions">
-        <a class="btn btn-maroon" href="<?= e(url('superadmin/admins/add.php')) ?>">+ Add Admin</a>
+    <div class="sa-admin-list-actions">
+        <a class="btn btn-maroon" href="<?= e(url('staff-console/admins/add.php')) ?>">+ Add Admin</a>
     </div>
 </header>
 
@@ -45,7 +45,7 @@ require dirname(__DIR__, 4) . '/includes/portal/superadmin-header.php';
     <div class="flash flash-error" role="alert"><span><?= e($loadError) ?></span></div>
 <?php endif; ?>
 
-<form class="filter-bar" method="get" action="<?= e(url('superadmin/admins/index.php')) ?>">
+<form class="filter-bar sa-admin-filters" method="get" action="<?= e(url('staff-console/admins/index.php')) ?>">
     <input class="input filter-search" type="search" name="q" value="<?= e($filters['q']) ?>"
            placeholder="Search by name or email" maxlength="100" aria-label="Search administrators">
     <select class="select filter-select" name="status" aria-label="Filter by status" data-autosubmit>
@@ -61,7 +61,7 @@ require dirname(__DIR__, 4) . '/includes/portal/superadmin-header.php';
 <section class="panel" aria-label="Administrator accounts">
     <div class="table-wrap">
         <table class="data-table">
-            <thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Date created</th><th>Account</th></tr></thead>
+            <thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Date created</th><th scope="col" class="sa-account-action">Account</th></tr></thead>
             <tbody>
             <?php if (!$list['rows']): ?>
                 <tr><td colspan="5" class="table-empty">
@@ -76,7 +76,7 @@ require dirname(__DIR__, 4) . '/includes/portal/superadmin-header.php';
                         ? '<span class="acct-chip acct-active">Active</span>'
                         : '<span class="acct-chip acct-deactivated">Deactivated</span>' ?></td>
                     <td><?= e(date('M j, Y', strtotime($a['created_at']))) ?></td>
-                    <td><a class="btn btn-light btn-sm" href="<?= e(url('superadmin/admins/manage.php?id=' . (int) $a['id'])) ?>">Manage</a></td>
+                    <td class="sa-account-action"><a class="btn btn-light btn-sm" href="<?= e(url('staff-console/admins/manage.php?id=' . (int) $a['id'])) ?>">Manage</a></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

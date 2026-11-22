@@ -119,7 +119,7 @@ $cards = [
 </section>
 
 <?php if ($sel): ?>
-<dialog class="dialog dialog-review" id="review-dialog" aria-labelledby="archive-title" data-autoopen>
+<dialog class="dialog dialog-review archive-dialog" id="review-dialog" aria-labelledby="archive-title" data-autoopen>
     <div class="review-form">
         <header class="dialog-head">
             <div>

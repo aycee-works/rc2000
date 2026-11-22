@@ -8,7 +8,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET') {
     json_response(false, 'Method not allowed.', null, 405);
 }
 
-if (!admin_session_is_valid()) {
+// Background notification polling must not keep an idle session alive.
+if (!admin_session_is_valid(false)) {
     json_response(false, 'Authentication required.', null, 401);
 }
 $admin = current_admin();

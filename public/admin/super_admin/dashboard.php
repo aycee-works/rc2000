@@ -1,5 +1,5 @@
 <?php
-// superadmin/dashboard.php - Super Admin dashboard: account counts, recent activity, admin accounts
+// staff-console/dashboard.php - Super Admin dashboard: account counts, recent activity, admin accounts
 require_once dirname(__DIR__, 3) . '/includes/portal/bootstrap.php';
 require_once dirname(__DIR__, 3) . '/includes/portal/services/superadmin-dashboard-service.php';
 
@@ -49,7 +49,7 @@ require dirname(__DIR__, 3) . '/includes/portal/superadmin-header.php';
     <article class="stat-card">
         <div class="stat-label">Deactivated Accounts</div>
         <div class="stat-value"><?= $counts ? (int) $counts['deactivated'] : '–' ?></div>
-        <a class="stat-link" href="<?= e(url('superadmin/admins/index.php?status=deactivated')) ?>">Review Accounts ›</a>
+        <a class="stat-link" href="<?= e(url('staff-console/admins/index.php?status=deactivated')) ?>">Review Accounts ›</a>
     </article>
     <article class="stat-card">
         <div class="stat-label">Admin Actions Today</div>
@@ -59,7 +59,7 @@ require dirname(__DIR__, 3) . '/includes/portal/superadmin-header.php';
     <article class="stat-card">
         <div class="stat-label">Admin Actions This Week</div>
         <div class="stat-value"><?= $actions ? (int) $actions['week'] : '–' ?></div>
-        <a class="stat-link" href="<?= e(url('superadmin/audit-logs.php')) ?>">Open Audit Logs ›</a>
+        <a class="stat-link" href="<?= e(url('staff-console/audit-logs.php')) ?>">Open Audit Logs ›</a>
     </article>
 </section>
 
@@ -68,7 +68,7 @@ require dirname(__DIR__, 3) . '/includes/portal/superadmin-header.php';
         <section class="panel" aria-label="Recent administrative activity">
             <div class="panel-header">
                 <h2 class="panel-title">Recent Administrative Activity</h2>
-                <a href="<?= e(url('superadmin/audit-logs.php')) ?>">View all</a>
+                <a href="<?= e(url('staff-console/audit-logs.php')) ?>">View All</a>
             </div>
             <div class="table-wrap">
                 <table class="data-table">
@@ -95,8 +95,8 @@ require dirname(__DIR__, 3) . '/includes/portal/superadmin-header.php';
 
         <section class="panel" aria-label="Activity by module">
             <div class="panel-header">
-                <h2 class="panel-title">Activity by Module</h2>
-                <span class="muted sa-small">This week · <?= $actions ? (int) $actions['week'] : 0 ?> action<?= $actions && $actions['week'] === 1 ? '' : 's' ?></span>
+                <h2 class="panel-title">Activity By Module</h2>
+                <span class="muted sa-small">This Week · <?= $actions ? (int) $actions['week'] : 0 ?> action<?= $actions && $actions['week'] === 1 ? '' : 's' ?></span>
             </div>
             <div class="panel-body">
                 <?php foreach (AUDIT_WORK_MODULES as $mod):
@@ -123,7 +123,7 @@ require dirname(__DIR__, 3) . '/includes/portal/superadmin-header.php';
                         <div>
                             <div class="sa-account-name"><?= e($a['name']) ?></div>
                             <div class="sa-account-meta">
-                                <?= $a['last_login_at'] ? 'Last active ' . e(date('M j, g:i A', strtotime($a['last_login_at']))) : 'Never logged in' ?>
+                                <?= $a['last_login_at'] ? 'Last Active ' . e(date('M j, g:i A', strtotime($a['last_login_at']))) : 'Never Logged In' ?>
                             </div>
                         </div>
                         <?= $a['is_active']
@@ -133,7 +133,7 @@ require dirname(__DIR__, 3) . '/includes/portal/superadmin-header.php';
                 <?php endforeach; ?>
             </ul>
             <div class="panel-body">
-                <a class="btn btn-maroon btn-block" href="<?= e(url('superadmin/admins/index.php')) ?>">Manage Admin Accounts</a>
+                <a class="btn btn-maroon btn-block" href="<?= e(url('staff-console/admins/index.php')) ?>">Manage Admin Accounts</a>
             </div>
         </section>
     </aside>

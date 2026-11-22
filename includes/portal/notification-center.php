@@ -2,7 +2,7 @@
 $notificationUser = current_admin() ?? ['id' => 0, 'role' => 'admin'];
 $notificationIsSuper = $notificationUser['role'] === 'super_admin';
 $notificationEndpoint = $notificationIsSuper
-    ? url('superadmin/api/notifications.php')
+    ? url('staff-console/api/notifications.php')
     : url('admin/api/notifications.php');
 $notificationPanelId = $notificationIsSuper ? 'superadmin-notification-panel' : 'admin-notification-panel';
 ?>
