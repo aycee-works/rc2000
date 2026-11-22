@@ -9,8 +9,8 @@
  *   - the REAL content type (read from the file's bytes) is JPEG, PNG or WebP
  *   - getimagesize() can read it as an image of the same type
  *   - width and height are 1..8000 pixels
- * The file is saved under a random name with an extension chosen from the
- * detected type, inside uploads/<folder>/ (where PHP execution is blocked).
+ * The validated image is uploaded to Cloudinary; its HTTPS URL is stored in
+ * the database so the asset survives Render restarts and redeploys.
  */
 
 const UPLOAD_MAX_BYTES     = 5 * 1024 * 1024;
@@ -54,8 +54,8 @@ function validate_image_file(string $path, int $size): array
 }
 
 /**
- * Validate and store one uploaded image ($_FILES['field']) in uploads/<folder>/.
- * Returns ['ok'=>true,'path'=>'uploads/gallery/abc.jpg','original_name','mime','size']
+ * Validate and store one uploaded image ($_FILES['field']) in Cloudinary.
+ * Returns ['ok'=>true,'path'=>'https://res.cloudinary.com/...','original_name','mime','size']
  * or ['ok'=>false,'message'=>..].
  */
 function save_uploaded_image($file, string $folder): array
@@ -90,37 +90,109 @@ function save_uploaded_image($file, string $folder): array
         return $check;
     }
 
-    // Public images are served through the root .htaccess rewrite to
-    // public/uploads/, so write files into that protected public directory.
-    $dir = ROOT_PATH . '/public/uploads/' . $folder;
-    if (!is_dir($dir) && !@mkdir($dir, 0755, true)) {
-        return $fail('The uploads folder is missing and could not be created.');
+    try {
+        $uploaded = cloudinary_client()->uploadApi()->upload($file['tmp_name'], [
+            'folder' => 'rc2000/' . $folder,
+            'resource_type' => 'image',
+            'use_filename' => false,
+            'unique_filename' => true,
+            'overwrite' => false,
+        ]);
+        $imageUrl = (string) ($uploaded['secure_url'] ?? '');
+        if (!preg_match('#^https://res\.cloudinary\.com/[^/]+/image/upload/.+#i', $imageUrl)) {
+            return $fail('The image storage service did not return a valid image URL. Please try again.');
+        }
+    } catch (Throwable $e) {
+        error_log('Cloudinary image upload failed (' . get_class($e) . ').');
+        return $fail('The image could not be saved to image storage. Please try again.');
     }
-
-    $name = bin2hex(random_bytes(16)) . '.' . $check['ext'];
-    if (!move_uploaded_file($file['tmp_name'], $dir . '/' . $name)) {
-        return $fail('The image could not be saved. Check that the uploads folder is writable.');
-    }
-    @chmod($dir . '/' . $name, 0644);
 
     $original = preg_replace('/[\x00-\x1F\x7F]/u', '', basename((string) ($file['name'] ?? '')));
     return [
         'ok'            => true,
-        'path'          => 'uploads/' . $folder . '/' . $name,
+        'path'          => $imageUrl,
         'original_name' => mb_substr($original, 0, 255),
         'mime'          => $check['mime'],
         'size'          => (int) $file['size'],
     ];
 }
 
-/** Delete a stored upload by its relative path. Only paths we generated are accepted. */
+/** Get a configured Cloudinary SDK instance, or fail without exposing credentials. */
+function cloudinary_client(): \Cloudinary\Cloudinary
+{
+    static $client = null;
+    if ($client instanceof \Cloudinary\Cloudinary) {
+        return $client;
+    }
+
+    $config = $GLOBALS['APP_CONFIG'] ?? [];
+    $cloudinaryUrl = trim((string) ($config['cloudinary_url'] ?? getenv('CLOUDINARY_URL') ?: ''));
+    if ($cloudinaryUrl === '') {
+        throw new RuntimeException('Cloudinary is not configured.');
+    }
+
+    $autoload = ROOT_PATH . '/vendor/autoload.php';
+    if (!is_file($autoload)) {
+        throw new RuntimeException('Cloudinary dependencies are not installed.');
+    }
+    require_once $autoload;
+
+    $client = new \Cloudinary\Cloudinary($cloudinaryUrl);
+    return $client;
+}
+
+/** Extract a Cloudinary public ID only from this application's Cloudinary URL. */
+function cloudinary_public_id_from_url(string $url): ?string
+{
+    $urlParts = parse_url($url);
+    $config = $GLOBALS['APP_CONFIG'] ?? [];
+    $cloudinaryUrl = trim((string) ($config['cloudinary_url'] ?? getenv('CLOUDINARY_URL') ?: ''));
+    $cloudName = $cloudinaryUrl !== '' ? parse_url($cloudinaryUrl, PHP_URL_HOST) : null;
+    if (!is_array($urlParts) || strtolower((string) ($urlParts['host'] ?? '')) !== 'res.cloudinary.com' || !$cloudName) {
+        return null;
+    }
+
+    $segments = explode('/', trim((string) ($urlParts['path'] ?? ''), '/'));
+    if (count($segments) < 5 || $segments[0] !== $cloudName || $segments[1] !== 'image' || $segments[2] !== 'upload') {
+        return null;
+    }
+    $assetSegments = array_slice($segments, 3);
+    if (isset($assetSegments[0]) && preg_match('/^v\d+$/', $assetSegments[0])) {
+        array_shift($assetSegments);
+    }
+    $publicId = rawurldecode(implode('/', $assetSegments));
+    $publicId = preg_replace('/\.[A-Za-z0-9]+$/', '', $publicId);
+    return $publicId !== '' ? $publicId : null;
+}
+
+/** Delete a stored upload locally or remotely after the database update succeeds. */
 function delete_uploaded_file(?string $relPath): void
 {
-    if (!$relPath || !preg_match('#^uploads/(gallery|stories|announcements|campaigns|challenges)/[A-Za-z0-9_-][A-Za-z0-9._-]*$#', $relPath)) {
+    $relPath = trim((string) $relPath);
+    if ($relPath === '') {
         return;
     }
-    $full = ROOT_PATH . '/public/' . $relPath;
-    if (is_file($full)) {
-        @unlink($full);
+
+    if (preg_match('#^uploads/(gallery|stories|announcements|campaigns|challenges)/[A-Za-z0-9_-][A-Za-z0-9._-]*$#', $relPath)) {
+        $full = ROOT_PATH . '/public/' . $relPath;
+        if (is_file($full)) {
+            @unlink($full);
+        }
+        return;
+    }
+
+    $publicId = cloudinary_public_id_from_url($relPath);
+    if ($publicId === null) {
+        return;
+    }
+
+    try {
+        cloudinary_client()->uploadApi()->destroy($publicId, [
+            'resource_type' => 'image',
+            'type' => 'upload',
+            'invalidate' => true,
+        ]);
+    } catch (Throwable $e) {
+        error_log('Cloudinary image deletion failed (' . get_class($e) . ').');
     }
 }

@@ -33,6 +33,7 @@ $config = [
 'mail_from_email' => getenv('RC2000_MAIL_FROM_EMAIL') ?: '',
 'mail_from_name' => getenv('RC2000_MAIL_FROM_NAME') ?: 'Reading Club 2000',
 'mail_admin_email' => getenv('RC2000_MAIL_ADMIN_EMAIL') ?: '',
+'cloudinary_url' => getenv('CLOUDINARY_URL') ?: '',
 ];
 
 $localFile = __DIR__ . '/local.php';

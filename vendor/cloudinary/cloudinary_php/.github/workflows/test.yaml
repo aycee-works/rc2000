@@ -1,0 +1,55 @@
+name: Tests
+on: [push, pull_request]
+jobs:
+  php:
+    name: PHP ${{ matrix.php-versions }}, Guzzle ${{ matrix.guzzle-versions }}, HTTP client ${{ matrix.http-client }}
+    # Same-repo changes run on push; fork PRs run on pull_request.
+    if: >-
+      (github.event_name == 'push' && !github.event.pull_request.head.repo.fork) ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php-versions:
+          - '8.0'
+          - '8.1'
+          - '8.2'
+          - '8.3'
+          - '8.4'
+          - '8.5'
+        guzzle-versions:
+          - '7'
+        http-client:
+          - 'default'
+        # Guzzle 8 on lowest and highest PHP only; Symfony PSR-18 client on latest only.
+        include:
+          - php-versions: '8.0'
+            guzzle-versions: '8'
+            http-client: 'default'
+          - php-versions: '8.5'
+            guzzle-versions: '8'
+            http-client: 'default'
+          - php-versions: '8.5'
+            guzzle-versions: '8'
+            http-client: 'symfony'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup PHP, with composer and extensions
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: json
+          coverage: xdebug
+      - name: Install Composer dependencies
+        run: |
+          composer require -n --no-update guzzlehttp/guzzle:^${{ matrix.guzzle-versions }}
+          composer update -n
+      - name: Run Tests
+        env:
+          CLD_TEST_HTTP_CLIENT: ${{ matrix.http-client }}
+        run: |
+          export CLOUDINARY_URL=$(bash tools/get_test_cloud.sh);
+          echo cloud_name: "$(echo $CLOUDINARY_URL | cut -d'@' -f2)"
+          vendor/bin/simple-phpunit

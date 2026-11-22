@@ -1,0 +1,157 @@
+<?php declare(strict_types=1);
+
+/*
+ * This file is part of the Monolog package.
+ *
+ * (c) Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Monolog\Handler;
+
+use Monolog\Level;
+use PHPUnit\Framework\Attributes\DataProvider;
+
+/**
+ * @requires extension sockets
+ */
+class SyslogUdpHandlerTest extends \Monolog\Test\MonologTestCase
+{
+    public function testWeValidateFacilities()
+    {
+        $this->expectException(\UnexpectedValueException::class);
+
+        $handler = new SyslogUdpHandler("ip", 514, "invalidFacility");
+    }
+
+    public function testWeSplitIntoLines()
+    {
+        $pid = getmypid();
+        $host = gethostname();
+
+        $handler = new \Monolog\Handler\SyslogUdpHandler("127.0.0.1", 514, "authpriv");
+        $handler->setFormatter(new \Monolog\Formatter\ChromePHPFormatter());
+
+        $time = '2014-01-07T12:34:56+00:00';
+        $socket = $this->getMockBuilder('Monolog\Handler\SyslogUdp\UdpSocket')
+            ->onlyMethods(['write'])
+            ->setConstructorArgs(['lol'])
+            ->getMock();
+
+        $matcher = $this->atLeast(2);
+
+        $socket->expects($matcher)
+            ->method('write')
+            ->willReturnCallback(function () use ($matcher, $time, $host, $pid) {
+                match ($matcher->numberOfInvocations()) {
+                    1 => $this->equalTo("lol") && $this->equalTo("<".(LOG_AUTHPRIV + LOG_WARNING).">1 $time $host php $pid - - "),
+                    2 => $this->equalTo("hej") && $this->equalTo("<".(LOG_AUTHPRIV + LOG_WARNING).">1 $time $host php $pid - - "),
+                    default => $this->assertTrue(true)
+                };
+            });
+
+        $handler->setSocket($socket);
+
+        $handler->handle($this->getRecordWithMessage("hej\nlol"));
+    }
+
+    public function testSplitWorksOnEmptyMsg()
+    {
+        $handler = new SyslogUdpHandler("127.0.0.1", 514, "authpriv");
+        $handler->setFormatter($this->getIdentityFormatter());
+
+        $socket = $this->getMockBuilder('Monolog\Handler\SyslogUdp\UdpSocket')
+            ->onlyMethods(['write'])
+            ->setConstructorArgs(['lol'])
+            ->getMock();
+        $socket->expects($this->never())
+            ->method('write');
+
+        $handler->setSocket($socket);
+
+        $handler->handle($this->getRecordWithMessage(''));
+    }
+
+    public function testRfc()
+    {
+        $pid = getmypid();
+        $host = gethostname();
+
+        $handler = new SyslogUdpHandler("127.0.0.1", 514, "authpriv", 'debug', true, "php", SyslogUdpHandler::RFC3164);
+        $handler->setFormatter($this->getIdentityFormatter());
+
+        $socket = $this->getMockBuilder('Monolog\Handler\SyslogUdp\UdpSocket')
+            ->onlyMethods(['write'])
+            ->setConstructorArgs(['lol'])
+            ->getMock();
+        $writes = [];
+        $socket->method('write')->willReturnCallback(static function (string $line, string $header) use (&$writes): void {
+            $writes[] = [$line, $header];
+        });
+        $handler->setSocket($socket);
+
+        $handler->handle($this->getRecord(message: "hej\nlol", level: Level::Warning, datetime: new \DateTimeImmutable('2014-01-07 12:34:56+00:00')));
+
+        $header = "<".(LOG_AUTHPRIV + Level::Warning->toRFC5424Level()).">Jan  7 12:34:56 $host php[$pid]: ";
+        $this->assertSame([['hej', $header], ['lol', $header]], $writes);
+    }
+
+    #[DataProvider('provideRfc3164Timestamps')]
+    public function testRfc3164PadsTheDayOfTheMonthWithASpace(string $datetime, string $expectedTimestamp)
+    {
+        $pid = getmypid();
+        $host = gethostname();
+
+        $handler = new SyslogUdpHandler("127.0.0.1", 514, "authpriv", 'debug', true, "php", SyslogUdpHandler::RFC3164);
+        $handler->setFormatter($this->getIdentityFormatter());
+
+        $socket = $this->getMockBuilder('Monolog\Handler\SyslogUdp\UdpSocket')
+            ->onlyMethods(['write'])
+            ->setConstructorArgs(['lol'])
+            ->getMock();
+        $socket->expects($this->once())
+            ->method('write')
+            ->with("hej", "<".(LOG_AUTHPRIV + Level::Warning->toRFC5424Level()).">$expectedTimestamp $host php[$pid]: ");
+
+        $handler->setSocket($socket);
+
+        $handler->handle($this->getRecord(message: 'hej', level: Level::Warning, datetime: new \DateTimeImmutable($datetime)));
+    }
+
+    public static function provideRfc3164Timestamps(): array
+    {
+        return [
+            'single digit day' => ['2014-08-07 12:34:56+00:00', 'Aug  7 12:34:56'],
+            'two digit day' => ['2014-08-17 02:04:06+00:00', 'Aug 17 02:04:06'],
+            'in the record timezone' => ['2014-01-01 01:00:00+02:00', 'Jan  1 01:00:00'],
+        ];
+    }
+
+    public function testMaxLengthIsPassedToTheSocket()
+    {
+        $handler = new SyslogUdpHandler("127.0.0.1", 514, "authpriv", 'debug', true, "php", SyslogUdpHandler::RFC5424, 1024);
+
+        $socketProp = new \ReflectionProperty(SyslogUdpHandler::class, 'socket');
+        $maxLengthProp = new \ReflectionProperty(\Monolog\Handler\SyslogUdp\UdpSocket::class, 'maxLength');
+
+        $this->assertSame(1024, $maxLengthProp->getValue($socketProp->getValue($handler)));
+    }
+
+    public function testMaxLengthDefaultsToUdpSocketsOwnDefaultWhenNotSpecified()
+    {
+        $handler = new SyslogUdpHandler("127.0.0.1", 514, "authpriv");
+
+        $socketProp = new \ReflectionProperty(SyslogUdpHandler::class, 'socket');
+        $maxLengthProp = new \ReflectionProperty(\Monolog\Handler\SyslogUdp\UdpSocket::class, 'maxLength');
+        $defaultConst = new \ReflectionClassConstant(\Monolog\Handler\SyslogUdp\UdpSocket::class, 'DATAGRAM_MAX_LENGTH');
+
+        $this->assertSame($defaultConst->getValue(), $maxLengthProp->getValue($socketProp->getValue($handler)));
+    }
+
+    protected function getRecordWithMessage($msg)
+    {
+        return $this->getRecord(message: $msg, level: Level::Warning, channel: 'lol', datetime: new \DateTimeImmutable('2014-01-07 12:34:56'));
+    }
+}
