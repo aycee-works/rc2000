@@ -1396,3 +1396,170 @@ body.home-page #trivia .trivia-answer-toggle:focus-visible { outline:3px solid #
   .footer-identity { grid-template-columns: 1fr; }
   .footer-copyright { grid-column: auto; }
 }
+
+/* Shared public footer: brand, feedback callout, links, then terms. */
+.site-footer { padding: 0 clamp(22px, 5vw, 72px); background: #102b3c; color: #fffaf0; }
+.site-footer .footer-main { display: block; width: 100%; max-width: 1950px; margin: 0 auto; }
+.site-footer .footer-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(210px, .58fr);
+  align-items: stretch;
+  padding: clamp(50px, 5.3vw, 112px) 0 clamp(42px, 4.2vw, 86px);
+}
+.site-footer .footer-column { min-width: 0; }
+.site-footer .footer-about {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-right: clamp(22px, 4vw, 68px);
+  border-right: 1px solid rgba(225, 240, 248, .5);
+}
+.site-footer .footer-brand {
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 2.4vw, 40px);
+  max-width: 100%;
+  padding: 0;
+  color: #fffaf0;
+}
+.site-footer .footer-brand .brand-logo {
+  flex: 0 0 auto;
+  width: clamp(64px, 6vw, 112px) !important;
+  height: clamp(64px, 6vw, 112px) !important;
+  max-width: 112px !important;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+.site-footer .footer-brand span { display: grid; gap: 8px; }
+.site-footer .footer-brand strong {
+  color: #fffaf0;
+  font: 700 clamp(1.65rem, 2.25vw, 3rem)/1.12 'Playfair Display', Georgia, serif;
+}
+.site-footer .footer-brand small {
+  max-width: 470px;
+  color: #e1e9eb;
+  font-size: clamp(1rem, 1.35vw, 1.65rem);
+  line-height: 1.45;
+}
+.site-footer .footer-copyright {
+  display: block;
+  margin-top: clamp(24px, 3vw, 44px);
+  color: #f4e9df;
+  font-size: clamp(.88rem, 1.15vw, 1.5rem);
+  line-height: 1.4;
+}
+.site-footer .footer-contact {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 clamp(24px, 4vw, 72px);
+  border-right: 1px solid rgba(225, 240, 248, .5);
+}
+.site-footer .footer-contact h2 {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 1.6vw, 24px);
+  margin: 0;
+  color: #fffaf0;
+  font: 700 clamp(1.65rem, 2.25vw, 3rem)/1.15 'Playfair Display', Georgia, serif;
+}
+.site-footer .footer-feedback-icon {
+  display: block;
+  flex: 0 0 auto;
+  width: clamp(40px, 4vw, 68px);
+  height: auto;
+  object-fit: contain;
+}
+.site-footer .footer-contact p {
+  max-width: 700px;
+  margin: 18px 0 26px;
+  color: #e1e9eb;
+  font-size: clamp(1rem, 1.4vw, 1.65rem);
+  line-height: 1.45;
+}
+.site-footer .footer-feedback-button {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 1.8vw, 26px);
+  min-height: clamp(58px, 4.2vw, 90px);
+  padding: 14px clamp(22px, 2.2vw, 42px);
+  border: 0;
+  border-radius: 10px;
+  background: #edc65e;
+  color: #12364a;
+  font: 700 clamp(1rem, 1.35vw, 1.65rem)/1.2 'DM Sans', Arial, sans-serif;
+  cursor: pointer;
+}
+.site-footer .footer-feedback-button:hover { background: #f4d37b; }
+.site-footer .footer-feedback-button:focus-visible { outline: 3px solid #fffaf0; outline-offset: 3px; }
+.site-footer .footer-feedback-arrow { font-size: 1.35em; line-height: 1; }
+.site-footer .footer-connect {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: clamp(12px, 1.15vw, 22px);
+  padding: 0 0 0 clamp(28px, 4.8vw, 96px);
+  border: 0;
+}
+.site-footer .footer-connect a {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #fffaf0;
+  font-size: clamp(1rem, 1.3vw, 1.65rem);
+  line-height: 1.3;
+  text-decoration: none;
+}
+.site-footer .footer-connect a:hover { color: #f0cc77; text-decoration: underline; }
+.site-footer .footer-facebook img { width: clamp(26px, 2.2vw, 40px); height: auto; object-fit: contain; }
+.site-footer .footer-bottom {
+  display: block;
+  width: 100%;
+  padding: 24px 0 32px;
+  border-top: 1px solid rgba(225, 240, 248, .5);
+  color: #cbd8dd;
+}
+.site-footer .footer-terms { max-width: none; }
+.site-footer .footer-terms summary {
+  color: #fffaf0;
+  font-size: clamp(1rem, 1.2vw, 1.5rem);
+  line-height: 1.4;
+  cursor: pointer;
+}
+.site-footer .footer-terms ol { color: #cbd8dd; font-size: .9rem; }
+
+@media (max-width: 900px) {
+  .site-footer .footer-top { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .site-footer .footer-about { padding-right: 24px; }
+  .site-footer .footer-contact { padding-inline: 24px; border-right: 0; }
+  .site-footer .footer-connect {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    padding: 24px 0 0;
+    border-top: 1px solid rgba(225, 240, 248, .3);
+  }
+}
+@media (max-width: 620px) {
+  .site-footer { padding-inline: 20px; }
+  .site-footer .footer-top { grid-template-columns: minmax(0, 1fr); padding: 30px 0; }
+  .site-footer .footer-about { padding: 0 0 24px; border-right: 0; border-bottom: 1px solid rgba(225, 240, 248, .35); }
+  .site-footer .footer-brand { gap: 16px; }
+  .site-footer .footer-brand .brand-logo { width: 62px !important; height: 62px !important; }
+  .site-footer .footer-brand strong { font-size: 1.45rem; }
+  .site-footer .footer-brand small { font-size: .95rem; }
+  .site-footer .footer-copyright { margin-top: 18px; font-size: .85rem; }
+  .site-footer .footer-contact { padding: 24px 0; border-right: 0; border-bottom: 1px solid rgba(225, 240, 248, .35); }
+  .site-footer .footer-contact h2 { gap: 12px; font-size: 1.45rem; }
+  .site-footer .footer-feedback-icon { width: 38px; }
+  .site-footer .footer-contact p { margin: 14px 0 18px; font-size: .98rem; }
+  .site-footer .footer-feedback-button { min-height: 54px; padding: 12px 18px; border-radius: 8px; }
+  .site-footer .footer-connect { grid-column: auto; justify-content: flex-start; gap: 12px 18px; padding: 22px 0 0; border-top: 0; }
+  .site-footer .footer-connect a { font-size: .98rem; }
+  .site-footer .footer-facebook img { width: 26px; }
+  .site-footer .footer-bottom { padding: 18px 0 24px; }
+}

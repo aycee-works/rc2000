@@ -39,7 +39,7 @@ $emailValue = is_post() ? post_str('email') : '';
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Public+Sans:wght@400;500;600&display=swap">
     <link rel="stylesheet" href="<?= e(asset('css/base.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('css/components.css')) ?>">
-    <link rel="stylesheet" href="<?= e(asset('css/login.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset('css/login.css')) ?>?v=2">
 </head>
 <body class="login-body">
 <div class="login-page">

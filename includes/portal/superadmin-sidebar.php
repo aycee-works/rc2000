@@ -1,11 +1,12 @@
 <?php
 /** includes/superadmin-sidebar.php - dark sidebar. Uses $activeNav to highlight the current page. */
 $navItems = [
-    'dashboard' => ['Dashboard',        'superadmin/dashboard.php'],
-    'admins'    => ['Admin Management', 'superadmin/admins/index.php'],
-    'audit'     => ['Audit Logs',       'superadmin/audit-logs.php'],
-    'archive'   => ['Archive',          'superadmin/archive.php'],
+    'dashboard' => ['Dashboard',        'superadmin/dashboard.php',  ['dashboard.png', 'admin_dashboard_dark.png']],
+    'admins'    => ['Admin Management', 'superadmin/admins/index.php', ['admin_management_light.png', 'admin_management_dark.png']],
+    'audit'     => ['Audit Logs',       'superadmin/audit-logs.php',  ['audit_logs_light.png', 'audit_logs_dark.png']],
+    'archive'   => ['Archive',          'superadmin/archive.php',     ['archive-light.png', 'archive-dark.png']],
 ];
+$sidebarUser = current_admin() ?? [];
 ?>
 <aside class="sidebar">
     <a class="sidebar-brand" href="<?= e(url('superadmin/dashboard.php')) ?>">
@@ -14,15 +15,23 @@ $navItems = [
     </a>
 
     <nav class="sidebar-nav" aria-label="Main">
-        <?php foreach ($navItems as $key => [$label, $path]): ?>
-            <a href="<?= e(url($path)) ?>"
+        <?php foreach ($navItems as $key => [$label, $path, $icon]): ?>
+            <a href="<?= e(url($path)) ?>" title="<?= e($label) ?>"
                class="nav-link<?= $key === $activeNav ? ' is-active' : '' ?>"
-               <?= $key === $activeNav ? 'aria-current="page"' : '' ?>><?= e($label) ?></a>
+               <?= $key === $activeNav ? 'aria-current="page"' : '' ?>>
+                <img class="nav-icon nav-icon-light" src="<?= e(asset('images/icons/' . $icon[0])) ?>" alt="" aria-hidden="true" width="22" height="22" onerror="this.style.visibility='hidden'">
+                <img class="nav-icon nav-icon-dark" src="<?= e(asset('images/icons/' . $icon[1])) ?>" alt="" aria-hidden="true" width="22" height="22" onerror="this.style.visibility='hidden'">
+                <span><?= e($label) ?></span>
+            </a>
         <?php endforeach; ?>
     </nav>
 
     <div class="sidebar-footer">
-        <div class="sidebar-user">Super Admin</div>
+        <div class="sidebar-user">
+            <img class="profile-icon profile-icon-light" src="<?= e(asset('images/icons/profile-light.png')) ?>" alt="" aria-hidden="true" width="20" height="20">
+            <img class="profile-icon profile-icon-dark" src="<?= e(asset('images/icons/profile-dark.png')) ?>" alt="" aria-hidden="true" width="20" height="20">
+            <span><?= e($sidebarUser['name'] ?? 'Super Admin') ?></span>
+        </div>
         <form method="post" action="<?= e(url('superadmin/logout.php')) ?>">
             <?= csrf_field() ?>
             <button type="submit" class="link-button">Log Out</button>
