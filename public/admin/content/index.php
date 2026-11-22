@@ -41,7 +41,18 @@ $quizFormQuestions = array_fill(0, 5, ['question' => '', 'options' => ['', ''], 
 $todayQuiz = null;
 try {
     $challengeRows = $pdo->query("SELECT c.*,COUNT(v.id) FILTER(WHERE v.choice='accept') AS accepts,COUNT(v.id) FILTER(WHERE v.choice='not_for_me') AS declines FROM rc2000_admin.challenge_posts c LEFT JOIN rc2000_admin.challenge_votes v ON v.challenge_id=c.id GROUP BY c.id ORDER BY c.starts_at DESC LIMIT 10")->fetchAll();
-    $quizRows = $pdo->query("SELECT q.id,q.quiz_date,q.status,COUNT(s.id) AS submissions,EXISTS(SELECT 1 FROM rc2000_admin.quiz_leaderboard_posts p WHERE p.week_start=date_trunc('week',q.quiz_date::timestamp)::date OR p.quiz_id=q.id) AS posted FROM rc2000_admin.daily_quizzes q LEFT JOIN rc2000_admin.quiz_submissions s ON s.quiz_id=q.id GROUP BY q.id ORDER BY q.quiz_date DESC LIMIT 10")->fetchAll();
+    $quizRows = $pdo->query("SELECT q.id,q.quiz_date,q.status,COUNT(s.id) AS submissions,p.quiz_id AS leaderboard_source_quiz_id,(p.quiz_id IS NOT NULL) AS posted
+        FROM rc2000_admin.daily_quizzes q
+        LEFT JOIN LATERAL (
+            SELECT lp.quiz_id
+            FROM rc2000_admin.quiz_leaderboard_posts lp
+            WHERE lp.week_start=date_trunc('week',q.quiz_date::timestamp)::date OR lp.quiz_id=q.id
+            ORDER BY lp.posted_at DESC
+            LIMIT 1
+        ) p ON TRUE
+        LEFT JOIN rc2000_admin.quiz_submissions s ON s.quiz_id=q.id
+        GROUP BY q.id,p.quiz_id
+        ORDER BY q.quiz_date DESC LIMIT 10")->fetchAll();
     $activeChallenge = $pdo->query("SELECT * FROM rc2000_admin.challenge_posts WHERE status='published' AND starts_at<=now() AND ends_at>now() ORDER BY starts_at DESC LIMIT 1")->fetch() ?: [];
     $challengeEditId = (int) ($_GET['challenge'] ?? (isset($_GET['new_challenge']) ? 0 : ($activeChallenge['id'] ?? 0)));
     if (isset($_GET['new_challenge'])) { $activeChallenge = []; }
@@ -144,9 +155,9 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
                     <button type="button" class="gallery-tile" data-gallery-edit
                             data-id="<?= (int) $g['id'] ?>" data-title="<?= e($g['title']) ?>"
                             data-caption="<?= e($g['caption'] ?? '') ?>" data-status="<?= e($g['status']) ?>"
-                            data-version="<?= e($g['updated_at']) ?>" data-src="<?= e(url($g['file_path'])) ?>"
+                            data-version="<?= e($g['updated_at']) ?>" data-src="<?= e(portal_media_url($g['file_path'])) ?>"
                             title="<?= e($g['title']) ?>">
-                        <img src="<?= e(url($g['file_path'])) ?>" alt="<?= e($g['title']) ?>" loading="lazy">
+                        <img src="<?= e(portal_media_url($g['file_path'])) ?>" alt="<?= e($g['title']) ?>" loading="lazy">
                         <?php if ($g['status'] !== 'published'): ?>
                             <span class="tile-badge"><?= e(CONTENT_STATUSES[$g['status']]) ?></span>
                         <?php endif; ?>
@@ -228,15 +239,25 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
 <div class="content-grid reading-activities-grid" id="reading-activities-panel" data-content-panel="activities" role="tabpanel" aria-labelledby="reading-activities-tab">
     <?php if ($communityFeaturesAvailable): ?>
     <section class="panel activity-card" id="weekly-challenge" aria-labelledby="challenge-title">
-        <div class="panel-header activity-card-header"><h2 class="panel-title" id="challenge-title">Weekly Reading Challenge</h2><span class="activity-status <?= e(($activeChallenge['status'] ?? '') === 'published' ? 'is-published' : 'is-draft') ?>"><?= e($activeChallenge['status'] ?? 'Not scheduled') ?></span></div>
+        <div class="panel-header activity-card-header"><h2 class="panel-title" id="challenge-title">Weekly Reading Challenge</h2><span class="activity-status <?= e(($activeChallenge['status'] ?? '') === 'published' ? 'is-published' : (($activeChallenge['status'] ?? '') === 'closed' ? 'is-archived' : 'is-draft')) ?>"><?= e(($activeChallenge['status'] ?? '') === 'closed' ? 'Archived' : ($activeChallenge['status'] ?? 'Not scheduled')) ?></span></div>
         <div class="activity-feature">
-            <?php if (!empty($activeChallenge['image_path'])): ?><img class="activity-art challenge-art" src="<?= e(url($activeChallenge['image_path'])) ?>" alt="Challenge artwork">
+            <?php if (!empty($activeChallenge['image_path'])): ?><img class="activity-art challenge-art" src="<?= e(portal_media_url($activeChallenge['image_path'])) ?>" alt="Challenge artwork">
             <?php else: ?><div class="activity-art challenge-art placeholder-art" aria-hidden="true"><span>▤</span></div><?php endif; ?>
             <div class="activity-feature-copy"><h3><?= e($activeChallenge['title'] ?? 'No challenge scheduled') ?></h3><p><?= e($activeChallenge['prompt'] ?? 'Create a weekly prompt to invite the community to read together.') ?></p>
                 <div class="activity-facts"><?php if (!empty($activeChallenge['starts_at'])): ?><span>▢ &nbsp;<?= e(format_date_short($activeChallenge['starts_at'])) ?> – <?= e(format_date_short($activeChallenge['ends_at'])) ?></span><?php endif; ?><span>♧ &nbsp;<?= (int) ($activeChallenge['accepts'] ?? 0) ?> joining &nbsp;·&nbsp; <?= (int) ($activeChallenge['declines'] ?? 0) ?> not now</span></div>
             </div>
         </div>
-        <div class="activity-card-actions"><button class="btn btn-maroon" type="button" data-editor-toggle="challenge-editor" data-open-label="Edit challenge" data-close-label="Cancel" aria-controls="challenge-editor" aria-expanded="<?= $challengeEditorOpen ? 'true' : 'false' ?>"><?= $challengeEditorOpen ? 'Cancel' : ($challengeEditId ? 'Edit challenge' : 'Create challenge') ?></button></div>
+        <div class="activity-card-actions">
+            <button class="btn btn-maroon" type="button" data-editor-toggle="challenge-editor" data-open-label="Edit challenge" data-close-label="Cancel" aria-controls="challenge-editor" aria-expanded="<?= $challengeEditorOpen ? 'true' : 'false' ?>"><?= $challengeEditorOpen ? 'Cancel' : ($challengeEditId ? 'Edit challenge' : 'Create challenge') ?></button>
+            <?php if (!empty($activeChallenge['id']) && ($activeChallenge['status'] ?? '') !== 'closed'): ?>
+                <form method="post" action="<?= e(url('admin/community.php')) ?>" onsubmit="return confirm('Archive this weekly challenge? It will be removed from the public site and kept in Archive.');">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="action" value="archive_challenge">
+                    <input type="hidden" name="id" value="<?= (int) $activeChallenge['id'] ?>">
+                    <button class="btn btn-light" type="submit">Archive challenge</button>
+                </form>
+            <?php endif; ?>
+        </div>
         <div class="activity-editor" id="challenge-editor" <?= $challengeEditorOpen ? '' : 'hidden' ?>>
         <form class="panel-body community-form" method="post" enctype="multipart/form-data" action="<?= e(url('admin/community.php')) ?>">
             <?= csrf_field() ?><input type="hidden" name="action" value="save_challenge"><input type="hidden" name="id" value="<?= (int) $challengeEditId ?>">
@@ -247,10 +268,43 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
                 <label>Starts at<input type="datetime-local" name="starts_at" required value="<?= e(isset($activeChallenge['starts_at']) ? date('Y-m-d\TH:i', strtotime($activeChallenge['starts_at'])) : date('Y-m-d\TH:i')) ?>"></label>
                 <label>Ends at<input type="datetime-local" name="ends_at" required value="<?= e(isset($activeChallenge['ends_at']) ? date('Y-m-d\TH:i', strtotime($activeChallenge['ends_at'])) : date('Y-m-d\TH:i', strtotime('+7 days'))) ?>"></label>
             </div>
-            <label>Visibility<select name="status"><option value="published" <?= ($activeChallenge['status'] ?? 'published') === 'published' ? 'selected' : '' ?>>Publish</option><option value="draft" <?= ($activeChallenge['status'] ?? '') === 'draft' ? 'selected' : '' ?>>Save draft</option></select></label>
+            <label>Visibility<select name="status"><option value="published" <?= ($activeChallenge['status'] ?? 'published') === 'published' ? 'selected' : '' ?>>Publish</option><option value="draft" <?= ($activeChallenge['status'] ?? '') === 'draft' ? 'selected' : '' ?>>Save draft</option><option value="closed" <?= ($activeChallenge['status'] ?? '') === 'closed' ? 'selected' : '' ?>>Archived</option></select></label>
             <button class="btn btn-maroon" type="submit">Save challenge</button>
         </form></div>
-        <?php if ($pastChallengeRows): ?><div class="activity-previous"><button class="link-button" type="button" data-editor-toggle="previous-challenges" data-open-label="Previous challenges (<?= count($pastChallengeRows) ?>)" data-close-label="Hide previous challenges" aria-controls="previous-challenges" aria-expanded="false">Previous challenges (<?= count($pastChallengeRows) ?>)</button><div id="previous-challenges" hidden><div class="table-wrap"><table class="data-table"><thead><tr><th>Challenge</th><th>Dates</th><th>Responses</th><th>Action</th></tr></thead><tbody><?php foreach ($pastChallengeRows as $challengeRow): ?><tr><td><?= e($challengeRow['title']) ?> · <?= e($challengeRow['status']) ?></td><td><?= e(format_date_short($challengeRow['starts_at'])) ?>–<?= e(format_date_short($challengeRow['ends_at'])) ?></td><td><?= (int) $challengeRow['accepts'] ?> joining · <?= (int) $challengeRow['declines'] ?> not now</td><td><a href="<?= e(url('admin/content/index.php?challenge=' . (int) $challengeRow['id'] . '#weekly-challenge')) ?>">Edit</a></td></tr><?php endforeach; ?></tbody></table></div></div></div><?php endif; ?>
+        <?php if ($pastChallengeRows): ?>
+            <div class="activity-previous">
+                <button class="link-button" type="button" data-editor-toggle="previous-challenges" data-open-label="Previous challenges (<?= count($pastChallengeRows) ?>)" data-close-label="Hide previous challenges" aria-controls="previous-challenges" aria-expanded="false">Previous challenges (<?= count($pastChallengeRows) ?>)</button>
+                <div id="previous-challenges" hidden>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Challenge</th><th>Dates</th><th>Responses</th><th>Action</th></tr></thead>
+                            <tbody>
+                            <?php foreach ($pastChallengeRows as $challengeRow): ?>
+                                <tr>
+                                    <td><?= e($challengeRow['title']) ?> · <?= e($challengeRow['status'] === 'closed' ? 'Archived' : $challengeRow['status']) ?></td>
+                                    <td><?= e(format_date_short($challengeRow['starts_at'])) ?>–<?= e(format_date_short($challengeRow['ends_at'])) ?></td>
+                                    <td><?= (int) $challengeRow['accepts'] ?> joining · <?= (int) $challengeRow['declines'] ?> not now</td>
+                                    <td>
+                                        <a href="<?= e(url('admin/content/index.php?challenge=' . (int) $challengeRow['id'] . '#weekly-challenge')) ?>">Edit</a>
+                                        <?php if ($challengeRow['status'] !== 'closed'): ?>
+                                            <form method="post" class="inline-form" action="<?= e(url('admin/community.php')) ?>" onsubmit="return confirm('Archive this weekly challenge? It will be removed from the public site and kept in Archive.');">
+                                                <?= csrf_field() ?>
+                                                <input type="hidden" name="action" value="archive_challenge">
+                                                <input type="hidden" name="id" value="<?= (int) $challengeRow['id'] ?>">
+                                                <button class="link-button" type="submit">Archive</button>
+                                            </form>
+                                        <?php else: ?>
+                                            · Archived
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
     </section>
 
     <section class="panel activity-card" id="daily-quiz" aria-labelledby="quiz-title">
@@ -288,8 +342,8 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
     </section>
     <section class="panel community-content-panel activity-history" aria-labelledby="quiz-history-title"><div class="panel-header"><div><span class="activity-eyebrow">SCHEDULE AND RESULTS</span><h2 class="panel-title" id="quiz-history-title">Recent quizzes</h2></div></div>
         <div class="table-wrap"><table class="data-table"><thead><tr><th>Date</th><th>Status</th><th>Entries</th><th>Weekly Leaderboard</th><th>Action</th></tr></thead><tbody>
-            <?php foreach ($quizRows as $quizRow): ?><tr><td><a href="<?= e(url('admin/content/index.php?quiz=' . (int) $quizRow['id'] . '#daily-quiz')) ?>"><?= e($quizRow['quiz_date']) ?></a></td><td><?= e($quizRow['status']) ?></td><td><?= (int) $quizRow['submissions'] ?></td><td><?php if (!$quizRow['posted'] && (int) $quizRow['submissions'] > 0): ?><form method="post" action="<?= e(url('admin/community.php')) ?>"><?= csrf_field() ?><input type="hidden" name="action" value="publish_leaderboard"><input type="hidden" name="quiz_id" value="<?= (int) $quizRow['id'] ?>"><button class="link-button" type="submit">Publish results</button></form><?php else: ?><?= !empty($quizRow['posted']) ? 'Published' : '—' ?><?php endif; ?></td></tr><?php endforeach; ?>
-            <?php if (!$quizRows): ?><tr><td colspan="4" class="table-empty"><span aria-hidden="true">▤</span><br>No quizzes scheduled yet.</td></tr><?php endif; ?>
+            <?php foreach ($quizRows as $quizRow): ?><tr><td><a href="<?= e(url('admin/content/index.php?quiz=' . (int) $quizRow['id'] . '#daily-quiz')) ?>"><?= e($quizRow['quiz_date']) ?></a></td><td><?= e($quizRow['status']) ?></td><td><?= (int) $quizRow['submissions'] ?></td><td><?php if (!$quizRow['posted'] && (int) $quizRow['submissions'] > 0): ?><form method="post" action="<?= e(url('admin/community.php')) ?>"><?= csrf_field() ?><input type="hidden" name="action" value="publish_leaderboard"><input type="hidden" name="quiz_id" value="<?= (int) $quizRow['id'] ?>"><button class="link-button" type="submit">Publish results</button></form><?php else: ?><?= !empty($quizRow['posted']) ? 'Published' : '—' ?><?php endif; ?></td><td><?php if (!empty($quizRow['posted']) && (int) $quizRow['leaderboard_source_quiz_id'] === (int) $quizRow['id']): ?><form method="post" action="<?= e(url('admin/community.php')) ?>" onsubmit="return confirm('Move this weekly leaderboard article back to Draft? Quiz submissions will remain unchanged.');"><?= csrf_field() ?><input type="hidden" name="action" value="unpublish_leaderboard"><input type="hidden" name="quiz_id" value="<?= (int) $quizRow['id'] ?>"><button class="link-button" type="submit">Unpublish results</button></form><?php else: ?>—<?php endif; ?></td></tr><?php endforeach; ?>
+            <?php if (!$quizRows): ?><tr><td colspan="5" class="table-empty"><span aria-hidden="true">▤</span><br>No quizzes scheduled yet.</td></tr><?php endif; ?>
         </tbody></table></div>
     </section>
     <?php else: ?>

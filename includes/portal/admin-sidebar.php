@@ -5,9 +5,9 @@
  */
 $admin = current_admin();
 $navItems = [
-    'dashboard' => ['Dashboard',        'admin/dashboard.php',       'dashboard.png'],
-    'donations' => ['Manage Donations', 'admin/donations/index.php',  'manage_donations.png'],
-    'community' => ['Manage Campaigns', 'admin/community.php',        'manage_campaigns.png'],
+    'dashboard' => ['Dashboard',        'admin/dashboard.php',       ['dashboard.png', 'admin_dashboard_dark.png']],
+    'donations' => ['Manage Donations', 'admin/donations/index.php',  ['manage_donations.png', 'manage_donations_dark.png']],
+    'community' => ['Manage Campaigns', 'admin/community.php',        ['manage_campaigns.png', 'manage_campaigns_dark.png']],
     'content'   => ['Manage Content',   'admin/content/index.php',    ['manage-content-light.png', 'manage-content-dark.png']],
     'inquiries' => ['Manage Inquiries', 'admin/inquiries/index.php',  ['manage-inquiries-light.png', 'manage-inquiries-dark.png']],
     'feedback'  => ['Website Feedback', 'admin/feedback/index.php',   ['manage-feedback-light.png', 'manage-feedback-dark.png']],

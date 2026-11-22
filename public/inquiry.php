@@ -6,11 +6,14 @@ if (!in_array($view, ['submit', 'status', 'receipt'], true)) {
     $view = 'submit';
 }
 $inquiryReceipt = $_SESSION['inquiry_receipt'] ?? null;
+$replyTimeNote = 'We typically respond within 3 to 5 days. Thank you for your patience.';
 
 $errors = [];
 $statusResult = null;
 $old = [
     'category' => '',
+    'first_name' => '',
+    'last_name' => '',
     'sender_name' => '',
     'sender_email' => '',
     'phone' => '',
@@ -19,23 +22,42 @@ $old = [
     'ticket_number' => '',
 ];
 
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && $view === 'status') {
+    $prefillReference = flash_get('inquiry_status_reference');
+    if (is_array($inquiryReceipt) && $prefillReference === $inquiryReceipt['reference']) {
+        $old['ticket_number'] = $inquiryReceipt['reference'];
+        $old['sender_name'] = $inquiryReceipt['name'];
+        $old['sender_email'] = $inquiryReceipt['email'];
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_is_valid($_POST['csrf_token'] ?? null)) {
         $errors[] = 'Your session expired. Please try again.';
     }
     $action = (string) ($_POST['action'] ?? '');
+    if ($action === 'status_from_receipt') {
+        $view = 'receipt';
+        if (!$errors && is_array($inquiryReceipt)) {
+            flash_set('inquiry_status_reference', $inquiryReceipt['reference']);
+            redirect('/public/inquiry.php?view=status');
+        }
+    }
     foreach ($old as $key => $_) {
         $old[$key] = post_string($key);
     }
 
     if ($action === 'submit') {
         $view = 'submit';
+        $fullName = preg_replace('/\s+/u', ' ', trim($old['first_name'] . ' ' . $old['last_name'])) ?? '';
         $categories = inquiry_categories();
         if (!isset($categories[$old['category']])) {
             $errors[] = 'Please select a category.';
         }
-        if (!required_text($old['sender_name'], 150)) {
-            $errors[] = 'Please enter your name.';
+        if (!required_text($old['first_name'], 150) || !required_text($old['last_name'], 150)) {
+            $errors[] = 'Please enter your first and last names.';
+        } elseif (!required_text($fullName, 150)) {
+            $errors[] = 'Your first and last names must total 150 characters or fewer.';
         }
         if (!valid_email($old['sender_email'])) {
             $errors[] = 'Please enter a valid email address.';
@@ -47,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = 'Please enter a subject.';
         }
         if (!required_text($old['message'], 8000)) {
-            $errors[] = 'Please describe your issue.';
+            $errors[] = 'Please enter your message.';
         }
 
         if (!$errors) {
@@ -64,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                      RETURNING reference_no"
                 );
                 $stmt->execute([
-                    'name' => $old['sender_name'],
+                    'name' => $fullName,
                     'email' => $old['sender_email'],
                     'subject' => $old['subject'],
                     'category' => $category,
@@ -73,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $ticket = (string) $stmt->fetchColumn();
                 $_SESSION['inquiry_receipt'] = [
                     'reference' => $ticket,
-                    'name' => $old['sender_name'],
+                    'name' => $fullName,
                     'email' => $old['sender_email'],
                     'category' => $category,
                     'subject' => $old['subject'],
@@ -95,9 +117,8 @@ if ($action === 'status') {
         $errors[] = 'Enter a ticket number such as INQ-0001.';
     }
 
-    $referenceNo = $ticketRef;
-
-    if (!required_text($old['sender_name'], 150)) {
+    $fullName = preg_replace('/\s+/u', ' ', $old['sender_name']) ?? '';
+    if (!required_text($fullName, 150)) {
         $errors[] = 'Please enter the name used when you submitted.';
     }
 
@@ -106,32 +127,17 @@ if ($action === 'status') {
     }
 
     if (!$errors) {
-        $stmt = db()->prepare(
-            'SELECT id, reference_no, name, email, subject, status, created_at, updated_at
-             FROM rc2000_admin.inquiries
-             WHERE LOWER(reference_no) = LOWER(:reference_no)
-               AND LOWER(email) = LOWER(:email)
-               AND LOWER(name) = LOWER(:name)
-             LIMIT 1'
-        );
-
-        $stmt->execute([
-            'reference_no' => $referenceNo,
-            'email' => $old['sender_email'],
-            'name' => $old['sender_name'],
-        ]);
-
         $row = fetch_one(
             'SELECT reference_no, name, email, subject, status, created_at
             FROM rc2000_admin.inquiries
             WHERE reference_no = :ref
               AND LOWER(email) = LOWER(:email)
-              AND LOWER(name) = LOWER(:name)
+              AND LOWER(regexp_replace(name, \'[[:space:]]+\', \' \', \'g\')) = LOWER(:name)
             LIMIT 1',
             [
                 'ref' => $ticketRef,
                 'email' => $old['sender_email'],
-                'name' => $old['sender_name'],
+                'name' => $fullName,
             ]
         );
 
@@ -144,19 +150,27 @@ if ($action === 'status') {
 }
 }
 
+$backPath = 'public/inquiry.php?view=submit';
+if ($view === 'submit') {
+    $backPath = 'public/home.php';
+} elseif ($view === 'status' && is_array($inquiryReceipt)) {
+    $backPath = 'public/inquiry.php?view=receipt';
+}
+
 page_start('Inquiry');
 ?>
 <main class="section inquiry-page">
+  <a class="inquiry-back" href="<?= e(app_url($backPath)) ?>"><span aria-hidden="true">←</span> Back</a>
   <div class="section-heading">
     <div>
-      <h1>Send Us an Inquiry!</h1>
-      <p>Send us an inquiry, request, report, or message. You’ll get a ticket number to track it.</p>
+      <h1>How can we help?</h1>
+      <p>Ask a question, make a request, or report a concern. You’ll get a ticket number to check for updates.</p>
     </div>
   </div>
 
   <div class="subnav">
     <a href="<?= e(app_url('public/inquiry.php?view=submit')) ?>" class="<?= $view === 'submit' ? 'is-active' : '' ?>">Submit an Inquiry</a>
-    <a href="<?= e(app_url('public/inquiry.php?view=status')) ?>" class="<?= $view === 'status' ? 'is-active' : '' ?>">Check Inquiry Status</a>
+    <a href="<?= e(app_url('public/inquiry.php?view=status')) ?>" class="<?= $view === 'status' ? 'is-active' : '' ?>">Check Status</a>
   </div>
 
   <?php render_alerts($errors); ?>
@@ -164,19 +178,41 @@ page_start('Inquiry');
   <?php if ($view === 'receipt'): ?>
     <section class="form-card framed submission-receipt">
       <?php if (is_array($inquiryReceipt)): ?>
-        <p class="eyebrow">Inquiry confirmation</p>
-        <h2>Your inquiry was submitted</h2>
-        <p>Keep this receipt. Use the ticket number, your name, and email to check its status later.</p>
+        <header class="receipt-header">
+          <img src="<?= e(app_url('public/assets/images/icons/logo.png')) ?>" alt="" width="56" height="56">
+          <div>
+            <p>Reading Club 2000</p>
+            <h2>Inquiry Confirmation</h2>
+          </div>
+        </header>
+        <p class="receipt-intro">Your inquiry was submitted. Use your ticket number, name, and email to check its status.</p>
+        <p class="inquiry-reply-note"><?= e($replyTimeNote) ?></p>
         <dl class="receipt-details">
-          <div><dt>Ticket number</dt><dd><?= e((string) $inquiryReceipt['reference']) ?></dd></div>
-          <div><dt>Name</dt><dd><?= e((string) $inquiryReceipt['name']) ?></dd></div>
+          <div class="receipt-reference">
+            <dt>Ticket number</dt>
+            <dd>
+              <div class="receipt-ticket">
+                <strong id="receipt-ticket-number"><?= e((string) $inquiryReceipt['reference']) ?></strong>
+                <button class="button button-secondary receipt-copy" type="button" id="receipt-copy" aria-describedby="receipt-copy-help" hidden>Copy</button>
+              </div>
+              <p id="receipt-copy-help" class="receipt-copy-help" role="status">Copy this number for later.</p>
+            </dd>
+          </div>
+          <div><dt>Full name</dt><dd><?= e((string) $inquiryReceipt['name']) ?></dd></div>
           <div><dt>Email</dt><dd><?= e((string) $inquiryReceipt['email']) ?></dd></div>
           <div><dt>Category</dt><dd><?= e((string) $inquiryReceipt['category']) ?></dd></div>
           <div><dt>Subject</dt><dd><?= e((string) $inquiryReceipt['subject']) ?></dd></div>
           <div><dt>Submitted</dt><dd><?= e(date('M j, Y g:i A', strtotime((string) $inquiryReceipt['submitted_at']))) ?></dd></div>
           <div class="receipt-message"><dt>Message</dt><dd><?= nl2br(e((string) $inquiryReceipt['message'])) ?></dd></div>
         </dl>
-        <div class="receipt-actions"><button class="button" type="button" onclick="window.print()">Print confirmation</button><a class="button button-secondary" href="<?= e(app_url('public/inquiry.php?view=status')) ?>">Check inquiry status</a></div>
+        <div class="receipt-actions">
+          <button class="button" type="button" onclick="window.print()">Print Confirmation</button>
+          <form method="post" action="<?= e(app_url('public/inquiry.php?view=receipt')) ?>">
+            <?= csrf_field() ?>
+            <button class="button button-secondary" type="submit" name="action" value="status_from_receipt">Check Status</button>
+          </form>
+        </div>
+        <script src="<?= e(app_url('public/assets/js/inquiry-receipt.js')) ?>" defer></script>
       <?php else: ?>
         <h2>No recent inquiry receipt</h2><p>Submit an inquiry to receive a printable confirmation and ticket number.</p>
         <a class="button" href="<?= e(app_url('public/inquiry.php?view=submit')) ?>">Submit an inquiry</a>
@@ -196,23 +232,28 @@ page_start('Inquiry');
           </select>
         </label>
         <div class="form-grid">
-          <label>Name
-            <input name="sender_name" required maxlength="150" value="<?= e($old['sender_name']) ?>">
+          <label>First name
+            <input name="first_name" autocomplete="given-name" required maxlength="150" value="<?= e($old['first_name']) ?>">
           </label>
-          <label>Email
-            <input type="email" name="sender_email" required maxlength="255" value="<?= e($old['sender_email']) ?>">
+          <label>Last name
+            <input name="last_name" autocomplete="family-name" required maxlength="150" value="<?= e($old['last_name']) ?>">
           </label>
         </div>
+        <label>Email
+          <input type="email" name="sender_email" required maxlength="255" value="<?= e($old['sender_email']) ?>">
+        </label>
         <label>Phone (optional)
           <input name="phone" maxlength="30" value="<?= e($old['phone']) ?>">
         </label>
         <label>Subject
           <input name="subject" required maxlength="200" value="<?= e($old['subject']) ?>">
         </label>
-        <label>Describe your issue
-          <textarea name="message" rows="7" required><?= e($old['message']) ?></textarea>
+        <label>Your message
+          <textarea name="message" rows="7" maxlength="8000" required><?= e($old['message']) ?></textarea>
         </label>
-        <button class="button wide" type="submit">Send Message</button>
+        <p class="inquiry-reply-note"><?= e($replyTimeNote) ?></p>
+        <button class="button wide" type="submit">Submit an Inquiry</button>
+        <p class="inquiry-privacy">Read our <a href="<?= e(app_url('public/privacy-policy.php')) ?>" target="_blank" rel="noopener">Privacy Policy</a>.</p>
       </form>
     </section>
   <?php else: ?>
@@ -227,7 +268,7 @@ page_start('Inquiry');
           <p><strong>Submitted:</strong> <?= e(date('M j, Y g:i A', strtotime((string) $statusResult['created_at']))) ?></p>
         </div>
       <?php endif; ?>
-      <form method="post">
+      <form method="post" autocomplete="off">
         <?= csrf_field() ?>
         <input type="hidden" name="action" value="status">
         <label>Reference number

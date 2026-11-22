@@ -31,6 +31,7 @@ $emailValue = is_post() ? post_str('email') : '';
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow, noarchive">
     <title>Super Admin Portal | Reading Club 2000</title>
     <link rel="icon" href="<?= e(asset('images/logo.png')) ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,7 +39,7 @@ $emailValue = is_post() ? post_str('email') : '';
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Public+Sans:wght@400;500;600&display=swap">
     <link rel="stylesheet" href="<?= e(asset('css/base.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('css/components.css')) ?>">
-    <link rel="stylesheet" href="<?= e(asset('css/superadmin.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset('css/superadmin.css')) ?>?v=2">
 </head>
 <body class="sa-login-body">
 <div class="sa-login-page">
@@ -79,6 +80,7 @@ $emailValue = is_post() ? post_str('email') : '';
                 <button type="submit" class="btn btn-maroon btn-block">Log in</button>
                 <p class="sa-footnote">Authorized personnel only.</p>
             </form>
+            <a class="sa-login-home" href="<?= e(url('public/home.php')) ?>">← Go back to home</a>
         </div>
     </section>
 </div>

@@ -12,6 +12,8 @@ return [
     'db_port'  => 5432,
     'db_user'  => 'postgres',
     'db_pass'  => '',
+    // Optional local image storage; set the value in ignored local.php.
+    'cloudinary_url' => '',
     // Optional, only if the public website runs on a different origin:
     // 'public_allowed_origins' => ['http://localhost:3000'],
 ];

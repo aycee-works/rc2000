@@ -19,5 +19,6 @@ require_once __DIR__ . '/auth.php';
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: SAMEORIGIN');
 header('Referrer-Policy: same-origin');
+header('X-Robots-Tag: noindex, nofollow, noarchive');
 
 start_secure_session();

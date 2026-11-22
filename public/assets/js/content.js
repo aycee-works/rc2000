@@ -13,7 +13,9 @@
     var contentTabs = Array.prototype.slice.call(document.querySelectorAll('[data-content-tab]'));
     var contentPanels = Array.prototype.slice.call(document.querySelectorAll('[data-content-panel]'));
     if (contentTabs.length && contentPanels.length) {
-        function selectContentTab(name) {
+        var contentTabStorageKey = 'rc2000-admin-content-tab';
+
+        function selectContentTab(name, remember) {
             contentTabs.forEach(function (tab) {
                 var selected = tab.getAttribute('data-content-tab') === name;
                 tab.classList.toggle('is-active', selected);
@@ -23,11 +25,26 @@
             contentPanels.forEach(function (panel) {
                 panel.hidden = panel.getAttribute('data-content-panel') !== name;
             });
+            if (remember) {
+                try { window.sessionStorage.setItem(contentTabStorageKey, name); } catch (e) {}
+            }
         }
         contentTabs.forEach(function (tab) {
-            tab.addEventListener('click', function () { selectContentTab(tab.getAttribute('data-content-tab')); });
+            tab.addEventListener('click', function () { selectContentTab(tab.getAttribute('data-content-tab'), true); });
         });
-        selectContentTab('activities');
+
+        var currentUrl = new URL(window.location.href);
+        var activityLink = ['challenge', 'new_challenge', 'quiz', 'new_quiz'].some(function (key) {
+            return currentUrl.searchParams.has(key);
+        }) || currentUrl.hash === '#weekly-challenge' || currentUrl.hash === '#daily-quiz';
+        var preferredTab = 'activities';
+        if (!activityLink) {
+            try {
+                var savedTab = window.sessionStorage.getItem(contentTabStorageKey);
+                if (savedTab === 'website' || savedTab === 'activities') { preferredTab = savedTab; }
+            } catch (e) {}
+        }
+        selectContentTab(preferredTab, false);
     }
 
     var quizMaker = document.querySelector('[data-quiz-question-maker]');

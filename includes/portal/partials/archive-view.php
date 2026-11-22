@@ -13,13 +13,13 @@ $canManage = $archive['can_manage'];
 $base = $archive['base'];
 $actionLabel = $canManage ? 'Review' : 'View';
 $baseParams = ['tab' => $f['tab'], 'q' => $f['q']];
-$tabs = ['all' => 'All records', 'inquiries' => 'Inquiries', 'activities' => 'Reading activities', 'campaigns' => 'Campaigns', 'content' => 'Website content'];
+$tabs = ['all' => 'All records', 'inquiries' => 'Inquiries', 'donations' => 'Donations', 'activities' => 'Reading activities', 'campaigns' => 'Campaigns', 'content' => 'Website content'];
 $cards = [
-    ['Inquiries', $counts['inquiries'], '✉'],
-    ['Quizzes & leaderboards', $counts['leaderboards'], '★'],
-    ['Reading challenges', $counts['challenges'], '▤'],
-    ['Campaigns', $counts['campaigns'], '◎'],
-    ['Website content', $counts['content'], '◆'],
+    ['Inquiries', $counts['inquiries'], ['archive_inquiries_light.png', 'archive_inquiries_dark.png']],
+    ['Donations', $counts['donations'], ['manage_donations.png', 'manage_donations_dark.png']],
+    ['Reading activities', $counts['activities'], '▤'],
+    ['Campaigns', $counts['campaigns'], ['manage_campaigns.png', 'manage_campaigns_dark.png']],
+    ['Website content', $counts['content'], ['manage-content-light.png', 'manage-content-dark.png']],
 ];
 ?>
 <header class="page-header">
@@ -31,10 +31,17 @@ $cards = [
     <div class="flash flash-error" role="alert"><span><?= e($archive['loadError']) ?></span></div>
 <?php endif; ?>
 
-<section class="stat-grid stat-grid-4 archive-stats" aria-label="Archive summary">
+<section class="stat-grid archive-stats" aria-label="Archive summary">
     <?php foreach ($cards as [$label, $n, $icon]): ?>
         <article class="stat-card archive-stat">
-            <span class="archive-stat-icon" aria-hidden="true"><?= e($icon) ?></span>
+            <span class="archive-stat-icon" aria-hidden="true">
+                <?php if (is_array($icon)): ?>
+                    <img class="archive-theme-icon archive-icon-light" src="<?= e(asset('images/icons/' . $icon[0])) ?>" alt="" width="24" height="24">
+                    <img class="archive-theme-icon archive-icon-dark" src="<?= e(asset('images/icons/' . $icon[1])) ?>" alt="" width="24" height="24">
+                <?php else: ?>
+                    <?= e($icon) ?>
+                <?php endif; ?>
+            </span>
             <div>
                 <div class="stat-label"><?= e($label) ?></div>
                 <div class="stat-value"><?= (int) $n ?></div>

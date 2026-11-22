@@ -60,10 +60,20 @@ if (is_post()) {
             if($prompt===''||mb_strlen($prompt)>3000)$errors[]='Add the challenge prompt (3,000 characters maximum).';
             if(!$start||!$end||strtotime($end)<=strtotime($start))$errors[]='Choose a valid start and end time.';
             $imagePath=null; if(upload_provided($_FILES['image']??null)){ $upload=save_uploaded_image($_FILES['image'],'challenges'); if(!$upload['ok'])$errors[]=$upload['message'];else$imagePath=$upload['path']; }
+            $challengeStatus=in_array(post_str('status'),['draft','published','closed'],true)?post_str('status'):'published';
             if(!$errors){
-                if($id>0){$sql='UPDATE rc2000_admin.challenge_posts SET title=?,prompt=?,starts_at=?,ends_at=?,status=?,'.($imagePath?'image_path=?,':'').' updated_at=now() WHERE id=?';$params=[$title,$prompt,date('c',strtotime($start)),date('c',strtotime($end)),post_str('status')==='draft'?'draft':'published'];if($imagePath)$params[]=$imagePath;$params[]=$id;$pdo->prepare($sql)->execute($params);}
-                else $pdo->prepare('INSERT INTO rc2000_admin.challenge_posts(title,prompt,image_path,starts_at,ends_at,status,created_by) VALUES(?,?,?,?,?,?,?)')->execute([$title,$prompt,$imagePath,date('c',strtotime($start)),date('c',strtotime($end)),post_str('status')==='draft'?'draft':'published',current_admin()['id']??null]);
+                if($id>0){$sql='UPDATE rc2000_admin.challenge_posts SET title=?,prompt=?,starts_at=?,ends_at=?,status=?,'.($imagePath?'image_path=?,':'').' updated_at=now() WHERE id=?';$params=[$title,$prompt,date('c',strtotime($start)),date('c',strtotime($end)),$challengeStatus];if($imagePath)$params[]=$imagePath;$params[]=$id;$pdo->prepare($sql)->execute($params);}
+                else $pdo->prepare('INSERT INTO rc2000_admin.challenge_posts(title,prompt,image_path,starts_at,ends_at,status,created_by) VALUES(?,?,?,?,?,?,?)')->execute([$title,$prompt,$imagePath,date('c',strtotime($start)),date('c',strtotime($end)),$challengeStatus,current_admin()['id']??null]);
                 flash('success','Weekly challenge saved.');redirect('admin/content/index.php#weekly-challenge');
+            }
+        } elseif ($action==='archive_challenge') {
+            $challengeId=(int)post_str('id');
+            if($challengeId<1)$errors[]='Select a weekly challenge to archive.';
+            else{
+                $stmt=$pdo->prepare("UPDATE rc2000_admin.challenge_posts SET status='closed' WHERE id=? RETURNING id");
+                $stmt->execute([$challengeId]);
+                if(!$stmt->fetchColumn())$errors[]='That weekly challenge could not be found.';
+                else{flash('success','Weekly challenge archived.');redirect('admin/content/index.php#weekly-challenge');}
             }
         } elseif ($action==='save_quiz') {
             $date=post_str('quiz_date')?:date('Y-m-d'); $status=post_str('quiz_status')==='published'?'published':'draft';
@@ -131,6 +141,23 @@ if (is_post()) {
             $exists=$pdo->prepare('SELECT 1 FROM rc2000_admin.quiz_leaderboard_posts WHERE week_start=?');$exists->execute([$weekStart]);if($exists->fetchColumn())$errors[]='A leaderboard post already exists for this week.';
             $stmt=$pdo->prepare('SELECT s.username,SUM(s.score) AS score,COUNT(*) AS quiz_count FROM rc2000_admin.quiz_submissions s JOIN rc2000_admin.daily_quizzes q ON q.id=s.quiz_id WHERE q.quiz_date>=? AND q.quiz_date<? GROUP BY s.username ORDER BY SUM(s.score) DESC,COUNT(*) DESC,LOWER(s.username) ASC LIMIT 20');$stmt->execute([$weekStart,$weekEnd]);$rows=$stmt->fetchAll();if(!$rows)$errors[]='There are no scores to publish for this week yet.';
             if(!$errors){$pdo->beginTransaction();$body="Weekly community leaderboard for the week beginning ".$weekStart.". Scores combine daily five-question quizzes.\n\n";foreach($rows as $i=>$row)$body.=sprintf("%d. %s — %d points across %d quiz%s\n",$i+1,$row['username'],$row['score'],$row['quiz_count'],(int)$row['quiz_count']===1?'':'zes');$title='Weekly Reading Quiz Leaderboard · '.date('M j, Y',strtotime($weekStart));$adminId=(int)(current_admin()['id']??0);$stmt=$pdo->prepare("INSERT INTO rc2000_admin.stories(type,title,body,author,status,published_at,created_by) VALUES('article',?,?,?,'published',now(),?) RETURNING id");$stmt->execute([$title,$body,'Reading Club 2000',$adminId?:null]);$storyId=(int)$stmt->fetchColumn();$pdo->prepare('INSERT INTO rc2000_admin.quiz_leaderboard_posts(quiz_id,story_id,week_start) VALUES(?,?,?)')->execute([$quizId,$storyId,$weekStart]);$pdo->commit();flash('success','Weekly leaderboard article published in Manage content.');redirect('admin/content/index.php');}
+        } elseif ($action==='unpublish_leaderboard') {
+            $quizId=(int)post_str('quiz_id');
+            if($quizId<1)$errors[]='Select a weekly leaderboard to unpublish.';
+            else{
+                $pdo->beginTransaction();
+                $postStmt=$pdo->prepare('SELECT story_id FROM rc2000_admin.quiz_leaderboard_posts WHERE quiz_id=? FOR UPDATE');
+                $postStmt->execute([$quizId]);
+                $leaderboardPost=$postStmt->fetch();
+                if(!$leaderboardPost){$pdo->rollBack();$errors[]='That weekly leaderboard is no longer published.';}
+                else{
+                    $pdo->prepare("UPDATE rc2000_admin.stories SET status='draft',published_at=NULL WHERE id=?")->execute([(int)$leaderboardPost['story_id']]);
+                    $pdo->prepare('DELETE FROM rc2000_admin.quiz_leaderboard_posts WHERE quiz_id=?')->execute([$quizId]);
+                    $pdo->commit();
+                    flash('success','Weekly leaderboard article moved to Draft. Quiz submissions were kept.');
+                    redirect('admin/content/index.php#daily-quiz');
+                }
+            }
         } elseif ($action==='review_campaign_donation') {
             $id=(int)post_str('id');$decision=post_str('decision');$amount=post_str('verified_amount');$message=post_str('admin_message');
             if(!in_array($decision,['verified','not_verified'],true))$errors[]='Choose a valid decision.';
@@ -139,9 +166,9 @@ if (is_post()) {
             if(!$errors){$stmt=$pdo->prepare('SELECT d.*,c.title AS campaign_title FROM rc2000_admin.monetary_donations d LEFT JOIN rc2000_admin.campaigns c ON c.id=d.campaign_id WHERE d.id=?');$stmt->execute([$id]);$row=$stmt->fetch();if(!$row)$errors[]='Donation report not found.';else{$pdo->prepare('UPDATE rc2000_admin.monetary_donations SET status=?,verified_amount=?,verification_note=?,admin_message=?,verified_by=?,verified_at=now() WHERE id=?')->execute([$decision,$decision==='verified'?$amount:null,post_str('verification_note')?:null,$message?:null,(int)(current_admin()['id']??0)?:null,$id]);$row['status_label']=$decision==='verified'?'Donation verified':'Donation not verified';$emailStatus='not_configured';$emailedAt=null;if($message!==''){try{if(community_send_donation_email($row,$message)){$emailStatus='sent';$emailedAt=date('c');}else$emailStatus='not_configured';}catch(Throwable $e){error_log('Donation update email failed: '.$e->getMessage());$emailStatus='failed';}}$pdo->prepare('UPDATE rc2000_admin.monetary_donations SET email_status=?,emailed_at=? WHERE id=?')->execute([$emailStatus,$emailedAt,$id]);flash('success',$emailStatus==='sent'?'Donation reviewed and email sent.':'Donation review saved. Email status: '.$emailStatus.'.');redirect('admin/community.php#reports');}}
         }
     } catch (Throwable $e) { if($pdo->inTransaction())$pdo->rollBack();error_log('Community admin action failed: '.$e->getMessage());$errors[]='The change could not be saved. Check that database/community_features.sql has been applied.'; }
-    if ($errors && in_array($action, ['save_challenge', 'save_quiz', 'publish_leaderboard'], true)) {
+    if ($errors && in_array($action, ['save_challenge', 'archive_challenge', 'save_quiz', 'publish_leaderboard', 'unpublish_leaderboard'], true)) {
         flash('error', implode(' ', $errors));
-        if ($action === 'save_challenge') {
+        if (in_array($action, ['save_challenge', 'archive_challenge'], true)) {
             redirect('admin/content/index.php#weekly-challenge');
         }
         if ($action === 'save_quiz') {

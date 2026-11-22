@@ -3,7 +3,8 @@
 }
 
 .privacy-policy-hero {
-  max-width: 900px;
+  width: 100%;
+  max-width: calc(240px + clamp(24px, 5vw, 64px) + 760px);
   margin: 0 auto;
   padding: clamp(52px, 8vw, 92px) 0 34px;
 }
@@ -105,6 +106,28 @@
 .privacy-policy-content a {
   color: var(--red);
   font-weight: 600;
+}
+
+html[data-theme="dark"] .privacy-policy-hero h1,
+html[data-theme="dark"] .privacy-policy-nav strong,
+html[data-theme="dark"] .privacy-policy-content h2,
+html[data-theme="dark"] .privacy-policy-content strong {
+  color: var(--text-strong);
+}
+
+html[data-theme="dark"] .privacy-policy-nav,
+html[data-theme="dark"] .privacy-policy-content {
+  background: var(--surface);
+}
+
+html[data-theme="dark"] .privacy-policy-hero .privacy-policy-updated,
+html[data-theme="dark"] .privacy-policy-nav a {
+  color: var(--muted);
+}
+
+html[data-theme="dark"] .privacy-policy-nav a:hover,
+html[data-theme="dark"] .privacy-policy-content a {
+  color: var(--text-accent);
 }
 
 @media (max-width: 760px) {

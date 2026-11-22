@@ -13,6 +13,8 @@ function archive_type_labels(): array
 {
     return [
         'inquiry'      => 'Inquiry',
+        'book_donation' => 'Book donation',
+        'monetary_donation' => 'Monetary donation',
         'quiz'         => 'Quiz',
         'leaderboard'  => 'Quiz leaderboard',
         'challenge'    => 'Reading challenge',
@@ -30,6 +32,7 @@ function archive_groups(): array
 {
     return [
         'inquiries'  => ['inquiry'],
+        'donations'  => ['book_donation', 'monetary_donation'],
         'activities' => ['quiz', 'leaderboard', 'challenge'],
         'campaigns'  => ['campaign'],
         'content'    => ['story', 'article', 'announcement', 'gallery', 'trivia'],
@@ -47,6 +50,25 @@ function archive_union_sql(): string
            COALESCE(i.closed_at, i.resolved_at, i.updated_at) AS archived_at
     FROM rc2000_admin.inquiries i
     WHERE i.status IN ('resolved', 'closed')
+
+    UNION ALL
+    SELECT 'book_donation'::text, b.id,
+           (COALESCE(b.reference_no, 'BD-' || b.id) || ' · ' || b.book_title || ' · ' || b.donor_name)::text,
+           b.status::text,
+           (CASE WHEN b.status = 'approved' THEN 'Approved' ELSE 'Rejected' END)::text,
+           COALESCE(b.reviewed_at, b.updated_at, b.created_at)
+    FROM rc2000_admin.book_donations b
+    WHERE b.status IN ('approved', 'rejected')
+
+    UNION ALL
+    SELECT 'monetary_donation'::text, m.id,
+           (COALESCE(m.reference_no, 'MD-' || m.id) || ' · ' || m.donor_name || ' · ₱'
+             || to_char(m.reported_amount, 'FM999,999,999,990.00'))::text,
+           m.status::text,
+           (CASE WHEN m.status = 'verified' THEN 'Verified' ELSE 'Not verified' END)::text,
+           COALESCE(m.verified_at, m.updated_at, m.created_at)
+    FROM rc2000_admin.monetary_donations m
+    WHERE m.status IN ('verified', 'not_verified')
 
     UNION ALL
     SELECT 'quiz'::text, q.id,
@@ -122,6 +144,10 @@ function archive_badge(string $key, string $label): string
         'ended'     => 'badge-resolved',
         'closed'    => 'badge-closed',
         'archived'  => 'badge-archived',
+        'approved'  => 'badge-published',
+        'rejected'  => 'badge-closed',
+        'verified'  => 'badge-resolved',
+        'not_verified' => 'badge-closed',
     ][$key] ?? 'badge-closed';
     return '<span class="badge ' . e($class) . '">' . e($label) . '</span>';
 }
@@ -138,6 +164,7 @@ function archive_manage_url(string $type, int $id): ?string
 {
     return [
         'inquiry'      => url('admin/inquiries/index.php?id=' . $id),
+        'monetary_donation' => url('admin/donations/index.php?id=' . $id),
         'quiz'         => url('admin/content/index.php?quiz=' . $id . '#daily-quiz'),
         'challenge'    => url('admin/content/index.php?challenge=' . $id . '#weekly-challenge'),
         'campaign'     => url('admin/community.php?campaign=' . $id . '#campaigns'),
@@ -152,7 +179,7 @@ function archive_manage_url(string $type, int $id): ?string
 function archive_filters_from_request(): array
 {
     $tab = get_str('tab');
-    if (!in_array($tab, ['inquiries', 'activities', 'campaigns', 'content'], true)) {
+    if (!in_array($tab, ['inquiries', 'donations', 'activities', 'campaigns', 'content'], true)) {
     $tab = 'all';
     }
     return [
@@ -162,7 +189,7 @@ function archive_filters_from_request(): array
     ];
 }
 
-/** Numbers for the four summary cards. */
+/** Numbers for the five summary cards. */
 function archive_counts(PDO $pdo): array
 {
     $rows = $pdo->query('SELECT type, COUNT(*) AS n FROM (' . archive_union_sql() . ') a GROUP BY type')->fetchAll();
@@ -173,8 +200,8 @@ function archive_counts(PDO $pdo): array
     $sum = fn(array $types) => array_sum(array_map(fn($t) => $by[$t] ?? 0, $types));
     return [
         'inquiries'    => $sum(['inquiry']),
-        'leaderboards' => $sum(['quiz', 'leaderboard']),
-        'challenges'   => $sum(['challenge']),
+        'donations'    => $sum(archive_groups()['donations']),
+        'activities'   => $sum(archive_groups()['activities']),
         'campaigns'    => $sum(['campaign']),
         'content'      => $sum(archive_groups()['content']),
         'all'          => array_sum($by),
@@ -259,6 +286,51 @@ function archive_get_detail(PDO $pdo, string $type, int $id): ?array
         $d['body_label'] = 'Message';
         $d['body'] = (string) $r['message'];
         $d['responses'] = get_inquiry_responses($pdo, $id);
+    } elseif ($type === 'book_donation') {
+        $q = $pdo->prepare("SELECT * FROM rc2000_admin.book_donations WHERE id = ? AND status IN ('approved', 'rejected')");
+        $q->execute([$id]);
+        $row = $q->fetch();
+        if (!$row) { return null; }
+        $d['title'] = 'Book donation · ' . (string) ($row['reference_no'] ?: 'BD-' . $row['id']);
+        $d['fields'] = [
+            ['Donor', (string) $row['donor_name']],
+            ['Email', (string) $row['donor_email']],
+            ['Contact number', (string) ($row['donor_contact'] ?? '')],
+            ['Book', (string) $row['book_title']],
+            ['Author', (string) ($row['author'] ?? '')],
+            ['Genre', (string) ($row['genre'] ?? '')],
+            ['Condition', (string) $row['book_condition']],
+            ['Quantity offered', (string) (int) $row['qty_offered']],
+            ['Quantity received', $row['qty_received'] === null ? 'Not recorded' : (string) (int) $row['qty_received']],
+            ['Submitted', format_datetime($row['created_at'])],
+            ['Reviewed', $row['reviewed_at'] ? format_datetime($row['reviewed_at']) : 'Not recorded'],
+        ];
+        if (!empty($row['notes'])) {
+            $d['body_label'] = 'Donor notes';
+            $d['body'] = (string) $row['notes'];
+        }
+    } elseif ($type === 'monetary_donation') {
+        $q = $pdo->prepare("SELECT * FROM rc2000_admin.monetary_donations WHERE id = ? AND status IN ('verified', 'not_verified')");
+        $q->execute([$id]);
+        $row = $q->fetch();
+        if (!$row) { return null; }
+        $d['title'] = 'Monetary donation · ' . (string) ($row['reference_no'] ?: 'MD-' . $row['id']);
+        $d['fields'] = [
+            ['Donor', (string) $row['donor_name']],
+            ['Email', (string) $row['donor_email']],
+            ['Contact number', (string) ($row['donor_contact'] ?? '')],
+            ['Reported amount', format_peso($row['reported_amount'])],
+            ['Verified amount', $row['verified_amount'] === null ? 'Not verified' : format_peso($row['verified_amount'])],
+            ['Payment method', (string) ($row['payment_method'] ?? '')],
+            ['Transaction reference', (string) ($row['transaction_ref'] ?? '')],
+            ['Proof of payment', empty($row['proof_path']) ? 'Not submitted' : 'Submitted'],
+            ['Submitted', format_datetime($row['created_at'])],
+            ['Reviewed', $row['verified_at'] ? format_datetime($row['verified_at']) : 'Not recorded'],
+        ];
+        if (!empty($row['verification_note'])) {
+            $d['body_label'] = 'Verification note';
+            $d['body'] = (string) $row['verification_note'];
+        }
     } elseif ($type === 'quiz') {
         $q = $pdo->prepare('SELECT quiz_date, status FROM rc2000_admin.daily_quizzes WHERE id = ?');
         $q->execute([$id]);
@@ -356,7 +428,7 @@ function archive_get_detail(PDO $pdo, string $type, int $id): ?array
         ];
         $d['body_label'] = 'Description and spending plan';
         $d['body'] = (string) $row['description'];
-        if (!empty($row['image_path'])) { $d['image'] = url($row['image_path']); }
+        if (!empty($row['image_path'])) { $d['image'] = portal_media_url($row['image_path']); }
     } else {
         // story / article / announcement / gallery item
         $map = [
@@ -383,7 +455,7 @@ function archive_get_detail(PDO $pdo, string $type, int $id): ?array
             $text = (string) $row['body'];
             $d['body'] = mb_strlen($text) > 1500 ? mb_substr($text, 0, 1500) . '…' : $text;
         }
-        if (!empty($row[$imgCol])) { $d['image'] = url($row[$imgCol]); }
+        if (!empty($row[$imgCol])) { $d['image'] = portal_media_url($row[$imgCol]); }
     }
     return $d;
 }
@@ -392,7 +464,7 @@ function archive_get_detail(PDO $pdo, string $type, int $id): ?array
 function archive_page_data(array $filters): array
 {
     $out = [
-        'counts'    => ['inquiries' => 0, 'leaderboards' => 0, 'challenges' => 0, 'campaigns' => 0, 'content' => 0, 'all' => 0],
+        'counts'    => ['inquiries' => 0, 'donations' => 0, 'activities' => 0, 'campaigns' => 0, 'content' => 0, 'all' => 0],
         'list'      => ['rows' => [], 'total' => 0, 'pages' => 1, 'page' => 1],
         'selected'  => null,
         'loadError' => null,

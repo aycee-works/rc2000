@@ -1,13 +1,12 @@
 <?php
 require_once __DIR__ . '/../includes/functions.php';
 
-$query = trim((string) ($_GET['q'] ?? ''));
-
+$query = is_string($_GET['q'] ?? null) ? trim($_GET['q']) : '';
 $results = $query !== ''
     ? search_published_content($query, 24)
     : [];
 
-$gallery = active_gallery(8);
+$gallery = active_gallery(6);
 $articles = published_content('article', 8);
 $stories = published_content('story', 8);
 
@@ -31,7 +30,7 @@ $contentUrl = static function (array $item): string {
 page_start('Explore');
 ?>
 
-<main>
+<main class="explore-page">
 
     <section class="page-hero explore-hero">
         <div class="section">
@@ -43,7 +42,7 @@ page_start('Explore');
                 <input id="explore-query" type="search" name="q" placeholder="Search stories and articles" value="<?= e($query) ?>">
                 <button class="button" type="submit"><img src="<?= e(app_url('public/assets/images/icons/search_icon.png')) ?>" alt="" aria-hidden="true" width="18" height="18"> Search</button>
             </form>
-            <nav class="explore-categories" aria-label="Explore sections"><a href="#stories">Stories</a><a href="#articles">Articles</a><a href="#gallery">Gallery</a><a href="<?= e(app_url('public/daily-quiz.php')) ?>">Daily quiz</a></nav>
+            <nav class="explore-categories" aria-label="Explore sections"><a href="#gallery">Gallery</a><a href="#stories">Stories</a><a href="#articles">Articles</a><a href="<?= e(app_url('public/daily-quiz.php')) ?>">Daily Quiz</a><a href="<?= e(app_url('public/announcements.php')) ?>">Announcements</a></nav>
         </div>
     </section>
 
@@ -57,14 +56,14 @@ page_start('Explore');
 
                 <div>
                     <span class="eyebrow">Search</span>
-                    <h1>Results for “<?= e($query) ?>”</h1>
+                    <h2>Results for “<?= e($query) ?>”</h2>
                 </div>
 
             </div>
 
             <?php if (!$results): ?>
 
-                <p>No published stories or articles matched that search.</p>
+                <p>No results matched your search.</p>
 
             <?php else: ?>
 
@@ -155,57 +154,24 @@ page_start('Explore');
 
         </div>
 
-        <div class="gallery-grid mosaic">
-
-            <?php if ($gallery): ?>
-
-                <?php foreach ($gallery as $index => $image): ?>
-
-                    <figure class="span-<?= ($index % 5) + 1 ?>">
-
-                        <?php if (
-                            media_file_exists($image['image_path'] ?? '')
-                        ): ?>
-
-                            <img
-                                src="<?= e(media_url($image['image_path'])) ?>"
-                                alt="<?= e($image['alt_text'] ?? '') ?>"
-                                loading="lazy"
-                            >
-
-                            <?php if (!empty($image['caption'])): ?>
-
-                                <figcaption>
-                                    <?= e($image['caption']) ?>
-                                </figcaption>
-
-                            <?php endif; ?>
-
-                        <?php else: ?>
-
-                            <div class="gallery-tile art-<?= ($index % 4) + 1 ?>">
-                                <span>
-                                    <?= e($image['caption'] ?? 'Reading Club 2000') ?>
-                                </span>
-                            </div>
-
+        <?php if ($gallery): ?>
+            <div class="gallery-grid explore-gallery-grid">
+                <?php foreach ($gallery as $image): ?>
+                    <figure>
+                        <img
+                            src="<?= e(media_url($image['image_path'])) ?>"
+                            alt="<?= e($image['alt_text'] ?? '') ?>"
+                            loading="lazy"
+                        >
+                        <?php if (!empty($image['caption'])): ?>
+                            <figcaption><?= e($image['caption']) ?></figcaption>
                         <?php endif; ?>
-
                     </figure>
-
                 <?php endforeach; ?>
-
-            <?php else: ?>
-
-                <?php foreach (range(1, 6) as $index): ?>
-
-                    <div class="gallery-tile art-<?= (($index - 1) % 4) + 1 ?>"></div>
-
-                <?php endforeach; ?>
-
-            <?php endif; ?>
-
-        </div>
+            </div>
+        <?php else: ?>
+            <p>No gallery photos are available yet.</p>
+        <?php endif; ?>
 
     </section>
 
@@ -296,7 +262,7 @@ page_start('Explore');
 
     <!-- ARTICLES -->
 
-    <section class="section tinted" id="articles">
+    <section class="section" id="articles">
 
         <div class="section-heading">
 
@@ -310,7 +276,6 @@ page_start('Explore');
 
         <?php if (!empty($articles)): ?>
 
-            <!-- Articles now reuse the white Stories card design. -->
             <div class="card-grid three">
 
                 <?php foreach ($articles as $index => $item): ?>

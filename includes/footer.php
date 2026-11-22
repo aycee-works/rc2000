@@ -1,30 +1,38 @@
 <footer class="site-footer">
   <div class="footer-main">
-    <div class="footer-identity">
-      <a class="footer-brand" href="<?= e(app_url('public/home.php')) ?>" aria-label="Reading Club 2000 home">
-        <img class="brand-logo" src="<?= e(app_url('public/assets/images/icons/logo.png')) ?>" alt="" width="38" height="38">
-        <span><strong>Reading Club 2000</strong><small>A neighborhood library built around sharing stories.</small></span>
-      </a>
-      <div class="footer-connect">
-        <nav aria-label="Footer navigation">
-          <a href="<?= e(app_url('public/about.php')) ?>">About the Club</a>
-          <a href="<?= e(app_url('public/contact.php')) ?>">Contact Us</a>
-          <a href="<?= e(app_url('public/privacy-policy.php')) ?>">Privacy Policy</a>
-          <a href="<?= e(app_url('public/inquiry.php')) ?>">Inquiries</a>
-          <a href="<?= e(app_url('public/home.php')) ?>#announcements">Announcements</a>
-          <a class="footer-facebook" href="https://www.facebook.com/ReadingClub2000" target="_blank" rel="noopener noreferrer">
-            <img src="<?= e(app_url('public/assets/images/icons/homefb_icon.png')) ?>" alt="" width="22" height="22"> Facebook
-          </a>
-        </nav>
-      </div>
+    <div class="footer-top">
+      <section class="footer-column footer-about" aria-label="About Reading Club 2000">
+        <a class="footer-brand" href="<?= e(app_url('public/home.php')) ?>" aria-label="Reading Club 2000 home">
+          <img class="brand-logo" src="<?= e(app_url('public/assets/images/icons/logo.png')) ?>" alt="" width="96" height="96">
+          <span><strong>Reading Club 2000</strong><small>A neighborhood library built around sharing stories.</small></span>
+        </a>
+        <small class="footer-copyright">© 2026 Reading Club 2000 by Mang Nanie</small>
+      </section>
+
+      <section class="footer-column footer-contact" aria-labelledby="footer-feedback-title">
+        <h2 id="footer-feedback-title">
+          <img class="footer-feedback-icon" src="<?= e(app_url('public/assets/images/icons/feedback_icon.png')) ?>" alt="" width="56" height="56">
+          <span>Send Us Feedback</span>
+        </h2>
+        <p>Tell us what you think about our website. Your feedback goes straight to our admins.</p>
+        <button type="button" class="button button-gold footer-feedback-button" data-feedback-open>
+          <span>Give Us Feedback</span><span class="footer-feedback-arrow" aria-hidden="true">→</span>
+        </button>
+      </section>
+
+      <nav class="footer-column footer-connect" aria-label="Footer navigation">
+        <a href="<?= e(app_url('public/about.php')) ?>">About us</a>
+        <a href="<?= e(app_url('public/inquiry.php')) ?>">Inquiries</a>
+        <a href="<?= e(app_url('public/home.php')) ?>#announcements">Announcements</a>
+        <a href="<?= e(app_url('public/privacy-policy.php')) ?>">Privacy Policy</a>
+        <a href="<?= e(app_url('public/donate.php')) ?>">Donation</a>
+        <a class="footer-facebook" href="https://www.facebook.com/ReadingClub2000" target="_blank" rel="noopener noreferrer">
+          <img src="<?= e(app_url('public/assets/images/icons/homefb_icon.png')) ?>" alt="" width="32" height="32"> Facebook
+        </a>
+      </nav>
     </div>
-    <section class="footer-contact" aria-labelledby="footer-feedback-title">
-      <h2 id="footer-feedback-title">Give Us a Feedback</h2>
-      <p>Tell us what you think about our website. Your feedback goes straight to our admins.</p>
-      <button type="button" class="button button-gold" data-feedback-open>Give Us a Feedback</button>
-    </section>
+
     <div class="footer-bottom">
-      <small>© <?= date('Y') ?> Reading Club 2000 Mang Nanie. All rights reserved. No part of this website may be copied, reproduced, or redistributed without written permission.</small>
       <details class="footer-terms">
         <summary>Terms and Conditions</summary>
         <ol>
@@ -33,7 +41,6 @@
           <li>Submitted feedback and inquiries may be reviewed by the Reading Club 2000 administrators.</li>
         </ol>
       </details>
-      <span class="footer-copyright"><img src="<?= e(app_url('public/assets/images/icons/copyright.png')) ?>" alt="" aria-hidden="true" width="16" height="16"><span>Copyright</span></span>
     </div>
   </div>
 </footer>
@@ -41,7 +48,7 @@
   <div class="feedback-body">
     <div class="feedback-head">
       <div>
-        <h2 id="feedback-title">Give Us a Feedback</h2>
+        <h2 id="feedback-title">Send Us a Feedback</h2>
         <p>How is your experience with our website? Tell us about the design and how easy it is to use.</p>
       </div>
       <button type="button" class="feedback-close" data-feedback-close aria-label="Close">×</button>
@@ -62,6 +69,6 @@
     </form>
   </div>
 </dialog>
-<script src="<?= e(app_url('public/assets/js/site.js?v=4')) ?>"></script>
+<script src="<?= e(app_url('public/assets/js/site.js?v=7')) ?>"></script>
 </body>
 </html>

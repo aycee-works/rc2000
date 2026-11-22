@@ -51,6 +51,8 @@
     color: #25496f; background: #e4ecf4; border-radius: var(--radius);
 }
 .login-footnote { margin: 14px 0 0; text-align: center; font-size: 13px; color: var(--color-muted); }
+.login-home-link { display: block; width: max-content; max-width: 100%; margin: 18px auto 0; text-align: center; font-size: 13px; font-weight: 600; color: var(--color-ink); }
+.login-home-link:hover { color: var(--color-navy); text-decoration: underline; }
 
 @media (max-width: 800px) {
     .login-page { grid-template-columns: 1fr; }

@@ -26,6 +26,7 @@
 .activity-status { flex:none; padding:5px 10px; border-radius:999px; background:#f1eee7; color:var(--color-muted); font-size:10px; font-weight:700; text-transform:capitalize; }
 .activity-status.is-published { background:#e5eee5; color:#527653; }
 .activity-status.is-draft { background:#f6eddc; color:#89642c; }
+.activity-status.is-archived { background:#e7e9ed; color:#5b6572; }
 .activity-summary { display:flex; justify-content:space-between; align-items:flex-start; gap:18px; padding:16px; }
 .activity-summary-copy { min-width:0; }
 .activity-summary h3 { margin:0 0 6px; color:var(--color-navy); font:600 17px var(--font-heading); }
@@ -43,6 +44,7 @@
 .activity-feature-copy p { margin:0; color:var(--color-muted); font-size:14px; line-height:1.55; }
 .activity-facts { display:flex; flex-wrap:wrap; gap:10px 22px; margin-top:16px; padding-top:12px; border-top:1px solid var(--color-border); color:var(--color-ink); font-size:12px; }
 .activity-card-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:12px; padding:0 22px 20px; }
+.activity-card-actions form { margin:0; }
 .activity-card-actions .btn { min-width:148px; font-weight:700; }
 .activity-editor { padding:0 22px 20px; border-top:1px solid var(--color-border); }
 .activity-editor[hidden] { display:none !important; }

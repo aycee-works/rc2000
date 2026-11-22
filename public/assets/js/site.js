@@ -9,6 +9,9 @@
       themeToggle.setAttribute('aria-label', `Switch to ${dark ? 'light' : 'dark'} mode`);
       themeIcon.src = dark ? themeIcon.dataset.darkSrc : themeIcon.dataset.lightSrc;
       themeLabel.textContent = dark ? 'Light mode' : 'Dark mode';
+      document.querySelectorAll('[data-theme-image]').forEach((image) => {
+        image.src = dark ? image.dataset.darkSrc : image.dataset.lightSrc;
+      });
     };
     updateThemeButton();
     themeToggle.addEventListener('click', () => {
@@ -44,6 +47,17 @@
     });
   });
 
+  document.querySelectorAll('[data-trivia-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const answer = document.getElementById(button.getAttribute('aria-controls'));
+      if (!answer) return;
+      const expanded = button.getAttribute('aria-expanded') === 'true';
+      button.setAttribute('aria-expanded', String(!expanded));
+      answer.hidden = expanded;
+      button.textContent = expanded ? 'Show answer' : 'Hide answer';
+    });
+  });
+
   document.querySelectorAll('[data-tabs]').forEach((tabs) => {
     const buttons = [...tabs.querySelectorAll('[data-tab-target]')];
     const panels = [...tabs.parentElement.querySelectorAll('[data-tab-panel]')];
@@ -59,6 +73,23 @@
       });
     });
   });
+
+  const scrollToAnnouncements = () => {
+    if (window.location.hash !== '#announcements') return;
+    const section = document.getElementById('announcements');
+    if (!section) return;
+    const header = document.querySelector('.site-header');
+    const stickyHeaderHeight = header && getComputedStyle(header).position === 'sticky'
+      ? header.getBoundingClientRect().height
+      : 0;
+    const visibleCenter = stickyHeaderHeight + (window.innerHeight - stickyHeaderHeight) / 2;
+    const sectionCenter = window.scrollY + section.getBoundingClientRect().top + section.getBoundingClientRect().height / 2;
+    window.scrollTo({ top: sectionCenter - visibleCenter, behavior: 'smooth' });
+  };
+  if (window.location.hash === '#announcements') {
+    window.addEventListener('load', scrollToAnnouncements, { once: true });
+  }
+  window.addEventListener('hashchange', scrollToAnnouncements);
 
   document.querySelectorAll('[data-quiz-steps]').forEach((form) => {
     const steps = [...form.querySelectorAll('[data-quiz-step]')];

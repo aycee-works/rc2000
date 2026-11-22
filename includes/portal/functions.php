@@ -16,6 +16,19 @@ function url(string $path = ''): string
     return BASE_URL . '/' . ltrim($path, '/');
 }
 
+/** Build a URL for media that may be stored locally or on an external host. */
+function portal_media_url(?string $path): string
+{
+    $path = trim((string) $path);
+    if ($path === '') {
+        return '';
+    }
+    if (preg_match('#^https?://#i', $path)) {
+        return $path;
+    }
+    return url($path);
+}
+
 /** Build a URL to a file in /assets, e.g. asset('css/base.css'). */
 function asset(string $path): string
 {
