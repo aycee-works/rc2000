@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/community.php';
 
-$tab = in_array($_GET['tab'] ?? '', ['money', 'campaign', 'status', 'receipt'], true) ? (string) $_GET['tab'] : 'money';
+$tab = in_array($_GET['tab'] ?? '', ['money', 'campaign', 'howto', 'status', 'receipt'], true) ? (string) $_GET['tab'] : 'money';
 $donationReceipt = $_SESSION['donation_receipt'] ?? null;
 
 $methods = active_donation_methods();
@@ -204,19 +204,12 @@ page_start('Donate');
     <p class="eyebrow">Donate by</p>
     <a class="<?= $tab === 'money' ? 'is-active' : '' ?>" href="<?= e(app_url('public/donate.php?tab=money')) ?>">Monetary Donation</a>
     <a class="<?= $tab === 'campaign' ? 'is-active' : '' ?>" href="<?= e(app_url('public/donate.php?tab=campaign')) ?>">Campaign Donation</a>
+    <a class="<?= $tab === 'howto' ? 'is-active' : '' ?>" href="<?= e(app_url('public/donate.php?tab=howto')) ?>">How to Donate</a>
     <a class="<?= $tab === 'status' ? 'is-active' : '' ?>" href="<?= e(app_url('public/donate.php?tab=status')) ?>">Donation Status</a>
   </aside>
 
   <div class="donate-main">
     <?php render_alerts($errors); ?>
-
-    <section class="howto">
-      <h3>How to Donate</h3>
-      <ol>
-        <li>Use QR, bank transfer, or check, then fill out the donation form so we can thank you.</li>
-        <li>You’ll get a confirmation after you submit.</li>
-      </ol>
-    </section>
 
     <?php if ($tab === 'receipt'): ?>
       <section class="form-card submission-receipt">
@@ -259,7 +252,10 @@ page_start('Donate');
             <?php if ($qrMethods): foreach ($qrMethods as $method): ?>
               <figure class="qr-card">
                 <?php if (media_file_exists($method['qr_image_path'])): ?>
-                  <img src="<?= e(media_url($method['qr_image_path'])) ?>" alt="<?= e($method['method_name']) ?>">
+                  <button class="qr-expand" type="button" data-qr-expand aria-label="Expand <?= e($method['method_name']) ?> QR code">
+                    <img src="<?= e(media_url($method['qr_image_path'])) ?>" alt="<?= e($method['method_name']) ?> QR code">
+                    <span>Click to enlarge for scanning</span>
+                  </button>
                 <?php else: ?>
                   <div class="qr-placeholder">Add the <?= e($method['method_name']) ?> image in the donation method settings.</div>
                 <?php endif; ?>
@@ -355,13 +351,47 @@ page_start('Donate');
         <?php endif; ?>
         <?php if (!$campaigns): ?><p>No open campaigns are accepting reports right now.</p><?php elseif (!$methods): ?><p>Donation methods are not configured yet.</p><?php else: ?>
         <p class="lede">This form records a payment you have already sent. It does not process payments. Your report stays pending until an admin verifies it.</p>
-        <div class="campaign-payment-methods"><h2>Choose a payment method</h2><div><?php foreach ($methods as $method): ?><article><strong><?=e($method['method_name'])?></strong><span><?=e($method['payment_provider'])?></span><?php if(!empty($method['qr_image_path'])&&media_file_exists($method['qr_image_path'])):?><img src="<?=e(media_url($method['qr_image_path']))?>" alt="<?=e($method['method_name'])?> payment QR" loading="lazy"><?php endif; ?><?php if(!empty($method['instructions'])):?><p><?=nl2br(e($method['instructions']))?></p><?php endif; ?></article><?php endforeach; ?></div></div>
+        <div class="campaign-payment-methods"><h2>Choose a payment method</h2><div><?php foreach ($methods as $method): ?><article><strong><?=e($method['method_name'])?></strong><span><?=e($method['payment_provider'])?></span><?php if(!empty($method['qr_image_path'])&&media_file_exists($method['qr_image_path'])):?><button class="qr-expand" type="button" data-qr-expand aria-label="Expand <?=e($method['method_name'])?> QR code"><img src="<?=e(media_url($method['qr_image_path']))?>" alt="<?=e($method['method_name'])?> payment QR" loading="lazy"><span>Click to enlarge for scanning</span></button><?php endif; ?><?php if(!empty($method['instructions'])):?><p><?=nl2br(e($method['instructions']))?></p><?php endif; ?></article><?php endforeach; ?></div></div>
         <form method="post" enctype="multipart/form-data"><?= csrf_field() ?><input type="hidden" name="action" value="campaign"><label>Campaign<select name="campaign_id" required><?php foreach ($campaigns as $item): ?><option value="<?= (int)$item['id'] ?>" <?= (int)$item['id']===(int)($featured['id']??0)?'selected':'' ?>><?= e($item['title']) ?> · goal ₱<?= e(number_format((float)$item['goal_amount'],2)) ?></option><?php endforeach; ?></select></label><label class="check-line"><input type="checkbox" name="anonymous" value="1" <?= $old['anonymous']?'checked':'' ?>> Donate anonymously</label><div class="form-grid"><label>Name<input name="donor_name" maxlength="120" value="<?= e($old['donor_name']) ?>"></label><label>Email<input type="email" name="donor_email" required maxlength="150" value="<?= e($old['donor_email']) ?>"></label><label>Contact info<input name="contact_info" maxlength="30" value="<?= e($old['contact_info']) ?>"></label><label>Amount (PHP)<input type="number" name="amount_reported" min="1" step="0.01" required value="<?= e($old['amount_reported']) ?>"></label><label>Payment date<input type="datetime-local" name="payment_date" required value="<?= e($old['payment_date']) ?>"></label><label>Donation method<select name="donation_method_id" required><option value="">Select a method</option><?php foreach($methods as $method): ?><option value="<?= (int)$method['donation_method_id'] ?>"><?= e($method['method_name'].' · '.$method['payment_provider']) ?></option><?php endforeach; ?></select></label><label>Transaction reference<input name="transaction_reference" maxlength="100" value="<?= e($old['transaction_reference']) ?>"></label></div><label class="upload-box">Payment proof (optional)<input type="file" name="proof_of_payment" accept="image/jpeg,image/png,image/webp,image/gif"></label><label class="check-line"><input type="checkbox" required> I have already sent this donation</label><button class="button wide" type="submit">Submit donation report</button></form>
         <?php endif; ?>
+      </section>
+    <?php elseif ($tab === 'howto'): ?>
+      <section class="form-card donation-howto-page">
+        <span class="eyebrow">Support the neighborhood library</span>
+        <h1>How to Donate</h1>
+        <p class="lede">You can support Reading Club 2000 with useful items or your time, as well as through monetary donations.</p>
+
+        <div class="donation-howto-grid">
+          <article>
+            <h2>In-kind donations</h2>
+            <p>We may be able to accept items that help readers and library activities, such as:</p>
+            <ul>
+              <li>Books and reading materials in clean, usable condition</li>
+              <li>School, art, and craft supplies for learning activities</li>
+              <li>Other library or program supplies that are in good condition</li>
+            </ul>
+            <p>Accepted items can depend on current needs, available space, and condition.</p>
+          </article>
+          <article>
+            <h2>Volunteer your time</h2>
+            <p>You can also ask about helping with reading sessions, storytelling, or library activities. Let us know your interests and availability so we can coordinate.</p>
+          </article>
+        </div>
+
+        <div class="donation-howto-next-step">
+          <h2>Coordinate before bringing items</h2>
+          <p>Please contact us first so we can confirm whether we can receive the donation and arrange a suitable time. Include the item type, quantity, condition, and your preferred drop-off or delivery schedule.</p>
+          <a class="button" href="<?= e(app_url('public/inquiry.php')) ?>">Contact us about a donation</a>
+        </div>
       </section>
     <?php else: ?>
       <section class="form-card donation-status-page"><span class="eyebrow">Donation transparency</span><h1>Check your donation report</h1><p>Enter the tracking ID from your receipt and the email used in your report.</p><form method="get"><input type="hidden" name="tab" value="status"><div class="form-grid"><label>Tracking ID<input name="reference" required value="<?= e((string)($_GET['reference']??'')) ?>"></label><label>Email<input type="email" name="email" required value="<?= e((string)($_GET['email']??'')) ?>"></label></div><button class="button" type="submit">Check status</button></form><?php if ($statusMessage): ?><p class="alert alert-error" role="alert"><?= e($statusMessage) ?></p><?php endif; ?><?php if ($statusRecord): ?><div class="donation-status-result"><span class="eyebrow"><?= e($statusRecord['reference_no']) ?></span><h2><?= $statusRecord['status']==='verified'?'Donation verified':($statusRecord['status']==='not_verified'?'Donation not verified':'Donation report received') ?></h2><p>Reported amount: ₱<?= e(number_format((float)$statusRecord['reported_amount'],2)) ?></p><?php if ($statusRecord['verified_amount']!==null): ?><p>Verified amount: ₱<?= e(number_format((float)$statusRecord['verified_amount'],2)) ?></p><?php endif; ?><?php if ($statusRecord['campaign_title']): ?><p>Campaign: <?= e($statusRecord['campaign_title']) ?></p><?php endif; ?><?php if ($statusRecord['verification_note']): ?><p><?= nl2br(e($statusRecord['verification_note'])) ?></p><?php endif; ?><p class="field-note"><?= $statusRecord['status']==='pending'?'Pending admin verification.':($statusRecord['verified_at']?'Reviewed '.e(date('F j, Y',strtotime($statusRecord['verified_at']))):'') ?></p></div><?php endif; ?></section>
     <?php endif; ?>
   </div>
 </main>
+<dialog class="qr-viewer" data-qr-viewer aria-label="Expanded donation QR code">
+  <button class="qr-viewer-close" type="button" data-qr-viewer-close aria-label="Close expanded QR code">×</button>
+  <img data-qr-viewer-image alt="Expanded donation QR code">
+  <p>Scan this QR code with your payment app.</p>
+</dialog>
 <?php page_end(); ?>

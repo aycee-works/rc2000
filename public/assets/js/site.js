@@ -74,6 +74,24 @@
     });
   });
 
+  const qrViewer = document.querySelector('[data-qr-viewer]');
+  const qrViewerImage = qrViewer?.querySelector('[data-qr-viewer-image]');
+  if (qrViewer && qrViewerImage) {
+    document.querySelectorAll('[data-qr-expand]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const image = button.querySelector('img');
+        if (!image) return;
+        qrViewerImage.src = image.currentSrc || image.src;
+        qrViewerImage.alt = image.alt || 'Expanded donation QR code';
+        qrViewer.showModal();
+      });
+    });
+    qrViewer.querySelector('[data-qr-viewer-close]')?.addEventListener('click', () => qrViewer.close());
+    qrViewer.addEventListener('click', (event) => {
+      if (event.target === qrViewer) qrViewer.close();
+    });
+  }
+
   const scrollToAnnouncements = () => {
     if (window.location.hash !== '#announcements') return;
     const section = document.getElementById('announcements');
