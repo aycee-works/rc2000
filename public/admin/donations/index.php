@@ -10,6 +10,13 @@ try {
     exit(e($e->getMessage()));
 }
 
+/** Build a link back to this page while omitting empty filter values. */
+function donations_url(array $params): string
+{
+    $params = array_filter($params, fn($v) => $v !== '' && $v !== null && $v !== 0);
+    return url('admin/donations/index.php' . ($params ? '?' . http_build_query($params) : ''));
+}
+
 $loadError = null;
 $moneySummary = ['total' => 0, 'reported' => 0.0, 'verified' => 0.0, 'awaiting' => 0];
 $moneyList = ['rows' => [], 'total' => 0, 'pages' => 1, 'page' => 1];
