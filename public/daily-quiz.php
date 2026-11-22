@@ -36,6 +36,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $quiz) {
     $action = (string) ($_POST['action'] ?? '');
     if (!csrf_is_valid($_POST['csrf_token'] ?? null)) {
         $errors[] = 'Your session expired. Please try again.';
+    } elseif ($action === 'next_participant') {
+        unset($_SESSION[$pendingKey], $_SESSION[$completeKey]);
+        header('Location: ' . app_url('public/daily-quiz.php'));
+        exit;
     } elseif (count($questions) !== 5) {
         $errors[] = 'Today’s quiz is being prepared. Please check back soon.';
     } elseif ($action === 'calculate_score') {
@@ -125,6 +129,13 @@ page_start('Daily quiz', ['class' => 'daily-quiz-page']);
         <div class="quiz-leaderboard-actions"><button type="submit" form="quiz-join-form" class="button">Join leaderboard</button><form method="post" class="quiz-skip-form"><?= csrf_field() ?><input type="hidden" name="action" value="skip_leaderboard"><button type="submit" class="button">No thanks, skip</button></form></div>
       </section>
     <?php endif; ?>
+    <div class="quiz-next-participant">
+      <form method="post">
+        <?= csrf_field() ?><input type="hidden" name="action" value="next_participant">
+        <button type="submit" class="button button-light"><?= is_array($pending) ? 'Discard score and start next participant' : 'Next participant' ?></button>
+      </form>
+      <p>Sharing a device? The next person can take the quiz here. Submitted leaderboard entries stay saved.</p>
+    </div>
   <?php elseif (!$quiz || count($questions) !== 5): ?><section class="quiz-result quiz-unavailable"><h2>No available quiz yet</h2><p>Please check back later.</p></section>
   <?php else: ?>
     <form method="post" class="daily-quiz-form" data-quiz-steps><?= csrf_field() ?><input type="hidden" name="action" value="calculate_score">

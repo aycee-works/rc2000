@@ -41,7 +41,18 @@ $quizFormQuestions = array_fill(0, 5, ['question' => '', 'options' => ['', ''], 
 $todayQuiz = null;
 try {
     $challengeRows = $pdo->query("SELECT c.*,COUNT(v.id) FILTER(WHERE v.choice='accept') AS accepts,COUNT(v.id) FILTER(WHERE v.choice='not_for_me') AS declines FROM rc2000_admin.challenge_posts c LEFT JOIN rc2000_admin.challenge_votes v ON v.challenge_id=c.id GROUP BY c.id ORDER BY c.starts_at DESC LIMIT 10")->fetchAll();
-    $quizRows = $pdo->query("SELECT q.id,q.quiz_date,q.status,COUNT(s.id) AS submissions,EXISTS(SELECT 1 FROM rc2000_admin.quiz_leaderboard_posts p WHERE p.week_start=date_trunc('week',q.quiz_date::timestamp)::date OR p.quiz_id=q.id) AS posted FROM rc2000_admin.daily_quizzes q LEFT JOIN rc2000_admin.quiz_submissions s ON s.quiz_id=q.id GROUP BY q.id ORDER BY q.quiz_date DESC LIMIT 10")->fetchAll();
+    $quizRows = $pdo->query("SELECT q.id,q.quiz_date,q.status,COUNT(s.id) AS submissions,p.quiz_id AS leaderboard_source_quiz_id,(p.quiz_id IS NOT NULL) AS posted
+        FROM rc2000_admin.daily_quizzes q
+        LEFT JOIN LATERAL (
+            SELECT lp.quiz_id
+            FROM rc2000_admin.quiz_leaderboard_posts lp
+            WHERE lp.week_start=date_trunc('week',q.quiz_date::timestamp)::date OR lp.quiz_id=q.id
+            ORDER BY lp.posted_at DESC
+            LIMIT 1
+        ) p ON TRUE
+        LEFT JOIN rc2000_admin.quiz_submissions s ON s.quiz_id=q.id
+        GROUP BY q.id,p.quiz_id
+        ORDER BY q.quiz_date DESC LIMIT 10")->fetchAll();
     $activeChallenge = $pdo->query("SELECT * FROM rc2000_admin.challenge_posts WHERE status='published' AND starts_at<=now() AND ends_at>now() ORDER BY starts_at DESC LIMIT 1")->fetch() ?: [];
     $challengeEditId = (int) ($_GET['challenge'] ?? (isset($_GET['new_challenge']) ? 0 : ($activeChallenge['id'] ?? 0)));
     if (isset($_GET['new_challenge'])) { $activeChallenge = []; }
@@ -331,8 +342,8 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
     </section>
     <section class="panel community-content-panel activity-history" aria-labelledby="quiz-history-title"><div class="panel-header"><div><span class="activity-eyebrow">SCHEDULE AND RESULTS</span><h2 class="panel-title" id="quiz-history-title">Recent quizzes</h2></div></div>
         <div class="table-wrap"><table class="data-table"><thead><tr><th>Date</th><th>Status</th><th>Entries</th><th>Weekly Leaderboard</th><th>Action</th></tr></thead><tbody>
-            <?php foreach ($quizRows as $quizRow): ?><tr><td><a href="<?= e(url('admin/content/index.php?quiz=' . (int) $quizRow['id'] . '#daily-quiz')) ?>"><?= e($quizRow['quiz_date']) ?></a></td><td><?= e($quizRow['status']) ?></td><td><?= (int) $quizRow['submissions'] ?></td><td><?php if (!$quizRow['posted'] && (int) $quizRow['submissions'] > 0): ?><form method="post" action="<?= e(url('admin/community.php')) ?>"><?= csrf_field() ?><input type="hidden" name="action" value="publish_leaderboard"><input type="hidden" name="quiz_id" value="<?= (int) $quizRow['id'] ?>"><button class="link-button" type="submit">Publish results</button></form><?php else: ?><?= !empty($quizRow['posted']) ? 'Published' : '—' ?><?php endif; ?></td></tr><?php endforeach; ?>
-            <?php if (!$quizRows): ?><tr><td colspan="4" class="table-empty"><span aria-hidden="true">▤</span><br>No quizzes scheduled yet.</td></tr><?php endif; ?>
+            <?php foreach ($quizRows as $quizRow): ?><tr><td><a href="<?= e(url('admin/content/index.php?quiz=' . (int) $quizRow['id'] . '#daily-quiz')) ?>"><?= e($quizRow['quiz_date']) ?></a></td><td><?= e($quizRow['status']) ?></td><td><?= (int) $quizRow['submissions'] ?></td><td><?php if (!$quizRow['posted'] && (int) $quizRow['submissions'] > 0): ?><form method="post" action="<?= e(url('admin/community.php')) ?>"><?= csrf_field() ?><input type="hidden" name="action" value="publish_leaderboard"><input type="hidden" name="quiz_id" value="<?= (int) $quizRow['id'] ?>"><button class="link-button" type="submit">Publish results</button></form><?php else: ?><?= !empty($quizRow['posted']) ? 'Published' : '—' ?><?php endif; ?></td><td><?php if (!empty($quizRow['posted']) && (int) $quizRow['leaderboard_source_quiz_id'] === (int) $quizRow['id']): ?><form method="post" action="<?= e(url('admin/community.php')) ?>" onsubmit="return confirm('Move this weekly leaderboard article back to Draft? Quiz submissions will remain unchanged.');"><?= csrf_field() ?><input type="hidden" name="action" value="unpublish_leaderboard"><input type="hidden" name="quiz_id" value="<?= (int) $quizRow['id'] ?>"><button class="link-button" type="submit">Unpublish results</button></form><?php else: ?>—<?php endif; ?></td></tr><?php endforeach; ?>
+            <?php if (!$quizRows): ?><tr><td colspan="5" class="table-empty"><span aria-hidden="true">▤</span><br>No quizzes scheduled yet.</td></tr><?php endif; ?>
         </tbody></table></div>
     </section>
     <?php else: ?>

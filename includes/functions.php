@@ -273,15 +273,19 @@ function daily_trivia(): array
 {
     $items = published_trivia(null);
     $count = count($items);
-    if ($count < 2) {
+    if ($count < 3) {
         return $items;
     }
 
     $today = new DateTimeImmutable('today', new DateTimeZone('Asia/Manila'));
     $day = intdiv($today->getTimestamp() + $today->getOffset(), 86400);
-    $start = ($day * 2) % $count;
+    $start = $day % $count;
 
-    return [$items[$start], $items[($start + 1) % $count]];
+    return [
+        $items[$start],
+        $items[($start + 1) % $count],
+        $items[($start + 2) % $count],
+    ];
 }
 
 function active_donation_methods(): array

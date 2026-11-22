@@ -173,8 +173,7 @@ function archive_counts(PDO $pdo): array
     $sum = fn(array $types) => array_sum(array_map(fn($t) => $by[$t] ?? 0, $types));
     return [
         'inquiries'    => $sum(['inquiry']),
-        'leaderboards' => $sum(['quiz', 'leaderboard']),
-        'challenges'   => $sum(['challenge']),
+        'activities'   => $sum(archive_groups()['activities']),
         'campaigns'    => $sum(['campaign']),
         'content'      => $sum(archive_groups()['content']),
         'all'          => array_sum($by),
@@ -392,7 +391,7 @@ function archive_get_detail(PDO $pdo, string $type, int $id): ?array
 function archive_page_data(array $filters): array
 {
     $out = [
-        'counts'    => ['inquiries' => 0, 'leaderboards' => 0, 'challenges' => 0, 'campaigns' => 0, 'content' => 0, 'all' => 0],
+        'counts'    => ['inquiries' => 0, 'activities' => 0, 'campaigns' => 0, 'content' => 0, 'all' => 0],
         'list'      => ['rows' => [], 'total' => 0, 'pages' => 1, 'page' => 1],
         'selected'  => null,
         'loadError' => null,

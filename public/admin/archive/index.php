@@ -15,7 +15,7 @@ $archive = archive_page_data($filters) + ['filters' => $filters, 'base' => 'admi
 
 $pageTitle = 'Archive';
 $activeNav = 'archive';
-$extraCss  = ['archive.css'];
+$extraCss  = ['archive.css?v=3'];
 $extraJs   = ['review-dialog.js'];
 require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
 require dirname(__DIR__, 3) . '/includes/portal/partials/archive-view.php';

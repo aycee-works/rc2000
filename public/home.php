@@ -53,7 +53,11 @@ $trivia = array_slice(array_merge($trivia, [
         'title' => 'What is a book’s spine?',
         'body' => 'It is the edge of the binding where the pages are joined. The title is often printed there so it can be read on a shelf.',
     ],
-]), 0, 2);
+    [
+        'title' => 'What is an endpaper?',
+        'body' => 'It is the sheet of paper at the front or back of a book that connects the pages to the cover.',
+    ],
+]), 0, 3);
 $facebookPageUrl = facebook_page_url();
 
 /*
@@ -423,10 +427,13 @@ page_start('Home', ['class' => 'home-page']);
       </div>
     </div>
     <div class="trivia-list">
-      <?php $triviaIcons = ['books.svg', 'sparkles.svg', 'quill.svg', 'search-book.svg', 'lightbulb.svg', 'open-book.svg']; ?>
+      <?php $triviaIcons = ['book', 'quill', 'puzzle']; ?>
       <?php foreach ($trivia as $index => $item): $answerId = 'trivia-answer-' . $index; ?>
         <article class="trivia-card" data-trivia-card>
-          <div class="trivia-icon" aria-hidden="true"><img src="<?= e(app_url('public/assets/images/icons/trivia/' . $triviaIcons[$index % count($triviaIcons)])) ?>" alt="" width="48" height="48"></div>
+          <div class="trivia-icon" aria-hidden="true">
+            <img class="trivia-icon-light" src="<?= e(app_url('public/assets/images/icons/trivia/' . $triviaIcons[$index % count($triviaIcons)] . '_light.png')) ?>" alt="" width="48" height="48">
+            <img class="trivia-icon-dark" src="<?= e(app_url('public/assets/images/icons/trivia/' . $triviaIcons[$index % count($triviaIcons)] . '_dark.png')) ?>" alt="" width="48" height="48">
+          </div>
           <div class="trivia-copy">
             <h3><?= e($item['title'] ?: 'Did you know?') ?></h3>
             <button class="trivia-answer-toggle" type="button" aria-expanded="false" aria-controls="<?= e($answerId) ?>" data-trivia-toggle>Show answer</button>
