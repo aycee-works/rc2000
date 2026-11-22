@@ -356,7 +356,7 @@ function archive_get_detail(PDO $pdo, string $type, int $id): ?array
         ];
         $d['body_label'] = 'Description and spending plan';
         $d['body'] = (string) $row['description'];
-        if (!empty($row['image_path'])) { $d['image'] = url($row['image_path']); }
+        if (!empty($row['image_path'])) { $d['image'] = portal_media_url($row['image_path']); }
     } else {
         // story / article / announcement / gallery item
         $map = [
@@ -383,7 +383,7 @@ function archive_get_detail(PDO $pdo, string $type, int $id): ?array
             $text = (string) $row['body'];
             $d['body'] = mb_strlen($text) > 1500 ? mb_substr($text, 0, 1500) . '…' : $text;
         }
-        if (!empty($row[$imgCol])) { $d['image'] = url($row[$imgCol]); }
+        if (!empty($row[$imgCol])) { $d['image'] = portal_media_url($row[$imgCol]); }
     }
     return $d;
 }

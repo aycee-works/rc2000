@@ -98,7 +98,7 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
             <label class="field-label-sm" for="f-image"><?= $entity === 'story' ? 'Cover image' : 'Image' ?> (optional · JPG, PNG or WebP, max 5 MB)</label>
             <?php if ($currentImage): ?>
                 <div class="current-image">
-                    <img src="<?= e(url($currentImage)) ?>" alt="Current image" id="f-current">
+                    <img src="<?= e(portal_media_url($currentImage)) ?>" alt="Current image" id="f-current">
                     <label class="check"><input type="checkbox" name="remove_image" value="1"> Remove current image</label>
                 </div>
             <?php endif; ?>

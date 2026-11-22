@@ -144,9 +144,9 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
                     <button type="button" class="gallery-tile" data-gallery-edit
                             data-id="<?= (int) $g['id'] ?>" data-title="<?= e($g['title']) ?>"
                             data-caption="<?= e($g['caption'] ?? '') ?>" data-status="<?= e($g['status']) ?>"
-                            data-version="<?= e($g['updated_at']) ?>" data-src="<?= e(url($g['file_path'])) ?>"
+                            data-version="<?= e($g['updated_at']) ?>" data-src="<?= e(portal_media_url($g['file_path'])) ?>"
                             title="<?= e($g['title']) ?>">
-                        <img src="<?= e(url($g['file_path'])) ?>" alt="<?= e($g['title']) ?>" loading="lazy">
+                        <img src="<?= e(portal_media_url($g['file_path'])) ?>" alt="<?= e($g['title']) ?>" loading="lazy">
                         <?php if ($g['status'] !== 'published'): ?>
                             <span class="tile-badge"><?= e(CONTENT_STATUSES[$g['status']]) ?></span>
                         <?php endif; ?>
@@ -230,7 +230,7 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
     <section class="panel activity-card" id="weekly-challenge" aria-labelledby="challenge-title">
         <div class="panel-header activity-card-header"><h2 class="panel-title" id="challenge-title">Weekly Reading Challenge</h2><span class="activity-status <?= e(($activeChallenge['status'] ?? '') === 'published' ? 'is-published' : 'is-draft') ?>"><?= e($activeChallenge['status'] ?? 'Not scheduled') ?></span></div>
         <div class="activity-feature">
-            <?php if (!empty($activeChallenge['image_path'])): ?><img class="activity-art challenge-art" src="<?= e(url($activeChallenge['image_path'])) ?>" alt="Challenge artwork">
+            <?php if (!empty($activeChallenge['image_path'])): ?><img class="activity-art challenge-art" src="<?= e(portal_media_url($activeChallenge['image_path'])) ?>" alt="Challenge artwork">
             <?php else: ?><div class="activity-art challenge-art placeholder-art" aria-hidden="true"><span>▤</span></div><?php endif; ?>
             <div class="activity-feature-copy"><h3><?= e($activeChallenge['title'] ?? 'No challenge scheduled') ?></h3><p><?= e($activeChallenge['prompt'] ?? 'Create a weekly prompt to invite the community to read together.') ?></p>
                 <div class="activity-facts"><?php if (!empty($activeChallenge['starts_at'])): ?><span>▢ &nbsp;<?= e(format_date_short($activeChallenge['starts_at'])) ?> – <?= e(format_date_short($activeChallenge['ends_at'])) ?></span><?php endif; ?><span>♧ &nbsp;<?= (int) ($activeChallenge['accepts'] ?? 0) ?> joining &nbsp;·&nbsp; <?= (int) ($activeChallenge['declines'] ?? 0) ?> not now</span></div>
