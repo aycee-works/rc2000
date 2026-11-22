@@ -18,9 +18,9 @@
       </div>
     </div>
     <section class="footer-contact" aria-labelledby="footer-feedback-title">
-      <h2 id="footer-feedback-title">Give Us a Feedback</h2>
-      <p>Tell us what you think about our website. Your feedback goes straight to our admins.</p>
-      <button type="button" class="button button-gold" data-feedback-open>Give Us a Feedback</button>
+      <h2 id="footer-feedback-title">Send Us a Feedback</h2>
+      <p>Tell us what you think about our website. Your feedback will greatly help us improve your experience and make our website better for everyone.</p>
+      <button type="button" class="button button-gold" data-feedback-open>Submit Feedback</button>
     </section>
     <div class="footer-bottom">
       <small>© 2026 Reading Club 2000 by Mang Nanie</small>
@@ -39,7 +39,7 @@
   <div class="feedback-body">
     <div class="feedback-head">
       <div>
-        <h2 id="feedback-title">Give Us a Feedback</h2>
+        <h2 id="feedback-title">Send Us a Feedback</h2>
         <p>How is your experience with our website? Tell us about the design and how easy it is to use.</p>
       </div>
       <button type="button" class="feedback-close" data-feedback-close aria-label="Close">×</button>
