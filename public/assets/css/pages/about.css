@@ -1,0 +1,173 @@
+.about-page .about-hero {
+  background-color: #142f4b;
+  background-image:
+    radial-gradient(ellipse at top right, #345b76aa, transparent 65%),
+    repeating-linear-gradient(120deg, #ffffff0d 0 1px, transparent 1px 5px);
+  color: #fff;
+}
+
+.about-hero .narrow { max-width: 960px; }
+.about-hero h1 { font-size: clamp(2.65rem, 6vw, 5.5rem); }
+.about-page .about-hero p {
+  max-width: 70ch;
+  color: #e4edf5;
+  font-size: clamp(1.125rem, 2vw, 1.35rem);
+  line-height: 1.65;
+  margin-bottom: 1.5rem;
+}
+
+.about-page .section.about-person {
+  grid-template-columns: minmax(220px, 330px) minmax(0, 1fr);
+  max-width: 1280px;
+  padding-block: clamp(48px, 8vw, 100px);
+  scroll-margin-top: 5rem;
+}
+
+.about-page .about-person .founder-description {
+  text-align: justify;
+  font-size: clamp(1.05rem, 1.6vw, 1.175rem);
+  line-height: 1.65;
+}
+
+.founder-bio-toggle[hidden] { display: none; }
+.founder-bio-toggle[aria-expanded="true"] { margin-top: .75rem; }
+
+.about-page .about-person h2 { color: var(--navy); }
+html[data-theme="dark"] .about-page .about-person h2 { color: var(--ink); }
+
+.about-page .portrait-trigger {
+  width: 100%;
+  max-width: 330px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: zoom-in;
+}
+
+.about-page .founder-portrait,
+.about-page .portrait-placeholder {
+  width: 100%;
+  max-width: 330px;
+  height: auto;
+  aspect-ratio: 1;
+  border: 5px solid #bf932b;
+}
+
+html[data-theme="dark"] .about-page .founder-portrait,
+html[data-theme="dark"] .about-page .portrait-placeholder {
+  border-color: var(--gold);
+}
+
+.about-page .founder-portrait { display: block; }
+
+.portrait-dialog {
+  max-width: calc(100% - 2rem);
+  max-height: calc(100% - 2rem);
+  padding: 1rem;
+  border: 1px solid #497492;
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.portrait-dialog::backdrop { background: #071523cf; }
+.portrait-dialog form { display: flex; justify-content: end; margin-bottom: .75rem; }
+.portrait-dialog button {
+  padding: .4rem .8rem;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.portrait-dialog figure { margin: 0; text-align: center; }
+.portrait-dialog img {
+  display: block;
+  width: min(600px, 75vw, 68dvh);
+  height: auto;
+  margin: 0 auto .75rem;
+}
+
+.about-page {
+  --about-section-inset: clamp(24px, 4vw, 48px);
+}
+
+.about-page .rc-history { padding-bottom: var(--about-section-inset); }
+.about-page .history-milestone p + p { margin-top: .75rem; }
+.about-page .mission-vision {
+  gap: 0;
+  padding-block: clamp(48px, 8vw, 96px);
+}
+.about-page .mission-vision h2 { margin-bottom: .85rem; }
+.about-page .mission-vision p { margin: 0; line-height: 1.65; }
+.about-page .watch-section { padding-top: var(--about-section-inset); }
+.about-page .watch-section .video-wrapper {
+  gap: clamp(20px, 3vw, 36px);
+  margin-top: 1.75rem;
+}
+
+.about-page .visit-section {
+  --visit-border: #d8d0c1;
+  background: #f1ede4;
+}
+
+html[data-theme="dark"] .about-page .visit-section {
+  --visit-border: #496276;
+  background: #16232e;
+}
+
+.about-page .visit-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr);
+  align-items: stretch;
+  gap: clamp(16px, 3vw, 32px);
+}
+
+.about-page .visit-info-card,
+.about-page .visit-map-card {
+  border: 1px solid var(--visit-border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.about-page .visit-info-card { padding: clamp(22px, 3vw, 42px); }
+.about-page .visit-map-card { overflow: hidden; }
+.visit-brand { display: flex; align-items: center; gap: 1rem; }
+.visit-brand h3 { margin: 0; font-size: clamp(1.15rem, 2.2vw, 1.55rem); }
+.visit-brand img,
+.about-page .visit-info-card .contact-detail img {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: #f0f4f8;
+}
+.visit-brand img { object-fit: contain; padding: 5px; }
+.about-page .visit-info-card .contact-detail img { padding: 9px; }
+.visit-copy {
+  border: 0;
+  padding: .35em 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: .2em;
+  cursor: pointer;
+}
+.about-page .visit-info-card .visit-copy-status {
+  min-height: 1.5em;
+  margin: -.5rem 0 0;
+  color: var(--ink);
+  font-size: .95rem;
+}
+
+@media (max-width: 900px) {
+  .about-page .visit-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 700px) {
+  .about-page .section.about-person { grid-template-columns: minmax(0, 1fr); }
+  .about-page .portrait-trigger,
+  .about-page .portrait-placeholder { max-width: 260px; justify-self: center; }
+}
