@@ -274,8 +274,16 @@ page_start('Donate');
         <h1>Monetary Donation</h1>
         <p class="lede">After donating, please fill out this form so we can thank you. The amount is self-reported and recorded for transparency; it is not independently tracked through this form.</p>
 
+        <div class="method-tabs" data-tabs>
+            <button type="button" class="is-active" data-tab-target="qr">QR Codes</button>
+            <button type="button" data-tab-target="bank">Bank Transfer</button>
+            <button type="button" data-tab-target="check">Check</button>
+          </div>
+
+        <div class="method-panels">
+          <div class="is-active" data-tab-panel="qr">
         <?php if ($methods): ?>
-          <label>Donation method
+          <label class="qr-method-select">Donation method
             <select form="monetary-donation-form" data-donation-method name="donation_method_id" required>
               <option value="">Select a method</option>
               <?php foreach ($methods as $method): ?>
@@ -287,14 +295,7 @@ page_start('Donate');
           </label>
         <?php endif; ?>
 
-        <div class="method-tabs" data-tabs>
-            <button type="button" class="is-active" data-tab-target="qr">QR Codes</button>
-            <button type="button" data-tab-target="bank">Bank Transfer</button>
-            <button type="button" data-tab-target="check">Check</button>
-          </div>
 
-        <div class="method-panels">
-          <div class="is-active" data-tab-panel="qr">
             <?php $qrMethods = array_values(array_filter($methods, static fn ($m) => stripos($m['payment_provider'] . $m['method_name'], 'qr') !== false || stripos($m['payment_provider'], 'gcash') !== false || stripos($m['payment_provider'], 'maya') !== false)); ?>
             <?php if ($qrMethods): foreach ($qrMethods as $method): ?>
               <figure class="qr-card" data-donation-method-details="<?= (int) $method['donation_method_id'] ?>" <?= (string) $method['donation_method_id'] === $old['donation_method_id'] ? '' : 'hidden' ?>>

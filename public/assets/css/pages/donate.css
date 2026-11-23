@@ -1,4 +1,6 @@
 /* Donation page */
+body:has(.donate-layout) .qr-method-select { display: block; width: min(100%, 340px); margin: 18px 0; }
+body:has(.donate-layout) .qr-method-select select { width: 100%; }
 body:has(.donate-layout) .donate-layout { grid-template-columns: 220px minmax(0, 1fr); min-height: 70vh; }
 body:has(.donate-layout) .donate-side {
   margin: 18px 0 18px 18px;
@@ -29,6 +31,7 @@ body:has(.donate-layout) .donation-howto-page li { color: var(--muted, #667085);
 body:has(.donate-layout) .donation-howto-page ul { padding-left: 22px; }
 body:has(.donate-layout) .donation-howto-next-step .button { display: inline-flex; margin-top: 6px; text-decoration: none; }
 body:has(.donate-layout) .qr-card { width: min(100%, 360px); margin: 20px auto 28px; }
+body:has(.donate-layout) .qr-card figcaption > strong { display: block; text-align: center; }
 body:has(.donate-layout) .qr-expand { display: grid; justify-items: center; gap: 9px; width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface, #fff); color: var(--muted, #667085); cursor: zoom-in; font: inherit; }
 body:has(.donate-layout) .qr-expand img { display: block; width: min(100%, 320px); max-width: 320px; max-height: 360px; object-fit: contain; }
 body:has(.donate-layout) .qr-expand span { font-size: .8rem; }
