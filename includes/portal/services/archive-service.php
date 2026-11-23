@@ -62,7 +62,8 @@ function archive_union_sql(): string
 
     UNION ALL
     SELECT 'monetary_donation'::text, m.id,
-           (COALESCE(m.reference_no, 'MD-' || m.id) || ' · ' || m.donor_name || ' · ₱'
+           (COALESCE(m.reference_no, 'MD-' || m.id) || ' · '
+             || COALESCE(NULLIF(m.donor_name, ''), 'Name not provided') || ' · ₱'
              || to_char(m.reported_amount, 'FM999,999,999,990.00'))::text,
            m.status::text,
            (CASE WHEN m.status = 'verified' THEN 'Verified' ELSE 'Not verified' END)::text,
@@ -316,7 +317,7 @@ function archive_get_detail(PDO $pdo, string $type, int $id): ?array
         if (!$row) { return null; }
         $d['title'] = 'Monetary donation · ' . (string) ($row['reference_no'] ?: 'MD-' . $row['id']);
         $d['fields'] = [
-            ['Donor', (string) $row['donor_name']],
+            ['Donor', $row['donor_name'] === '' ? 'Name not provided' : (string) $row['donor_name']],
             ['Email', (string) $row['donor_email']],
             ['Contact number', (string) ($row['donor_contact'] ?? '')],
             ['Reported amount', format_peso($row['reported_amount'])],

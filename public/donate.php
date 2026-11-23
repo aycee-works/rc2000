@@ -7,6 +7,7 @@ $donationReceipt = $_SESSION['donation_receipt'] ?? null;
 
 $methods = active_donation_methods();
 $errors = [];
+$donationPrivacyNote = 'Your email is required to check your donation status and receive updates. Admins use your payment details to verify your donation. Any payment proof you upload may show your name.';
 $old = [
     'donor_name' => '',
     'donor_email' => '',
@@ -21,7 +22,6 @@ $old = [
     'donation_method_id' => '',
     'transaction_reference' => '',
     'payment_date' => date('Y-m-d\TH:i'),
-    'anonymous' => '',
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -31,17 +31,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $action = (string) ($_POST['action'] ?? '');
     foreach ($old as $key => $_) {
-        if ($key !== 'anonymous') {
-            $old[$key] = post_string($key);
-        }
+        $old[$key] = post_string($key);
     }
-    $old['anonymous'] = isset($_POST['anonymous']) ? '1' : '';
+    // Honor the checkbox if someone submits an older copy of the form.
+    if (($_POST['anonymous'] ?? null) === '1') {
+        $old['donor_name'] = '';
+    }
+    $donorName = $old['donor_name'];
     $tab = in_array($_POST['action'] ?? '', ['campaign'], true) ? 'campaign' : 'money';
+
+    if (!$errors && in_array($action, ['campaign', 'monetary'], true) && !optional_text($donorName, 120)) {
+        $errors[] = 'Please enter a name of 120 characters or fewer, or leave it blank.';
+    }
 
     if (!$errors && $action === 'campaign') {
         $campaignId = (int) post_string('campaign_id');
-        $name = $old['anonymous'] === '1' ? 'Anonymous' : trim($old['donor_name']);
-        if ($name === '' || mb_strlen($name) > 120) $errors[] = 'Please enter your name or select anonymous giving.';
         if (!valid_email($old['donor_email']) || mb_strlen($old['donor_email']) > 150) $errors[] = 'Please enter a valid email address.';
         if (!valid_amount($old['amount_reported'])) $errors[] = 'Please enter a valid amount.';
         if (!valid_date_time($old['payment_date'])) $errors[] = 'Please enter the payment date.';
@@ -59,11 +63,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 $methodName = mb_substr(trim($selectedMethod['method_name'] . ' · ' . $selectedMethod['payment_provider']), 0, 40);
                 $stmt = db()->prepare("INSERT INTO rc2000_admin.monetary_donations (reference_no, donor_name, donor_email, donor_contact, reported_amount, payment_method, transaction_ref, proof_path, campaign_id) VALUES ('MD-' || lpad(nextval('rc2000_admin.monetary_donation_seq')::text, 4, '0'), :name, :email, :contact, :amount, :method, :reference, :proof, :campaign) RETURNING reference_no");
-                $stmt->execute(['name' => $name, 'email' => strtolower(trim($old['donor_email'])), 'contact' => $contact ?: null, 'amount' => number_format((float) $old['amount_reported'], 2, '.', ''), 'method' => $methodName, 'reference' => $old['transaction_reference'], 'proof' => $proof, 'campaign' => $campaignId]);
+                $stmt->execute(['name' => $donorName, 'email' => strtolower(trim($old['donor_email'])), 'contact' => $contact ?: null, 'amount' => number_format((float) $old['amount_reported'], 2, '.', ''), 'method' => $methodName, 'reference' => $old['transaction_reference'], 'proof' => $proof, 'campaign' => $campaignId]);
                 $trackingId = (string) $stmt->fetchColumn();
                 $_SESSION['donation_receipt'] = [
                     'reference' => $trackingId,
-                    'name' => $name,
+                    'name' => $donorName,
                     'email' => strtolower(trim($old['donor_email'])),
                     'amount' => number_format((float) $old['amount_reported'], 2, '.', ''),
                     'method' => $methodName,
@@ -81,10 +85,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!$errors && $action === 'monetary') {
-        $donorName = $old['anonymous'] === '1' ? 'Anonymous' : $old['donor_name'];
-        if ($old['anonymous'] !== '1' && !required_text($donorName, 150)) {
-            $errors[] = 'Please enter your name, or donate anonymously.';
-        }
         if (!optional_text($old['contact_info'], 255)) {
             $errors[] = 'Contact information is too long.';
         }
@@ -195,7 +195,7 @@ page_start('Donate');
     <p class="eyebrow">Donate by</p>
     <a class="<?= $tab === 'money' ? 'is-active' : '' ?>" href="<?= e(app_url('public/donate.php?tab=money')) ?>">Monetary Donation</a>
     <a class="<?= $tab === 'campaign' ? 'is-active' : '' ?>" href="<?= e(app_url('public/donate.php?tab=campaign')) ?>">Campaign Donation</a>
-    <a class="<?= $tab === 'howto' ? 'is-active' : '' ?>" href="<?= e(app_url('public/donate.php?tab=howto')) ?>">How to Donate</a>
+    <a class="<?= $tab === 'howto' ? 'is-active' : '' ?>" href="<?= e(app_url('public/donate.php?tab=howto')) ?>">Other Donations</a>
     <a class="<?= $tab === 'status' ? 'is-active' : '' ?>" href="<?= e(app_url('public/donate.php?tab=status')) ?>">Donation Status</a>
   </aside>
 
@@ -210,7 +210,7 @@ page_start('Donate');
           <p class="lede">Keep this receipt. Your report is pending until reviewed by an administrator.</p>
           <dl class="receipt-details">
             <div><dt>Tracking ID</dt><dd><?= e((string) $donationReceipt['reference']) ?></dd></div>
-            <div><dt>Donor</dt><dd><?= e((string) $donationReceipt['name']) ?></dd></div>
+            <div><dt>Donor</dt><dd><?= e($donationReceipt['name'] === '' ? 'Name not provided' : (string) $donationReceipt['name']) ?></dd></div>
             <div><dt>Email</dt><dd><?= e((string) $donationReceipt['email']) ?></dd></div>
             <div><dt>Reported amount</dt><dd>₱<?= e(number_format((float) $donationReceipt['amount'], 2)) ?></dd></div>
             <div><dt>Payment method</dt><dd><?= e((string) $donationReceipt['method']) ?></dd></div>
@@ -281,16 +281,13 @@ page_start('Donate');
           <form method="post" enctype="multipart/form-data">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="monetary">
-            <label class="check-line">
-              <input type="checkbox" name="anonymous" value="1" <?= $old['anonymous'] ? 'checked' : '' ?>>
-              Donate anonymously
-            </label>
+            <p class="field-note" id="donation-report-privacy"><?= e($donationPrivacyNote) ?></p>
             <div class="form-grid">
-              <label>Name 
-                <input name="donor_name" maxlength="150" value="<?= e($old['donor_name']) ?>">
+              <label>Name (optional)
+                <input name="donor_name" maxlength="120" value="<?= e($old['donor_name']) ?>">
               </label>
               <label>Email
-                <input type="email" name="donor_email" required maxlength="150" value="<?= e($old['donor_email']) ?>">
+                <input type="email" name="donor_email" required maxlength="150" aria-describedby="donation-report-privacy" value="<?= e($old['donor_email']) ?>">
               </label>
               <label>Contact info
                 <input name="contact_info" maxlength="255" value="<?= e($old['contact_info']) ?>">
@@ -343,7 +340,55 @@ page_start('Donate');
         <?php if (!$campaigns): ?><p>No open campaigns are accepting reports right now.</p><?php elseif (!$methods): ?><p>Donation methods are not configured yet.</p><?php else: ?>
         <p class="lede">This form records a payment you have already sent. It does not process payments. Your report stays pending until an admin verifies it.</p>
         <div class="campaign-payment-methods"><h2>Choose a payment method</h2><div><?php foreach ($methods as $method): ?><article><strong><?=e($method['method_name'])?></strong><span><?=e($method['payment_provider'])?></span><?php if(!empty($method['qr_image_path'])&&media_file_exists($method['qr_image_path'])):?><button class="qr-expand" type="button" data-qr-expand aria-label="Expand <?=e($method['method_name'])?> QR code"><img src="<?=e(media_url($method['qr_image_path']))?>" alt="<?=e($method['method_name'])?> payment QR" loading="lazy"><span>Click to enlarge for scanning</span></button><?php endif; ?><?php if(!empty($method['instructions'])):?><p><?=nl2br(e($method['instructions']))?></p><?php endif; ?></article><?php endforeach; ?></div></div>
-        <form method="post" enctype="multipart/form-data"><?= csrf_field() ?><input type="hidden" name="action" value="campaign"><label>Campaign<select name="campaign_id" required><?php foreach ($campaigns as $item): ?><option value="<?= (int)$item['id'] ?>" <?= (int)$item['id']===(int)($featured['id']??0)?'selected':'' ?>><?= e($item['title']) ?> · goal ₱<?= e(number_format((float)$item['goal_amount'],2)) ?></option><?php endforeach; ?></select></label><label class="check-line"><input type="checkbox" name="anonymous" value="1" <?= $old['anonymous']?'checked':'' ?>> Donate anonymously</label><div class="form-grid"><label>Name<input name="donor_name" maxlength="120" value="<?= e($old['donor_name']) ?>"></label><label>Email<input type="email" name="donor_email" required maxlength="150" value="<?= e($old['donor_email']) ?>"></label><label>Contact info<input name="contact_info" maxlength="30" value="<?= e($old['contact_info']) ?>"></label><label>Amount (PHP)<input type="number" name="amount_reported" min="1" step="0.01" required value="<?= e($old['amount_reported']) ?>"></label><label>Payment date<input type="datetime-local" name="payment_date" required value="<?= e($old['payment_date']) ?>"></label><label>Donation method<select name="donation_method_id" required><option value="">Select a method</option><?php foreach($methods as $method): ?><option value="<?= (int)$method['donation_method_id'] ?>"><?= e($method['method_name'].' · '.$method['payment_provider']) ?></option><?php endforeach; ?></select></label><label>Transaction reference<input name="transaction_reference" maxlength="100" value="<?= e($old['transaction_reference']) ?>"></label></div><label class="upload-box">Payment proof (optional)<input type="file" name="proof_of_payment" accept="image/jpeg,image/png,image/webp,image/gif"></label><label class="check-line"><input type="checkbox" required> I have already sent this donation</label><button class="button wide" type="submit">Submit donation report</button></form>
+        <form method="post" enctype="multipart/form-data">
+          <?= csrf_field() ?>
+          <input type="hidden" name="action" value="campaign">
+          <label>Campaign
+            <select name="campaign_id" required>
+              <?php foreach ($campaigns as $item): ?>
+                <option value="<?= (int) $item['id'] ?>" <?= (int) $item['id'] === (int) ($featured['id'] ?? 0) ? 'selected' : '' ?>>
+                  <?= e($item['title']) ?> · goal ₱<?= e(number_format((float) $item['goal_amount'], 2)) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </label>
+          <p class="field-note" id="donation-report-privacy"><?= e($donationPrivacyNote) ?></p>
+          <div class="form-grid">
+            <label>Name (optional)
+              <input name="donor_name" maxlength="120" value="<?= e($old['donor_name']) ?>">
+            </label>
+            <label>Email
+              <input type="email" name="donor_email" required maxlength="150" aria-describedby="donation-report-privacy" value="<?= e($old['donor_email']) ?>">
+            </label>
+            <label>Contact info
+              <input name="contact_info" maxlength="30" value="<?= e($old['contact_info']) ?>">
+            </label>
+            <label>Amount (PHP)
+              <input type="number" name="amount_reported" min="1" step="0.01" required value="<?= e($old['amount_reported']) ?>">
+            </label>
+            <label>Payment date
+              <input type="datetime-local" name="payment_date" required value="<?= e($old['payment_date']) ?>">
+            </label>
+            <label>Donation method
+              <select name="donation_method_id" required>
+                <option value="">Select a method</option>
+                <?php foreach ($methods as $method): ?>
+                  <option value="<?= (int) $method['donation_method_id'] ?>"><?= e($method['method_name'] . ' · ' . $method['payment_provider']) ?></option>
+                <?php endforeach; ?>
+              </select>
+            </label>
+            <label>Transaction reference
+              <input name="transaction_reference" maxlength="100" value="<?= e($old['transaction_reference']) ?>">
+            </label>
+          </div>
+          <label class="upload-box">Payment proof (optional)
+            <input type="file" name="proof_of_payment" accept="image/jpeg,image/png,image/webp,image/gif">
+          </label>
+          <label class="check-line">
+            <input type="checkbox" required> I have already sent this donation
+          </label>
+          <button class="button wide" type="submit">Submit donation report</button>
+        </form>
         <?php endif; ?>
       </section>
     <?php elseif ($tab === 'howto'): ?>

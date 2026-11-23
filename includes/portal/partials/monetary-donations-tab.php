@@ -72,7 +72,7 @@ $m = $moneySelected;
             ?>
                 <tr<?= $isSelected ? ' class="is-selected"' : '' ?>>
                     <td><?= e($row['reference_no']) ?></td>
-                    <td><?= e($row['donor_name']) ?></td>
+                    <td><?= e($row['donor_name'] === '' ? 'Name not provided' : $row['donor_name']) ?></td>
                     <td><?= e(format_peso($row['reported_amount'])) ?></td>
                     <td><?= e($row['payment_method'] ?? '') ?></td>
                     <td><?= e(format_date_short($row['created_at'])) ?></td>
@@ -143,7 +143,7 @@ $m = $moneySelected;
             <section>
                 <h3 class="review-heading">Donor</h3>
                 <dl class="detail-grid">
-                    <?= detail_item('Name', e($m['donor_name'])) ?>
+                    <?= detail_item('Name', e($m['donor_name'] === '' ? 'Name not provided' : $m['donor_name'])) ?>
                     <?= detail_item('Email', e($m['donor_email'])) ?>
                     <?= detail_item('Contact number', e($m['donor_contact'] ?? '')) ?>
                     <?= detail_item('Donation history', e($historyText)) ?>

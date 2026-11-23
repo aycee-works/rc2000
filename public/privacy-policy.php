@@ -29,7 +29,7 @@ page_start('Privacy Policy', ['class' => 'privacy-policy-page']);
         <p>When you use the website, you may choose to provide information through its forms, including:</p>
         <ul>
           <li><strong>Inquiries:</strong> your name, email address, optional phone number, inquiry category, subject, and message.</li>
-          <li><strong>Donation reports:</strong> your name and email address, optional contact details, donation amount and date, payment method, transaction reference, and any payment proof you upload. Book donation forms may also ask for book details and notes.</li>
+          <li><strong>Donation reports:</strong> your name (optional for monetary donations) and email address, optional contact details, donation amount and date, payment method, transaction reference, and any payment proof you upload. Book donation forms may also ask for book details and notes.</li>
           <li><strong>Website feedback:</strong> your name, email address, and feedback message.</li>
           <li><strong>Daily quizzes:</strong> your answers are processed to calculate your score. Joining the leaderboard is optional; if you join, your username, email address, score, and quiz date are stored. Your username and score appear on the public leaderboard.</li>
           <li><strong>Weekly reading challenge:</strong> if you vote, your choice is stored with a one-way hash derived from the connection IP address and browser user-agent to help prevent duplicate votes. The vote record stores the hash rather than those raw values.</li>

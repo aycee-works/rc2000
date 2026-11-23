@@ -104,7 +104,7 @@ require dirname(__DIR__, 2) . '/includes/portal/admin-header.php';
                 <?php foreach ($pendingDonations as $d): ?>
                     <tr>
                         <td><?= e($d['label']) ?></td>
-                        <td><?= e($d['donor']) ?></td>
+                        <td><?= e($d['donor'] === '' ? 'Name not provided' : $d['donor']) ?></td>
                         <td>Monetary</td>
                         <td><a href="<?= e($d['review_url']) ?>">Review</a></td>
                     </tr>

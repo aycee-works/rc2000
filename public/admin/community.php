@@ -20,10 +20,13 @@ function community_send_donation_email(array $row, string $message): bool
     $mail->Port=(int)($config['mail_port']??587);
     $mail->SMTPSecure=($config['mail_encryption']??'tls')==='ssl' ? \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS : \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
     $mail->CharSet='UTF-8'; $mail->setFrom((string)($config['mail_from_email']??$mail->Username),(string)($config['mail_from_name']??'Reading Club 2000'));
-    $mail->addAddress((string)$row['donor_email'],(string)$row['donor_name']); $mail->isHTML(false);
+    $donorName = (string) $row['donor_name'];
+    $greeting = $donorName === '' ? 'Hello,' : "Hello {$donorName},";
+    $mail->addAddress((string) $row['donor_email'], $donorName);
+    $mail->isHTML(false);
     $mail->Subject='Donation report update · '.(string)$row['reference_no'];
     $campaignLine=!empty($row['campaign_title'])?"Campaign: {$row['campaign_title']}\n":'';
-    $mail->Body="Hello {$row['donor_name']},\n\nYour donation report {$row['reference_no']} is now marked: {$row['status_label']}.\n{$campaignLine}Reported amount: ₱".number_format((float)$row['reported_amount'],2)."\n\n{$message}\n\nThank you,\nReading Club 2000";
+    $mail->Body="{$greeting}\n\nYour donation report {$row['reference_no']} is now marked: {$row['status_label']}.\n{$campaignLine}Reported amount: ₱".number_format((float)$row['reported_amount'],2)."\n\n{$message}\n\nThank you,\nReading Club 2000";
     $mail->send(); return true;
 }
 
@@ -181,7 +184,13 @@ if (is_post()) {
 
 $editId=(int)($_GET['campaign']??0);$editCampaign=null;if($editId){$s=$pdo->prepare('SELECT * FROM rc2000_admin.campaigns WHERE id=?');$s->execute([$editId]);$editCampaign=$s->fetch()?:null;}
 $campaigns=$pdo->query("SELECT c.*,COALESCE(SUM(d.verified_amount) FILTER(WHERE d.status='verified'),0) AS raised FROM rc2000_admin.campaigns c LEFT JOIN rc2000_admin.monetary_donations d ON d.campaign_id=c.id GROUP BY c.id ORDER BY c.is_featured DESC,c.created_at DESC")->fetchAll();
-$reports=$pdo->query("SELECT d.id,d.reference_no,d.donor_name,d.donor_email,d.reported_amount,d.status,d.email_status,c.title AS campaign_title FROM rc2000_admin.monetary_donations d LEFT JOIN rc2000_admin.campaigns c ON c.id=d.campaign_id ORDER BY (d.status='pending') DESC,d.created_at DESC LIMIT 30")->fetchAll();
+$reports = $pdo->query(
+    "SELECT d.id, d.reference_no, COALESCE(NULLIF(d.donor_name, ''), 'Name not provided') AS donor_name,
+            d.donor_email, d.reported_amount, d.status, d.email_status, c.title AS campaign_title
+     FROM rc2000_admin.monetary_donations d
+     LEFT JOIN rc2000_admin.campaigns c ON c.id = d.campaign_id
+     ORDER BY (d.status = 'pending') DESC, d.created_at DESC LIMIT 30"
+)->fetchAll();
 $pageTitle='Campaigns & community';$activeNav='community';$extraCss=['community.css'];require dirname(__DIR__,2).'/includes/portal/admin-header.php';
 ?>
 <header class="page-header"><h1 class="page-title">Manage Campaigns</h1><p class="page-subtitle">Manage campaign transparency and donation verification.</p></header>
