@@ -3,7 +3,7 @@
     <img class="brand-logo" src="<?= e(app_url('public/assets/images/icons/logo.png')) ?>" alt="" width="24" height="24">
     <span class="brand-name">Reading Club 2000</span>
   </a>
-  <nav class="main-nav" aria-label="Main navigation">
+  <nav class="main-nav" id="public-main-nav" aria-label="Main navigation">
     <a href="<?= e(app_url('public/home.php')) ?>"<?= nav_active('home.php') ?>>Home</a>
     <a href="<?= e(app_url('public/explore.php')) ?>"<?= nav_active('explore.php') ?>>Explore</a>
     <a href="<?= e(app_url('public/donate.php')) ?>"<?= nav_active('donate.php') ?>>Donate</a>
@@ -14,6 +14,9 @@
     <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false">
       <img data-theme-icon src="<?= e(app_url('public/assets/images/icons/theme-moon.svg')) ?>" data-light-src="<?= e(app_url('public/assets/images/icons/theme-moon.svg')) ?>" data-dark-src="<?= e(app_url('public/assets/images/icons/theme-sun.svg')) ?>" alt="" aria-hidden="true" width="24" height="24">
       <span data-theme-label>Dark mode</span>
+    </button>
+    <button class="mobile-nav-toggle" type="button" data-mobile-nav-toggle aria-controls="public-main-nav" aria-expanded="false" hidden>
+      <span aria-hidden="true">☰</span> Menu
     </button>
   </div>
 </header>

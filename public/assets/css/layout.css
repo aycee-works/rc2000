@@ -169,3 +169,38 @@ body.admin-body:not(.superadmin-body) .sidebar-footer .link-button:focus-visible
 @media (prefers-reduced-motion: reduce) {
     body.admin-body:not(.superadmin-body) .sidebar { transition:none; }
 }
+
+/* Compact navigation and fluid workspace for both staff portals. */
+.portal-menu-toggle { display: none; }
+@media (max-width: 900px) {
+    body.admin-body .admin-shell { display: block; width: 100%; min-width: 0; }
+    body.admin-body .sidebar {
+        width: 100%; height: auto; min-width: 0;
+        display: flex; flex-direction: row; flex-wrap: wrap;
+        justify-content: space-between; gap: 12px;
+    }
+    body.admin-body .sidebar-brand { min-width: 0; flex: 1; padding: 0; }
+    body.admin-body .sidebar-brand span { white-space: normal; overflow-wrap: anywhere; }
+    body.admin-body .portal-menu-toggle:not([hidden]) {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-height: 44px; padding: 8px 12px;
+        border: 1px solid currentColor; border-radius: var(--radius);
+        color: inherit; background: transparent; font: inherit; cursor: pointer;
+    }
+    body.superadmin-body .portal-menu-toggle { color: #fff; }
+    body.admin-body .sidebar-nav { flex: 0 0 100%; flex-direction: column; gap: 4px; min-width: 0; }
+    body.admin-body .sidebar-nav .nav-link { min-height: 44px; white-space: normal; }
+    body.admin-body .sidebar-footer { flex: 0 0 100%; display: block; padding: 12px 0 0; margin: 0; }
+    body.admin-body .sidebar:has([data-portal-menu]:not([hidden])[aria-expanded="false"]) :is(.sidebar-nav, .sidebar-footer) { display: none; }
+    body.admin-body .admin-main { width: 100%; min-width: 0; margin-left: 0; padding: 16px 14px 32px; }
+    body.admin-body .portal-toolbar { position: relative; inset: auto; justify-content: flex-end; flex-wrap: wrap; margin-bottom: 16px; }
+    body.admin-body .page-header { padding-right: 0; }
+    body.admin-body .page-title { font-size: clamp(22px, 5vw, 28px); overflow-wrap: anywhere; }
+    body.admin-body :is(.panel, .sa-card, .table-wrap) { min-width: 0; max-width: 100%; }
+    body.admin-body .notification-panel { width: min(360px, calc(100vw - 28px)); }
+    body.admin-body :is(.page-header, .sa-account-head, .sa-card-foot, .filters) { flex-wrap: wrap; gap: 10px; }
+}
+@media (max-width: 560px) {
+    body.admin-body :is(.sa-form-grid, .sa-manage-grid, .form-grid) { grid-template-columns: minmax(0, 1fr); }
+    body.admin-body :is(input, select, textarea) { max-width: 100%; min-width: 0; }
+}

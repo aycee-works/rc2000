@@ -1296,6 +1296,42 @@ html[data-theme="dark"] .testimonial p { color: var(--ink); }
   .site main :is(h1, h2, h3) { white-space: normal; overflow-wrap: anywhere; }
 }
 
+.mobile-nav-toggle { display: none; }
+
+@media (max-width: 700px) {
+  .mobile-nav-toggle:not([hidden]) {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    font-size: .875rem;
+    cursor: pointer;
+  }
+  .site-header:has(.mobile-nav-toggle:not([hidden])) .main-nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding-block: 4px;
+  }
+  .site-header:has(.mobile-nav-toggle:not([hidden])[aria-expanded="false"]) .main-nav { display: none; }
+  .site-header:has(.mobile-nav-toggle:not([hidden])) .main-nav a {
+    min-height: 44px;
+    justify-content: flex-start;
+    padding-inline: 12px;
+  }
+}
+
+@media (max-width: 440px) {
+  .site-header:has(.mobile-nav-toggle:not([hidden])) .theme-toggle { min-height: 44px; min-width: 44px; }
+  .site-header:has(.mobile-nav-toggle:not([hidden])) [data-theme-label] { display: none; }
+}
+
 /* Final homepage trivia overrides, placed after shared theme rules. */
 body.home-page #trivia.tinted { background:#f0eadc !important; }
 html[data-theme="dark"] body.home-page #trivia.tinted { background:#202f38 !important; }

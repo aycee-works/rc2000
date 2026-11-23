@@ -274,6 +274,19 @@ page_start('Donate');
         <h1>Monetary Donation</h1>
         <p class="lede">After donating, please fill out this form so we can thank you. The amount is self-reported and recorded for transparency; it is not independently tracked through this form.</p>
 
+        <?php if ($methods): ?>
+          <label>Donation method
+            <select form="monetary-donation-form" data-donation-method name="donation_method_id" required>
+              <option value="">Select a method</option>
+              <?php foreach ($methods as $method): ?>
+                <option value="<?= (int) $method['donation_method_id'] ?>" <?= (string) $method['donation_method_id'] === $old['donation_method_id'] ? 'selected' : '' ?>>
+                  <?= e($method['method_name'] . ' · ' . $method['payment_provider']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </label>
+        <?php endif; ?>
+
         <div class="method-tabs" data-tabs>
             <button type="button" class="is-active" data-tab-target="qr">QR Codes</button>
             <button type="button" data-tab-target="bank">Bank Transfer</button>
@@ -284,7 +297,7 @@ page_start('Donate');
           <div class="is-active" data-tab-panel="qr">
             <?php $qrMethods = array_values(array_filter($methods, static fn ($m) => stripos($m['payment_provider'] . $m['method_name'], 'qr') !== false || stripos($m['payment_provider'], 'gcash') !== false || stripos($m['payment_provider'], 'maya') !== false)); ?>
             <?php if ($qrMethods): foreach ($qrMethods as $method): ?>
-              <figure class="qr-card">
+              <figure class="qr-card" data-donation-method-details="<?= (int) $method['donation_method_id'] ?>" <?= (string) $method['donation_method_id'] === $old['donation_method_id'] ? '' : 'hidden' ?>>
                 <?php if (media_file_exists($method['qr_image_path'])): ?>
                   <button class="qr-expand" type="button" data-qr-expand aria-label="Expand <?= e($method['method_name']) ?> QR code">
                     <img src="<?= e(media_url($method['qr_image_path'])) ?>" alt="<?= e($method['method_name']) ?> QR code">
@@ -321,7 +334,7 @@ page_start('Donate');
         <?php if (!$methods): ?>
           <p class="alert alert-error">Monetary reports need at least one active row in <code>donation_methods</code>.</p>
         <?php else: ?>
-          <form method="post" enctype="multipart/form-data">
+          <form id="monetary-donation-form" method="post" enctype="multipart/form-data">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="monetary">
             <p class="field-note" id="donation-report-privacy"><?= e($donationPrivacyNote) ?></p>
@@ -340,16 +353,6 @@ page_start('Donate');
               </label>
               <label>Payment date
                 <input type="datetime-local" name="payment_date" required value="<?= e($old['payment_date']) ?>">
-              </label>
-              <label>Donation method
-                <select name="donation_method_id" required>
-                  <option value="">Select a method</option>
-                  <?php foreach ($methods as $method): ?>
-                    <option value="<?= (int) $method['donation_method_id'] ?>" <?= (string) $method['donation_method_id'] === $old['donation_method_id'] ? 'selected' : '' ?>>
-                      <?= e($method['method_name'] . ' · ' . $method['payment_provider']) ?>
-                    </option>
-                  <?php endforeach; ?>
-                </select>
               </label>
               <label>Transaction / check number
                 <input name="transaction_reference" required maxlength="150" value="<?= e($old['transaction_reference']) ?>">
@@ -382,10 +385,20 @@ page_start('Donate');
         <?php endif; ?>
         <?php if (!$campaigns): ?><p>No open campaigns are accepting reports right now.</p><?php elseif (!$methods): ?><p>Donation methods are not configured yet.</p><?php else: ?>
         <p class="lede">This form records a payment you have already sent. It does not process payments. Your report stays pending until an admin verifies it.</p>
-        <div class="campaign-payment-methods"><h2>Choose a payment method</h2><div><?php foreach ($methods as $method): ?><article><strong><?=e($method['method_name'])?></strong><span><?=e($method['payment_provider'])?></span><?php if(!empty($method['qr_image_path'])&&media_file_exists($method['qr_image_path'])):?><button class="qr-expand" type="button" data-qr-expand aria-label="Expand <?=e($method['method_name'])?> QR code"><img src="<?=e(media_url($method['qr_image_path']))?>" alt="<?=e($method['method_name'])?> payment QR" loading="lazy"><span>Click to enlarge for scanning</span></button><?php endif; ?><?php if(!empty($method['instructions'])):?><p><?=nl2br(e($method['instructions']))?></p><?php endif; ?></article><?php endforeach; ?></div></div>
         <form method="post" enctype="multipart/form-data">
           <?= csrf_field() ?>
           <input type="hidden" name="action" value="campaign">
+          <label>Donation method
+            <select data-donation-method name="donation_method_id" required>
+              <option value="">Select a method</option>
+              <?php foreach ($methods as $method): ?>
+                <option value="<?= (int) $method['donation_method_id'] ?>" <?= (string) $method['donation_method_id'] === $old['donation_method_id'] ? 'selected' : '' ?>>
+                  <?= e($method['method_name'] . ' · ' . $method['payment_provider']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </label>
+        <div class="campaign-payment-methods"><div><?php foreach ($methods as $method): ?><article class="qr-card" data-donation-method-details="<?= (int) $method['donation_method_id'] ?>" <?= (string) $method['donation_method_id'] === $old['donation_method_id'] ? '' : 'hidden' ?>><strong><?=e($method['method_name'])?></strong><span><?=e($method['payment_provider'])?></span><?php if(!empty($method['qr_image_path'])&&media_file_exists($method['qr_image_path'])):?><button class="qr-expand" type="button" data-qr-expand aria-label="Expand <?=e($method['method_name'])?> QR code"><img src="<?=e(media_url($method['qr_image_path']))?>" alt="<?=e($method['method_name'])?> payment QR" loading="lazy"><span>Click to enlarge for scanning</span></button><?php endif; ?><?php if(!empty($method['instructions'])):?><p><?=nl2br(e($method['instructions']))?></p><?php endif; ?></article><?php endforeach; ?></div></div>
           <label>Campaign
             <select name="campaign_id" required>
               <?php foreach ($campaigns as $item): ?>
@@ -411,14 +424,6 @@ page_start('Donate');
             </label>
             <label>Payment date
               <input type="datetime-local" name="payment_date" required value="<?= e($old['payment_date']) ?>">
-            </label>
-            <label>Donation method
-              <select name="donation_method_id" required>
-                <option value="">Select a method</option>
-                <?php foreach ($methods as $method): ?>
-                  <option value="<?= (int) $method['donation_method_id'] ?>"><?= e($method['method_name'] . ' · ' . $method['payment_provider']) ?></option>
-                <?php endforeach; ?>
-              </select>
             </label>
             <label>Transaction reference
               <input name="transaction_reference" maxlength="100" value="<?= e($old['transaction_reference']) ?>">

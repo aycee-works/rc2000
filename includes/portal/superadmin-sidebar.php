@@ -14,7 +14,8 @@ $sidebarUser = current_admin() ?? [];
         <span>Reading Club 2000</span>
     </a>
 
-    <nav class="sidebar-nav" aria-label="Main">
+    <button class="portal-menu-toggle" type="button" data-portal-menu aria-controls="portal-navigation portal-account" aria-expanded="false" hidden>☰ Menu</button>
+    <nav class="sidebar-nav" id="portal-navigation" aria-label="Main">
         <?php foreach ($navItems as $key => [$label, $path, $icon]): ?>
             <a href="<?= e(url($path)) ?>" title="<?= e($label) ?>"
                class="nav-link<?= $key === $activeNav ? ' is-active' : '' ?>"
@@ -26,7 +27,7 @@ $sidebarUser = current_admin() ?? [];
         <?php endforeach; ?>
     </nav>
 
-    <div class="sidebar-footer">
+    <div class="sidebar-footer" id="portal-account">
         <div class="sidebar-user">
             <img class="profile-icon profile-icon-light" src="<?= e(asset('images/icons/profile-light.png')) ?>" alt="" aria-hidden="true" width="20" height="20">
             <img class="profile-icon profile-icon-dark" src="<?= e(asset('images/icons/profile-dark.png')) ?>" alt="" aria-hidden="true" width="20" height="20">

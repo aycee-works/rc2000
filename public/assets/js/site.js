@@ -1,4 +1,22 @@
 (() => {
+  const mobileNavToggle = document.querySelector('[data-mobile-nav-toggle]');
+  if (mobileNavToggle) {
+    const header = mobileNavToggle.closest('.site-header');
+    const closeMenu = () => mobileNavToggle.setAttribute('aria-expanded', 'false');
+    mobileNavToggle.hidden = false;
+    mobileNavToggle.addEventListener('click', () => {
+      const expanded = mobileNavToggle.getAttribute('aria-expanded') === 'true';
+      mobileNavToggle.setAttribute('aria-expanded', String(!expanded));
+      if (!expanded) header.querySelector('.main-nav a')?.focus();
+    });
+    header.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && mobileNavToggle.getAttribute('aria-expanded') === 'true' && mobileNavToggle.offsetWidth) {
+        closeMenu();
+        mobileNavToggle.focus();
+      }
+    });
+  }
+
   const themeToggle = document.querySelector('[data-theme-toggle]');
   if (themeToggle) {
     const themeIcon = themeToggle.querySelector('[data-theme-icon]');
@@ -71,6 +89,23 @@
           panel.classList.toggle('is-active', match);
         });
       });
+    });
+  });
+
+  document.querySelectorAll('[data-donation-method]').forEach((select) => {
+    const section = select.closest('.form-card');
+    const details = [...section.querySelectorAll('[data-donation-method-details]')];
+    const updateDetails = () => {
+      details.forEach((item) => {
+        item.hidden = item.dataset.donationMethodDetails !== select.value;
+      });
+    };
+    updateDetails();
+    select.addEventListener('change', () => {
+      updateDetails();
+      if (details.some((item) => !item.hidden)) {
+        section.querySelector('[data-tab-target="qr"]')?.click();
+      }
     });
   });
 

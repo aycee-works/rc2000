@@ -2,6 +2,20 @@
 
 (function () {
     'use strict';
+    var menuToggle = document.querySelector('[data-portal-menu]');
+    if (menuToggle) {
+        menuToggle.hidden = false;
+        menuToggle.addEventListener('click', function () {
+            var expanded = menuToggle.getAttribute('aria-expanded') === 'true';
+            menuToggle.setAttribute('aria-expanded', String(!expanded));
+        });
+        menuToggle.closest('.sidebar').addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && menuToggle.offsetWidth && menuToggle.getAttribute('aria-expanded') === 'true') {
+                menuToggle.setAttribute('aria-expanded', 'false');
+                menuToggle.focus();
+            }
+        });
+    }
 
     // ---- Helpers other scripts can reuse (window.RC) ----
     var RC = window.RC = window.RC || {};

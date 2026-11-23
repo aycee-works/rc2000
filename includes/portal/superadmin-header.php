@@ -24,7 +24,7 @@ if (!headers_sent()) { header('Cache-Control: no-store'); }
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Public+Sans:wght@400;500;600&display=swap">
     <link rel="stylesheet" href="<?= e(asset('css/base.css')) ?>">
-    <link rel="stylesheet" href="<?= e(asset('css/layout.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset('css/layout.css')) ?>?v=2">
     <link rel="stylesheet" href="<?= e(asset('css/components.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('css/superadmin.css')) ?>?v=4">
     <link rel="stylesheet" href="<?= e(asset('css/notifications.css')) ?>">
