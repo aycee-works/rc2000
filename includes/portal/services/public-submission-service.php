@@ -96,7 +96,7 @@ function pub_rate_limit(PDO $pdo, string $bucket): int
 
 function pub_find_by_key(PDO $pdo, string $table, string $key): ?array
 {
-    $allowed = ['book_donations', 'monetary_donations', 'inquiries'];
+    $allowed = ['monetary_donations', 'inquiries'];
     if (!in_array($table, $allowed, true)) {
         return null;
     }
@@ -128,35 +128,6 @@ function pub_insert(PDO $pdo, string $table, string $sql, array $params, ?string
         }
         throw $e;
     }
-}
-
-function submit_book_donation(PDO $pdo, array $in): array
-{
-    $errors = [];
-    [$name, $email, $contact] = pub_person($in, $errors, 'donor_name', 'donor_email', 'donor_contact');
-    $key    = pub_idempotency_key($in, $errors);
-    $title  = pub_clean($in['book_title'] ?? '');
-    $author = pub_clean($in['author'] ?? '');
-    $genre  = pub_clean($in['genre'] ?? '');
-    $cond   = trim($in['book_condition'] ?? 'Good');
-    $notes  = pub_clean($in['notes'] ?? '');
-    $qtyRaw = trim($in['qty_offered'] ?? '1');
-
-    if ($title === '' || pub_len($title) > 200)  { $errors['book_title'] = 'Book title is required (up to 200 characters).'; }
-    if (pub_len($author) > 150)                  { $errors['author'] = 'Author must be 150 characters or fewer.'; }
-    if (pub_len($genre) > 60)                    { $errors['genre'] = 'Genre must be 60 characters or fewer.'; }
-    if (!in_array($cond, BOOK_CONDITIONS, true)) { $errors['book_condition'] = 'Condition must be one of: ' . implode(', ', BOOK_CONDITIONS) . '.'; }
-    if (!ctype_digit($qtyRaw) || (int) $qtyRaw < 1 || (int) $qtyRaw > 1000) { $errors['qty_offered'] = 'Quantity must be a whole number from 1 to 1000.'; }
-    if (pub_len($notes) > 1000)                  { $errors['notes'] = 'Notes must be 1000 characters or fewer.'; }
-    if ($errors) { return pub_fail($errors); }
-
-    if ($key !== null && ($existing = pub_find_by_key($pdo, 'book_donations', $key))) {
-        return ['ok' => true, 'created' => false, 'record' => $existing];
-    }
-    return pub_insert($pdo, 'book_donations',
-        "INSERT INTO book_donations (reference_no, idempotency_key, donor_name, donor_email, donor_contact, book_title, author, genre, book_condition, qty_offered, notes)
-         VALUES ('BD-' || lpad(nextval('book_donation_seq')::text, 4, '0'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        [$key, $name, $email, $contact, $title, $author ?: null, $genre ?: null, $cond, (int) $qtyRaw, $notes ?: null], $key);
 }
 
 /**

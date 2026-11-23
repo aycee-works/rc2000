@@ -13,7 +13,7 @@ try {
     $pdo = db();
     $out['database'] = true;
     $out['integration_sql'] = (bool) $pdo->query(
-        "SELECT (SELECT COUNT(*) FROM pg_sequences WHERE sequencename IN ('book_donation_seq','monetary_donation_seq','inquiry_seq')) = 3
+        "SELECT (SELECT COUNT(*) FROM pg_sequences WHERE sequencename IN ('monetary_donation_seq','inquiry_seq')) = 2
             AND to_regclass('rc2000_admin.public_rate_limits') IS NOT NULL"
     )->fetchColumn();
 } catch (Throwable $e) {

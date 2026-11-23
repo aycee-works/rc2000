@@ -92,11 +92,10 @@ function client_ip(): string
     return substr($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0', 0, 45);
 }
 
-/** Status badge HTML. $type is 'book', 'money', 'inquiry' or 'content'. */
+/** Status badge HTML. $type is 'money', 'inquiry' or 'content'. */
 function status_badge(string $status, string $type): string
 {
     $labels = [
-        'book'    => BOOK_STATUSES,
         'money'   => MONEY_STATUSES,
         'inquiry' => INQUIRY_STATUSES,
         'content' => CONTENT_STATUSES,

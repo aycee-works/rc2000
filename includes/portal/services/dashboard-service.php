@@ -5,8 +5,8 @@
  * admin/api/dashboard.php so both always show the same numbers.
  *
  * Metric definitions (change here only):
- *   total donations     = all book records + all monetary records
- *   pending donations   = book 'pending' + monetary 'pending'
+ *   total donations     = all monetary records
+ *   pending donations   = monetary records with status 'pending'
  *   pending inquiries   = inquiries 'open' + 'in_progress'
  *   monetary total      = SUM(verified_amount) of status 'verified'
  *                         (reported total = SUM(reported_amount) of all records)
@@ -56,8 +56,8 @@ function dashboard_card_values(array $s): array
 }
 
 /**
- * Newest pending donations (book and monetary together).
- * Each row: type ('book'|'monetary'), id, label, donor, reference_no, created_at.
+ * Newest pending monetary donations.
+ * Each row: type ('monetary'), id, label, donor, reference_no, created_at.
  */
 function get_pending_donations(PDO $pdo, int $limit = 5): array
 {

@@ -13,7 +13,6 @@ function archive_type_labels(): array
 {
     return [
         'inquiry'      => 'Inquiry',
-        'book_donation' => 'Book donation',
         'monetary_donation' => 'Monetary donation',
         'quiz'         => 'Quiz',
         'leaderboard'  => 'Quiz leaderboard',
@@ -32,7 +31,7 @@ function archive_groups(): array
 {
     return [
         'inquiries'  => ['inquiry'],
-        'donations'  => ['book_donation', 'monetary_donation'],
+        'donations'  => ['monetary_donation'],
         'activities' => ['quiz', 'leaderboard', 'challenge'],
         'campaigns'  => ['campaign'],
         'content'    => ['story', 'article', 'announcement', 'gallery', 'trivia'],
@@ -50,15 +49,6 @@ function archive_union_sql(): string
            COALESCE(i.closed_at, i.resolved_at, i.updated_at) AS archived_at
     FROM rc2000_admin.inquiries i
     WHERE i.status IN ('resolved', 'closed')
-
-    UNION ALL
-    SELECT 'book_donation'::text, b.id,
-           (COALESCE(b.reference_no, 'BD-' || b.id) || ' · ' || b.book_title || ' · ' || b.donor_name)::text,
-           b.status::text,
-           (CASE WHEN b.status = 'approved' THEN 'Approved' ELSE 'Rejected' END)::text,
-           COALESCE(b.reviewed_at, b.updated_at, b.created_at)
-    FROM rc2000_admin.book_donations b
-    WHERE b.status IN ('approved', 'rejected')
 
     UNION ALL
     SELECT 'monetary_donation'::text, m.id,
@@ -287,29 +277,6 @@ function archive_get_detail(PDO $pdo, string $type, int $id): ?array
         $d['body_label'] = 'Message';
         $d['body'] = (string) $r['message'];
         $d['responses'] = get_inquiry_responses($pdo, $id);
-    } elseif ($type === 'book_donation') {
-        $q = $pdo->prepare("SELECT * FROM rc2000_admin.book_donations WHERE id = ? AND status IN ('approved', 'rejected')");
-        $q->execute([$id]);
-        $row = $q->fetch();
-        if (!$row) { return null; }
-        $d['title'] = 'Book donation · ' . (string) ($row['reference_no'] ?: 'BD-' . $row['id']);
-        $d['fields'] = [
-            ['Donor', (string) $row['donor_name']],
-            ['Email', (string) $row['donor_email']],
-            ['Contact number', (string) ($row['donor_contact'] ?? '')],
-            ['Book', (string) $row['book_title']],
-            ['Author', (string) ($row['author'] ?? '')],
-            ['Genre', (string) ($row['genre'] ?? '')],
-            ['Condition', (string) $row['book_condition']],
-            ['Quantity offered', (string) (int) $row['qty_offered']],
-            ['Quantity received', $row['qty_received'] === null ? 'Not recorded' : (string) (int) $row['qty_received']],
-            ['Submitted', format_datetime($row['created_at'])],
-            ['Reviewed', $row['reviewed_at'] ? format_datetime($row['reviewed_at']) : 'Not recorded'],
-        ];
-        if (!empty($row['notes'])) {
-            $d['body_label'] = 'Donor notes';
-            $d['body'] = (string) $row['notes'];
-        }
     } elseif ($type === 'monetary_donation') {
         $q = $pdo->prepare("SELECT * FROM rc2000_admin.monetary_donations WHERE id = ? AND status IN ('verified', 'not_verified')");
         $q->execute([$id]);

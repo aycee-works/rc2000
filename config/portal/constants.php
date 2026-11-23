@@ -5,12 +5,6 @@
  * Keep these in sync with database/schema.sql.
  */
 
-const BOOK_STATUSES = [
-    'pending'  => 'Pending',
-    'approved' => 'Approved',
-    'rejected' => 'Rejected',
-];
-
 const MONEY_STATUSES = [
     'pending'      => 'Pending',
     'verified'     => 'Verified',
@@ -31,8 +25,6 @@ const CONTENT_STATUSES = [
     'published' => 'Published',
     'archived'  => 'Archived',
 ];
-
-const BOOK_CONDITIONS = ['Excellent', 'Good', 'Fair', 'Poor'];
 
 // Login throttling: block after this many failures within the window
 const LOGIN_MAX_ATTEMPTS   = 5;

@@ -27,7 +27,7 @@ const AUDIT_MODULE_LABELS = [
 ];
 
 const AUDIT_ENTITY_NOUNS = [
-    'book_donation' => 'book donation', 'monetary_donation' => 'monetary donation', 'inquiry' => 'inquiry',
+    'monetary_donation' => 'monetary donation', 'inquiry' => 'inquiry',
     'gallery' => 'gallery image', 'story' => 'story', 'announcement' => 'announcement',
     'trivia' => 'trivia entry', 'admin' => 'admin account',
 ];
@@ -46,7 +46,7 @@ SELECT l.id, l.admin_id, l.action, l.entity_type, l.entity_id, l.details, l.crea
          WHEN l.action = 'content_status' THEN
               CASE substring(l.details from '-> ([a-z_]+)$')
                    WHEN 'published' THEN 'published' WHEN 'archived' THEN 'archived' ELSE 'edited' END
-         WHEN l.action = 'book_donation_updated' THEN
+         WHEN l.action ~ '_donation_updated$' THEN
               CASE substring(l.details from 'status: [a-z_]+ -> ([a-z_]+)')
                    WHEN 'approved' THEN 'approved' WHEN 'rejected' THEN 'rejected' ELSE 'edited' END
          WHEN l.action = 'money_verified'     THEN 'verified'
@@ -59,7 +59,7 @@ SELECT l.id, l.admin_id, l.action, l.entity_type, l.entity_id, l.details, l.crea
        END AS activity_key,
        CASE
          WHEN l.action IN ('login', 'logout') THEN 'access'
-         WHEN l.entity_type IN ('book_donation', 'monetary_donation') THEN 'donations'
+         WHEN l.entity_type ~ '_donation$' THEN 'donations'
          WHEN l.entity_type = 'inquiry' THEN 'inquiries'
          WHEN l.entity_type IN ('gallery', 'story', 'announcement', 'trivia') THEN 'content'
          WHEN l.entity_type = 'admin' OR l.action ~ '^admin_' THEN 'accounts'
@@ -70,7 +70,7 @@ LEFT JOIN admins a ON a.id = l.admin_id
 SQL;
 }
 
-/** One-line description of a classified row, e.g. "Approved book donation BD-0001". */
+/** One-line description of a classified row, e.g. "Verified monetary donation MD-0001". */
 function audit_describe(array $row): string
 {
     $key = $row['activity_key'];

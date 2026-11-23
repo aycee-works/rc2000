@@ -341,13 +341,13 @@ page_start('Donate');
             <input type="hidden" name="action" value="monetary">
             <p class="field-note" id="donation-report-privacy"><?= e($donationPrivacyNote) ?></p>
             <div class="form-grid">
-              <label>Name (optional)
+              <label>Name (Optional)
                 <input name="donor_name" maxlength="120" value="<?= e($old['donor_name']) ?>">
               </label>
               <label>Email
                 <input type="email" name="donor_email" required maxlength="150" aria-describedby="donation-report-privacy" value="<?= e($old['donor_email']) ?>">
               </label>
-              <label>Contact info
+              <label>Contact Info (Optional)
                 <input name="contact_info" maxlength="255" value="<?= e($old['contact_info']) ?>">
               </label>
               <label>Amount
@@ -356,7 +356,7 @@ page_start('Donate');
               <label>Payment date
                 <input type="datetime-local" name="payment_date" required value="<?= e($old['payment_date']) ?>">
               </label>
-              <label>Transaction / check number
+              <label>Transaction / Check Number
                 <input name="transaction_reference" required maxlength="150" value="<?= e($old['transaction_reference']) ?>">
               </label>
             </div>
@@ -375,7 +375,7 @@ page_start('Donate');
     <?php elseif ($tab === 'campaign'): ?>
       <?php $featured = featured_campaign(); ?>
       <section class="form-card campaign-donation-page">
-        <span class="eyebrow">Support reading in our community</span><h1>Make a Campaign Donation Report</h1>
+        <span class="eyebrow"></span><h1>Make a Campaign Donation Report</h1>
         <?php if ($featured): $campaignGoal=(float)$featured['goal_amount']; $campaignRaised=(float)$featured['raised']; $campaignPct=$campaignGoal ? min(100,(int)round($campaignRaised/$campaignGoal*100)) : 0; ?>
           <article class="campaign-donation-summary">
             <h2><?= e($featured['title']) ?></h2>
@@ -443,7 +443,6 @@ page_start('Donate');
       </section>
     <?php elseif ($tab === 'howto'): ?>
       <section class="form-card donation-howto-page">
-        <span class="eyebrow">Support the neighborhood library</span>
         <h1>How to Donate</h1>
         <p class="lede">You can support Reading Club 2000 with useful items or your time, as well as through monetary donations.</p>
 
