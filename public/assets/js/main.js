@@ -101,20 +101,6 @@
         });
     }
 
-    document.querySelectorAll('[data-password-toggle]').forEach(function (button) {
-        var input = document.getElementById(button.getAttribute('aria-controls'));
-        if (!input) return;
-
-        button.setAttribute('aria-label', 'Show password');
-        button.hidden = false;
-        button.addEventListener('click', function () {
-            var reveal = input.type === 'password';
-            input.type = reveal ? 'text' : 'password';
-            button.textContent = reveal ? 'Hide' : 'Show';
-            button.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
-        });
-    });
-
     // ---- Portal notification bell ----
     var notificationRoot = document.querySelector('[data-notifications]');
     if (notificationRoot) {

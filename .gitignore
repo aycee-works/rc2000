@@ -1,4 +1,5 @@
 # Admin portal local configuration may contain database credentials.
 config/portal/local.php
+/config/db.local.php
 /composer.phar
 /composer-setup.php

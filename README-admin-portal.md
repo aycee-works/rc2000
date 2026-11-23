@@ -24,7 +24,7 @@ The portals use shared code in `includes/portal/`, settings in `config/portal/`,
 
    Follow the prompts for the superadmin email and password. Then open `/rc2000/superadmin/` and use the admin management page to create regular admin accounts. Regular staff sign in at `/rc2000/admin/`.
 
-The portal connection reuses `config/db.php` and its `RC2000_DB_*` environment variables. Keep that file's local database credentials configured for XAMPP.
+The portal uses the same PostgreSQL connection as the public site. Follow the [localhost database setup](README-localhost.md#3-set-the-php-database-connection) to configure `config/db.local.php` or the `RC2000_DB_*` environment variables.
 
 The campaign and quiz experience requires the one-time `database/community_features.sql` migration. It adds the campaign, challenge, vote, quiz, and quiz score tables to `rc2000_admin` and extends monetary donation records with campaign and email status fields. Campaigns and donation reports are managed at `/rc2000/public/admin/community.php`; weekly challenges, daily quizzes, and leaderboard publishing are in Manage content at `/rc2000/public/admin/content/index.php`. Existing featured stories and articles remain in their current content system.
 

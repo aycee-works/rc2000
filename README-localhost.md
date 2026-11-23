@@ -28,7 +28,9 @@ If your SQL client reports that `CREATE DATABASE` cannot run inside a transactio
 
 ## 3. Set the PHP database connection
 
-Edit `config/db.php` and set `$user` and `$pass` to your PostgreSQL username and password. The defaults are `postgres` and an empty password. You can alternatively set the `RC2000_DB_HOST`, `RC2000_DB_PORT`, `RC2000_DB_NAME`, `RC2000_DB_USER`, and `RC2000_DB_PASSWORD` environment variables.
+Copy `config/db.local.example.php` to `config/db.local.php` and set `pass` to the password for your PostgreSQL user. The example uses `postgres` and the local database `rc2000_db`. Adjust the other values if your installation differs. Git ignores `config/db.local.php` so your credentials stay local.
+
+Alternatively, set `RC2000_DB_PASSWORD` and any other database settings Apache needs through `RC2000_DB_HOST`, `RC2000_DB_PORT`, `RC2000_DB_NAME`, and `RC2000_DB_USER`. Environment values take precedence over the local file when set to nonempty values other than `0`.
 
 The PHP installation used by Apache must have the `pdo_pgsql` extension enabled. If it is missing, enable the PostgreSQL PDO extension in the `php.ini` used by Apache, then restart Apache.
 
