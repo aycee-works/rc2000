@@ -212,6 +212,15 @@ body.admin-body .page-title { overflow-wrap: anywhere; }
     body.admin-body :is(.page-header, .sa-account-head, .sa-card-foot, .filters) { flex-wrap: wrap; gap: 10px; }
 }
 @media (max-width: 560px) {
+    body.admin-body .admin-main { padding-top: 10px; }
+    body.admin-body .admin-main > .portal-toolbar {
+        min-height: 36px;
+        margin-bottom: 6px;
+    }
+    body.admin-body .panel-header { flex-wrap: wrap; gap: 8px; }
+    body.admin-body .panel-header > * { min-width: 0; }
+    body.admin-body .panel-title { overflow-wrap: anywhere; }
+    body.admin-body .panel-header > a { flex-shrink: 0; }
     body.admin-body :is(.sa-form-grid, .sa-manage-grid, .form-grid) { grid-template-columns: minmax(0, 1fr); }
     body.admin-body :is(input, select, textarea) { max-width: 100%; min-width: 0; }
 }

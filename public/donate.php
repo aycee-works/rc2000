@@ -282,11 +282,13 @@ page_start('Donate');
 
         <div class="method-panels">
           <div class="is-active" data-tab-panel="qr">
+            <?php $qrMethods = array_values(array_filter($methods, static fn ($m) => stripos($m['payment_provider'] . $m['method_name'], 'qr') !== false || stripos($m['payment_provider'], 'gcash') !== false || stripos($m['payment_provider'], 'maya') !== false)); ?>
+
         <?php if ($methods): ?>
           <label class="qr-method-select">Donation method
             <select form="monetary-donation-form" data-donation-method name="donation_method_id" required>
               <option value="">Select a method</option>
-              <?php foreach ($methods as $method): ?>
+              <?php foreach ($qrMethods as $method): ?>
                 <option value="<?= (int) $method['donation_method_id'] ?>" <?= (string) $method['donation_method_id'] === $old['donation_method_id'] ? 'selected' : '' ?>>
                   <?= e($method['method_name'] . ' · ' . $method['payment_provider']) ?>
                 </option>
@@ -296,7 +298,6 @@ page_start('Donate');
         <?php endif; ?>
 
 
-            <?php $qrMethods = array_values(array_filter($methods, static fn ($m) => stripos($m['payment_provider'] . $m['method_name'], 'qr') !== false || stripos($m['payment_provider'], 'gcash') !== false || stripos($m['payment_provider'], 'maya') !== false)); ?>
             <?php if ($qrMethods): foreach ($qrMethods as $method): ?>
               <figure class="qr-card" data-donation-method-details="<?= (int) $method['donation_method_id'] ?>" <?= (string) $method['donation_method_id'] === $old['donation_method_id'] ? '' : 'hidden' ?>>
                 <?php if (media_file_exists($method['qr_image_path'])): ?>

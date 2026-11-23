@@ -9,6 +9,18 @@
 .superadmin-body .sidebar-brand { color: var(--color-white); line-height: 1.2; }
 .superadmin-body .sidebar-brand img { flex: 0 0 26px; }
 .superadmin-body .sidebar-brand span { white-space: nowrap; }
+body.superadmin-body .sidebar .portal-menu-toggle:not([hidden]) {
+    color: #fff;
+    background: #343b48;
+    border-color: #aab6c4;
+}
+body.superadmin-body .sidebar .portal-menu-toggle:hover {
+    background: #465164;
+}
+body.superadmin-body .sidebar .portal-menu-toggle:focus-visible {
+    outline: 3px solid #d8ad47;
+    outline-offset: 3px;
+}
 
 @media (min-width: 901px) {
     .superadmin-body .admin-shell { grid-template-columns: 228px minmax(0, 1fr); }
@@ -92,6 +104,7 @@ html[data-admin-theme="dark"] .superadmin-body .sidebar-nav .nav-icon-dark { dis
     gap: 14px;
     align-items: start;
 }
+.sa-dash-main, .sa-dash-side { min-width: 0; }
 .sa-dash-main .panel, .sa-dash-side .panel { margin-bottom: 14px; }
 .sa-dash-grid .data-table td { border-color: var(--color-border); }
 .sa-account-list li:last-child { border-bottom: 1px solid var(--color-border); }
@@ -159,7 +172,7 @@ html[data-admin-theme="dark"] .superadmin-body .sidebar-nav .nav-icon-dark { dis
 .sa-login-box .flash { font-size: 14px; }
 
 @media (max-width: 1000px) {
-    .sa-dash-grid { grid-template-columns: 1fr; }
+    .sa-dash-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 800px) {
     .sa-login-page { grid-template-columns: 1fr; }
