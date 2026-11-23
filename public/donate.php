@@ -30,6 +30,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $action = (string) ($_POST['action'] ?? '');
+    if ($tab === 'receipt' && $action === 'status_from_receipt' && !$errors && is_array($donationReceipt)) {
+        flash_set('donation_status_reference', $donationReceipt['reference']);
+        redirect('/public/donate.php?tab=status');
+    }
     foreach ($old as $key => $_) {
         $old[$key] = post_string($key);
     }
@@ -38,7 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $old['donor_name'] = '';
     }
     $donorName = $old['donor_name'];
-    $tab = in_array($_POST['action'] ?? '', ['campaign'], true) ? 'campaign' : 'money';
+    if ($action !== 'status_from_receipt' || $tab !== 'receipt') {
+        $tab = $action === 'campaign' ? 'campaign' : 'money';
+    }
 
     if (!$errors && in_array($action, ['campaign', 'monetary'], true) && !optional_text($donorName, 120)) {
         $errors[] = 'Please enter a name of 120 characters or fewer, or leave it blank.';
@@ -183,11 +189,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $campaigns = fetch_all("SELECT id, title, description, goal_amount FROM rc2000_admin.campaigns WHERE status = 'open' ORDER BY is_featured DESC, created_at DESC");
 $statusRecord = null;
 $statusMessage = '';
+$statusReference = '';
+$statusEmail = '';
+if ($tab === 'status') {
+    $prefillReference = flash_get('donation_status_reference');
+    if (is_array($donationReceipt) && $prefillReference === $donationReceipt['reference']) {
+        $statusReference = $donationReceipt['reference'];
+        $statusEmail = $donationReceipt['email'];
+    }
+}
 if ($tab === 'status' && isset($_GET['reference'], $_GET['email'])) {
-    $statusRecord = fetch_one('SELECT d.reference_no, d.donor_email, d.reported_amount, d.verified_amount, d.status, d.verification_note, d.verified_at, d.created_at, c.title AS campaign_title FROM rc2000_admin.monetary_donations d LEFT JOIN rc2000_admin.campaigns c ON c.id = d.campaign_id WHERE upper(d.reference_no) = upper(:ref) AND lower(d.donor_email) = lower(:email)', ['ref' => trim((string) $_GET['reference']), 'email' => trim((string) $_GET['email'])]);
+    $statusReference = trim((string) $_GET['reference']);
+    $statusEmail = trim((string) $_GET['email']);
+    $statusRecord = fetch_one('SELECT d.reference_no, d.donor_email, d.reported_amount, d.verified_amount, d.status, d.verification_note, d.verified_at, d.created_at, c.title AS campaign_title FROM rc2000_admin.monetary_donations d LEFT JOIN rc2000_admin.campaigns c ON c.id = d.campaign_id WHERE upper(d.reference_no) = upper(:ref) AND lower(d.donor_email) = lower(:email)', ['ref' => $statusReference, 'email' => $statusEmail]);
     if (!$statusRecord) $statusMessage = 'We could not find a donation with that tracking ID and email address.';
 }
 
+$donationTab = empty($donationReceipt['campaign']) ? 'money' : 'campaign';
+$backTab = $tab === 'status' && is_array($donationReceipt) ? 'receipt' : $donationTab;
 page_start('Donate');
 ?>
 <main class="donate-layout">
@@ -200,16 +219,33 @@ page_start('Donate');
   </aside>
 
   <div class="donate-main">
+    <?php if ($tab === 'receipt' || $tab === 'status'): ?>
+      <a class="inquiry-back" href="<?= e(app_url('public/donate.php?tab=' . $backTab)) ?>"><span aria-hidden="true">←</span> Back</a>
+    <?php endif; ?>
     <?php render_alerts($errors); ?>
 
     <?php if ($tab === 'receipt'): ?>
       <section class="form-card submission-receipt">
         <?php if (is_array($donationReceipt)): ?>
-          <p class="eyebrow">Donation confirmation</p>
-          <h1>Thank you for your donation report</h1>
-          <p class="lede">Keep this receipt. Your report is pending until reviewed by an administrator.</p>
+          <header class="receipt-header">
+            <img src="<?= e(app_url('public/assets/images/icons/logo.png')) ?>" alt="" width="56" height="56">
+            <div>
+              <p>Reading Club 2000</p>
+              <h1>Donation Confirmation</h1>
+            </div>
+          </header>
+          <p class="receipt-intro">Thank you for your donation report. Keep this receipt while your report is pending review.</p>
           <dl class="receipt-details">
-            <div><dt>Tracking ID</dt><dd><?= e((string) $donationReceipt['reference']) ?></dd></div>
+            <div class="receipt-reference">
+              <dt>Tracking ID</dt>
+              <dd>
+                <div class="receipt-ticket">
+                  <strong id="receipt-ticket-number" data-copy-label="Tracking ID"><?= e((string) $donationReceipt['reference']) ?></strong>
+                  <button class="button button-secondary receipt-copy" type="button" id="receipt-copy" aria-describedby="receipt-copy-help" hidden>Copy</button>
+                </div>
+                <p id="receipt-copy-help" class="receipt-copy-help" role="status">Copy this number for later.</p>
+              </dd>
+            </div>
             <div><dt>Donor</dt><dd><?= e($donationReceipt['name'] === '' ? 'Name not provided' : (string) $donationReceipt['name']) ?></dd></div>
             <div><dt>Email</dt><dd><?= e((string) $donationReceipt['email']) ?></dd></div>
             <div><dt>Reported amount</dt><dd>₱<?= e(number_format((float) $donationReceipt['amount'], 2)) ?></dd></div>
@@ -220,7 +256,14 @@ page_start('Donate');
             <div><dt>Submitted</dt><dd><?= e(date('M j, Y g:i A', strtotime((string) $donationReceipt['submitted_at']))) ?></dd></div>
           </dl>
           <p>To check your donation status later, use the tracking ID above and the email you submitted.</p>
-          <div class="receipt-actions"><button class="button" type="button" onclick="window.print()">Print receipt</button><a class="button button-secondary" href="<?= e(app_url('public/donate.php?tab=status')) ?>">Track donation</a></div>
+          <div class="receipt-actions">
+            <button class="button" type="button" onclick="window.print()">Print Receipt</button>
+            <form method="post" action="<?= e(app_url('public/donate.php?tab=receipt')) ?>">
+              <?= csrf_field() ?>
+              <button class="button button-secondary" type="submit" name="action" value="status_from_receipt">Track Donation</button>
+            </form>
+          </div>
+          <script src="<?= e(app_url('public/assets/js/inquiry-receipt.js?v=2')) ?>" defer></script>
         <?php else: ?>
           <h1>No recent donation receipt</h1><p>Submit a donation report to get a printable receipt and tracking ID.</p>
           <a class="button" href="<?= e(app_url('public/donate.php?tab=money')) ?>">Make a donation report</a>
@@ -295,7 +338,7 @@ page_start('Donate');
               <label>Amount
                 <input type="number" name="amount_reported" min="1" step="0.01" required value="<?= e($old['amount_reported']) ?>">
               </label>
-              <label class="payment-date-label"><span><img src="<?= e(app_url('public/assets/images/icons/donationdate_icon.png')) ?>" alt="" width="18" height="18">Payment date</span>
+              <label>Payment date
                 <input type="datetime-local" name="payment_date" required value="<?= e($old['payment_date']) ?>">
               </label>
               <label>Donation method
@@ -399,7 +442,7 @@ page_start('Donate');
 
         <div class="donation-howto-grid">
           <article>
-            <h2>In-kind donations</h2>
+            <h2>In-kind Donations</h2>
             <p>We may be able to accept items that help readers and library activities, such as:</p>
             <ul>
               <li>Books and reading materials in clean, usable condition</li>
@@ -409,7 +452,7 @@ page_start('Donate');
             <p>Accepted items can depend on current needs, available space, and condition.</p>
           </article>
           <article>
-            <h2>Volunteer your time</h2>
+            <h2>Volunteer Your Time</h2>
             <p>You can also ask about helping with reading sessions, storytelling, or library activities. Let us know your interests and availability so we can coordinate.</p>
           </article>
         </div>
@@ -421,7 +464,7 @@ page_start('Donate');
         </div>
       </section>
     <?php else: ?>
-      <section class="form-card donation-status-page"><span class="eyebrow">Donation transparency</span><h1>Check your donation report</h1><p>Enter the tracking ID from your receipt and the email used in your report.</p><form method="get"><input type="hidden" name="tab" value="status"><div class="form-grid"><label>Tracking ID<input name="reference" required value="<?= e((string)($_GET['reference']??'')) ?>"></label><label>Email<input type="email" name="email" required value="<?= e((string)($_GET['email']??'')) ?>"></label></div><button class="button" type="submit">Check status</button></form><?php if ($statusMessage): ?><p class="alert alert-error" role="alert"><?= e($statusMessage) ?></p><?php endif; ?><?php if ($statusRecord): ?><div class="donation-status-result"><span class="eyebrow"><?= e($statusRecord['reference_no']) ?></span><h2><?= $statusRecord['status']==='verified'?'Donation verified':($statusRecord['status']==='not_verified'?'Donation not verified':'Donation report received') ?></h2><p>Reported amount: ₱<?= e(number_format((float)$statusRecord['reported_amount'],2)) ?></p><?php if ($statusRecord['verified_amount']!==null): ?><p>Verified amount: ₱<?= e(number_format((float)$statusRecord['verified_amount'],2)) ?></p><?php endif; ?><?php if ($statusRecord['campaign_title']): ?><p>Campaign: <?= e($statusRecord['campaign_title']) ?></p><?php endif; ?><?php if ($statusRecord['verification_note']): ?><p><?= nl2br(e($statusRecord['verification_note'])) ?></p><?php endif; ?><p class="field-note"><?= $statusRecord['status']==='pending'?'Pending admin verification.':($statusRecord['verified_at']?'Reviewed '.e(date('F j, Y',strtotime($statusRecord['verified_at']))):'') ?></p></div><?php endif; ?></section>
+      <section class="form-card donation-status-page"><span class="eyebrow">Donation transparency</span><h1>Check your donation report</h1><p>Enter the tracking ID from your receipt and the email used in your report.</p><form method="get" autocomplete="off"><input type="hidden" name="tab" value="status"><div class="form-grid"><label>Tracking ID<input name="reference" required value="<?= e($statusReference) ?>"></label><label>Email<input type="email" name="email" required value="<?= e($statusEmail) ?>"></label></div><button class="button" type="submit">Check status</button></form><?php if ($statusMessage): ?><p class="alert alert-error" role="alert"><?= e($statusMessage) ?></p><?php endif; ?><?php if ($statusRecord): ?><div class="donation-status-result"><span class="eyebrow"><?= e($statusRecord['reference_no']) ?></span><h2><?= $statusRecord['status']==='verified'?'Donation verified':($statusRecord['status']==='not_verified'?'Donation not verified':'Donation report received') ?></h2><p>Reported amount: ₱<?= e(number_format((float)$statusRecord['reported_amount'],2)) ?></p><?php if ($statusRecord['verified_amount']!==null): ?><p>Verified amount: ₱<?= e(number_format((float)$statusRecord['verified_amount'],2)) ?></p><?php endif; ?><?php if ($statusRecord['campaign_title']): ?><p>Campaign: <?= e($statusRecord['campaign_title']) ?></p><?php endif; ?><?php if ($statusRecord['verification_note']): ?><p><?= nl2br(e($statusRecord['verification_note'])) ?></p><?php endif; ?><p class="field-note"><?= $statusRecord['status']==='pending'?'Pending admin verification.':($statusRecord['verified_at']?'Reviewed '.e(date('F j, Y',strtotime($statusRecord['verified_at']))):'') ?></p></div><?php endif; ?></section>
     <?php endif; ?>
   </div>
 </main>

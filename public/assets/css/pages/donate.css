@@ -48,8 +48,6 @@ body:has(.donate-layout) .form-card input[type="checkbox"] { width: auto; }
 body:has(.donate-layout) .upload-box { padding: 18px; }
 body:has(.donate-layout) .upload-box input[type="file"] { display: block; max-width: 100%; margin: 8px auto 0; }
 body:has(.donate-layout) .field-note { color: var(--muted, #667085); font-size: .76rem; font-weight: 400; line-height: 1.4; }
-body:has(.donate-layout) .payment-date-label > span { display: inline-flex; align-items: center; gap: 7px; margin-bottom: 5px; }
-body:has(.donate-layout) .payment-date-label img { display: block; width: 18px; height: 18px; object-fit: contain; }
 
 @media (max-width: 700px) {
   body:has(.donate-layout) .donate-layout { grid-template-columns: minmax(0, 1fr); }
@@ -74,13 +72,35 @@ body:has(.donate-layout) .payment-date-label img { display: block; width: 18px; 
 .donate-layout .donate-main .submission-receipt .receipt-details > div { min-width:0; padding:12px 0; border-bottom:1px solid var(--line); }
 .donate-layout .donate-main .submission-receipt .receipt-details dt { color:var(--muted); font-size:.8rem; font-weight:700; }
 .donate-layout .donate-main .submission-receipt .receipt-details dd { margin:4px 0 0; overflow-wrap:anywhere; }
-.receipt-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
-.receipt-actions .button-secondary { display:inline-flex; align-items:center; justify-content:center; padding:10px 16px; border:1px solid var(--line); border-radius:6px; background:var(--surface); color:var(--ink); text-decoration:none; }
+.donate-layout .submission-receipt .receipt-reference { grid-column: 1 / -1; }
 @media(max-width:560px) { .donate-layout .donate-main .submission-receipt .receipt-details { grid-template-columns:1fr; } }
 @media print {
-  body * { visibility:hidden !important; }
-  .submission-receipt, .submission-receipt * { visibility:visible !important; }
-  .submission-receipt { position:absolute; inset:0 auto auto 0; width:100%; max-width:none; margin:0; padding:0; border:0 !important; box-shadow:none !important; background:#fff !important; color:#111 !important; }
-  .submission-receipt .receipt-actions { display:none !important; }
-  .receipt-details > div { border-color:#bbb; }
+  body:has(.donate-layout .submission-receipt) > :not(.donate-layout),
+  .donate-layout:has(.submission-receipt) > :not(.donate-main),
+  .donate-main:has(.submission-receipt) > :not(.submission-receipt) { display: none !important; }
+
+  body:has(.donate-layout .submission-receipt),
+  body:has(.submission-receipt) .donate-layout,
+  body:has(.submission-receipt) .donate-layout .donate-main {
+    display: block;
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+
+  body:has(.donate-layout) .donate-main .form-card.submission-receipt {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: #fff !important;
+    color: #173449;
+  }
+
+  .donate-layout .donate-main .submission-receipt .receipt-details dt { color: #364854; }
+  .donate-layout .donate-main .submission-receipt .receipt-details > div { border-color: #aab6bf; }
 }
