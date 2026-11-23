@@ -1,0 +1,69 @@
+RC2000 project directory
+
+rc2000/
+├── index.php                         Project entry point
+├── Dockerfile                        PHP and Apache container for Render
+├── .htaccess                         URL routing and access rules
+├── composer.json                     PHP dependencies and versions
+├── composer.lock                     Exact dependency versions
+├── README-localhost.md                Local setup guide
+├── README-admin-portal.md             Portal setup guide
+├── config/
+│   ├── db.php                        PostgreSQL connection
+│   └── portal/
+│       ├── app.php                   Portal, email, and media settings
+│       └── database.php              Portal database schema selection
+├── database/
+│   ├── schema.sql                    Original public database schema
+│   ├── admin_portal_schema.sql        Staff, content, and submission tables
+│   ├── integration.sql               Tracking number sequences and API setup
+│   └── community_features.sql        Campaign and quiz tables
+├── includes/
+│   ├── header.php                    Shared public page header
+│   ├── footer.php                    Shared footer and feedback form
+│   ├── functions.php                 Common public website functions
+│   ├── community.php                 Public campaign and quiz queries
+│   ├── upload.php                    Public form image uploads
+│   └── portal/
+│       ├── bootstrap.php             Starts and configures the portal
+│       ├── auth.php                  Staff sessions and role checks
+│       └── services/
+│           ├── monetary-donation-service.php   Donation review
+│           ├── inquiry-service.php             Inquiry replies and email sending
+│           ├── content-service.php             Content publishing
+│           ├── admin-account-service.php       Staff account management
+│           ├── audit-service.php               Admin activity logs
+│           └── upload-service.php              Cloudinary image uploads
+└── public/
+    ├── home.php                      Home and announcements preview
+    ├── explore.php                   Stories, articles, and gallery navigation
+    ├── donate.php                    Donation reporting, receipt, and tracking
+    ├── inquiry.php                   Inquiry submission and ticket lookup
+    ├── about.php                     Library background
+    ├── contact.php                   Library contact information
+    ├── announcements.php             Public announcements
+    ├── daily_trivia.php              Daily trivia
+    ├── daily-quiz.php                Daily quiz
+    ├── feedback.php                  Website feedback submission
+    ├── privacy-policy.php            Public privacy information
+    ├── admin/
+    │   ├── login.php                 Admin sign-in
+    │   ├── dashboard.php             Staff overview
+    │   ├── donations/                Donation review screens
+    │   ├── inquiries/                Inquiry management
+    │   ├── content/                  Content editing and publishing
+    │   ├── community.php             Campaigns and donation reports
+    │   ├── archive/                  Staff archive
+    │   ├── feedback/                 Feedback review
+    │   ├── api/                      Staff JSON endpoints
+    │   └── super_admin/
+    │       ├── login.php             Super Admin sign-in
+    │       ├── dashboard.php         Super Admin overview
+    │       ├── admins/               Staff account management screens
+    │       └── audit-logs.php         Audit log screen
+    ├── api/
+    │   └── public/                   Public API endpoints
+    └── assets/
+        ├── css/                      Website and portal styling
+        ├── js/                       Browser interactions
+        └── images/                   Logos, icons, and site images
