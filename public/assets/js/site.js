@@ -165,13 +165,19 @@
           body: new FormData(feedbackForm),
           headers: { 'Accept': 'application/json' },
         });
-        const data = await response.json();
-        showFeedbackStatus(data.message, data.success ? 'success' : 'error');
-        if (data.success) feedbackForm.reset();
+        const data = await response.json().catch(() => null);
+        if (!data || typeof data.success !== 'boolean' || typeof data.message !== 'string') {
+          showFeedbackStatus('The server returned an unexpected response. Please try again later.', 'error');
+          return;
+        }
+        const success = response.ok && data.success;
+        showFeedbackStatus(data.message, success ? 'success' : 'error');
+        if (success) feedbackForm.reset();
       } catch (error) {
         showFeedbackStatus('Could not reach the server. Please try again.', 'error');
+      } finally {
+        submit.disabled = false;
       }
-      submit.disabled = false;
     });
   }
 })();

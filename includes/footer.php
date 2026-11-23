@@ -54,7 +54,7 @@
       <button type="button" class="feedback-close" data-feedback-close aria-label="Close">×</button>
     </div>
     <p class="feedback-status" id="feedback-status" role="status" hidden></p>
-    <form id="feedback-form" action="/rc2000/public/feedback.php" method="post">
+    <form id="feedback-form" action="<?= e(app_url('public/feedback.php')) ?>" method="post">
       <?= csrf_field() ?>
       <label>Name
         <input name="name" required maxlength="120">
@@ -69,6 +69,6 @@
     </form>
   </div>
 </dialog>
-<script src="<?= e(app_url('public/assets/js/site.js?v=8')) ?>"></script>
+<script src="<?= e(app_url('public/assets/js/site.js?v=9')) ?>"></script>
 </body>
 </html>
