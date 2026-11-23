@@ -62,14 +62,7 @@ html[data-admin-theme="dark"] .archive-stat-icon .archive-icon-dark { display: b
     .archive-search-form { max-width: none; flex-basis: 100%; }
 }
 
-html[data-admin-theme="dark"] .archive-dialog :is(.dialog-head, .dialog-foot, .archive-text, .response-item) {
+html[data-admin-theme="dark"] .archive-dialog .archive-text {
     background: var(--color-cream);
-    color: var(--color-navy);
-}
-html[data-admin-theme="dark"] .archive-dialog :is(.review-heading, .response-item) {
-    border-color: var(--color-border);
-}
-html[data-admin-theme="dark"] .archive-dialog :is(.dialog-x, .btn-light):is(:hover, :focus-visible) {
-    background: var(--color-row-hover);
     color: var(--color-navy);
 }

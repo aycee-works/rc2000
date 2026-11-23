@@ -60,6 +60,18 @@ html[data-admin-theme="dark"] .table-wrap,
 html[data-admin-theme="dark"] .dialog,
 html[data-admin-theme="dark"] .detail-card,
 html[data-admin-theme="dark"] .notification-panel { background: var(--color-white); color: var(--color-navy); border-color: var(--color-border); }
+html[data-admin-theme="dark"] .dialog-review :is(.dialog-head, .dialog-foot, .response-item) {
+    background: var(--color-cream);
+    color: var(--color-navy);
+}
+html[data-admin-theme="dark"] .dialog-review :is(.review-heading, .response-item) {
+    border-color: var(--color-border);
+}
+html[data-admin-theme="dark"] .dialog-review :is(.dialog-x, .btn-light, .btn-dark):is(:hover, :focus-visible) {
+    background: var(--color-row-hover);
+    color: var(--color-navy);
+}
+html[data-admin-theme="dark"] .dialog-review :is(.btn-red, .btn-green) { color: #fff; }
 html[data-admin-theme="dark"] .input,
 html[data-admin-theme="dark"] .select,
 html[data-admin-theme="dark"] .textarea,
@@ -74,7 +86,7 @@ html[data-admin-theme="dark"] .data-table th { background: #29333f; color: var(-
 html[data-admin-theme="dark"] .data-table td,
 html[data-admin-theme="dark"] .data-table th,
 html[data-admin-theme="dark"] .notification-panel-head { border-color: var(--color-border); }
-html[data-admin-theme="dark"] .data-table tbody tr:hover,
+html[data-admin-theme="dark"] .data-table tbody tr:is(:hover, .is-selected),
 html[data-admin-theme="dark"] .notification-item:hover { background: #29333f; }
 html[data-admin-theme="dark"] .notification-item.is-unread { background: #33303a; }
 html[data-admin-theme="dark"] .notification-panel-head h2,
