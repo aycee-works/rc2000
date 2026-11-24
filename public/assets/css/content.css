@@ -12,7 +12,7 @@
 .btn-sm { padding: 6px 12px; font-size: 12px; }
 
 .content-tabs { display:flex; gap:0; margin:0 0 22px; padding-bottom:14px; border-bottom:1px solid #c9c8c2; }
-.content-tab { appearance:none; min-width:220px; border:1px solid #c9cdd1; padding:12px 22px; background:transparent; color:var(--color-muted); font:600 14px var(--font-body); cursor:pointer; }
+.content-tab { appearance:none; min-width:220px; border:1px solid #c9cdd1; padding:12px 22px; background:transparent; color:var(--color-muted); font:600 14px var(--font-body); text-align:center; text-decoration:none; cursor:pointer; }
 .content-tab:first-child { border-radius:12px 0 0 12px; }
 .content-tab:last-child { border-radius:0 12px 12px 0; }
 .content-tab:hover,.content-tab.is-active { color:var(--color-white); background:var(--color-maroon); border-color:var(--color-maroon); }

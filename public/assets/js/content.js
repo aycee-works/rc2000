@@ -30,15 +30,19 @@
             }
         }
         contentTabs.forEach(function (tab) {
-            tab.addEventListener('click', function () { selectContentTab(tab.getAttribute('data-content-tab'), true); });
+            tab.addEventListener('click', function (event) {
+                event.preventDefault();
+                selectContentTab(tab.getAttribute('data-content-tab'), true);
+                window.history.replaceState(null, '', tab.href);
+            });
         });
 
         var currentUrl = new URL(window.location.href);
         var activityLink = ['challenge', 'new_challenge', 'quiz', 'new_quiz'].some(function (key) {
             return currentUrl.searchParams.has(key);
         }) || currentUrl.hash === '#weekly-challenge' || currentUrl.hash === '#daily-quiz';
-        var preferredTab = 'activities';
-        if (!activityLink) {
+        var preferredTab = !activityLink && currentUrl.searchParams.get('section') === 'website' ? 'website' : 'activities';
+        if (!activityLink && !currentUrl.searchParams.has('section')) {
             try {
                 var savedTab = window.sessionStorage.getItem(contentTabStorageKey);
                 if (savedTab === 'website' || savedTab === 'activities') { preferredTab = savedTab; }

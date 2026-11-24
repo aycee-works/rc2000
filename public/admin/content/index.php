@@ -128,7 +128,8 @@ function limit_note(int $shown, int $total): string
 $pageTitle = 'Manage content';
 $activeNav = 'content';
 $extraCss  = ['content.css?v=' . filemtime(dirname(__DIR__, 3) . '/public/assets/css/content.css'), 'community.css'];
-$extraJs   = ['content.js?v=' . filemtime(dirname(__DIR__, 3) . '/public/assets/js/content.js')];
+$extraJs   = ['content.js'];
+$contentSection = ($_GET['section'] ?? '') === 'website' ? 'website' : 'activities';
 require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
 ?>
 <header class="page-header">
@@ -141,10 +142,10 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
 <?php endif; ?>
 
 <div class="content-tabs" role="tablist" aria-label="Content areas">
-    <button type="button" class="content-tab" id="website-content-tab" role="tab" aria-selected="false" aria-controls="website-content-panel" data-content-tab="website" tabindex="-1">Website Content</button>
-    <button type="button" class="content-tab is-active" id="reading-activities-tab" role="tab" aria-selected="true" aria-controls="reading-activities-panel" data-content-tab="activities">Reading Activities</button>
+    <a class="content-tab<?= $contentSection === 'website' ? ' is-active' : '' ?>" id="website-content-tab" role="tab" aria-selected="<?= $contentSection === 'website' ? 'true' : 'false' ?>" aria-controls="website-content-panel" data-content-tab="website" tabindex="<?= $contentSection === 'website' ? '0' : '-1' ?>" href="<?= e(url('admin/content/index.php?section=website')) ?>">Website Content</a>
+    <a class="content-tab<?= $contentSection === 'activities' ? ' is-active' : '' ?>" id="reading-activities-tab" role="tab" aria-selected="<?= $contentSection === 'activities' ? 'true' : 'false' ?>" aria-controls="reading-activities-panel" data-content-tab="activities" tabindex="<?= $contentSection === 'activities' ? '0' : '-1' ?>" href="<?= e(url('admin/content/index.php?section=activities')) ?>">Reading Activities</a>
 </div>
-<div class="content-grid website-content-grid" id="website-content-panel" data-content-panel="website" role="tabpanel" aria-labelledby="website-content-tab" hidden>
+<div class="content-grid website-content-grid" id="website-content-panel" data-content-panel="website" role="tabpanel" aria-labelledby="website-content-tab" <?= $contentSection === 'website' ? '' : 'hidden' ?>>
 
     <!-- Gallery -->
     <section class="panel" aria-labelledby="gal-title">
@@ -236,7 +237,7 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
     </section>
 
     </div>
-<div class="content-grid reading-activities-grid" id="reading-activities-panel" data-content-panel="activities" role="tabpanel" aria-labelledby="reading-activities-tab">
+<div class="content-grid reading-activities-grid" id="reading-activities-panel" data-content-panel="activities" role="tabpanel" aria-labelledby="reading-activities-tab" <?= $contentSection === 'activities' ? '' : 'hidden' ?>>
     <?php if ($communityFeaturesAvailable): ?>
     <section class="panel activity-card" id="weekly-challenge" aria-labelledby="challenge-title">
         <div class="panel-header activity-card-header"><h2 class="panel-title" id="challenge-title">Weekly Reading Challenge</h2><span class="activity-status <?= e(($activeChallenge['status'] ?? '') === 'published' ? 'is-published' : (($activeChallenge['status'] ?? '') === 'closed' ? 'is-archived' : 'is-draft')) ?>"><?= e(($activeChallenge['status'] ?? '') === 'closed' ? 'Archived' : ($activeChallenge['status'] ?? 'Not scheduled')) ?></span></div>
