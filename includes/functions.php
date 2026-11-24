@@ -136,55 +136,42 @@ function fetch_one(string $sql, array $params = []): ?array
     return $rows[0] ?? null;
 }
 
-function published_content(string $type, int $limit = 6): array
+function published_content(string $type, ?int $limit = 6): array
 {
+    $limitClause = $limit === null ? '' : ' LIMIT :limit';
+    $params = ['status' => 'published'];
+    if ($limit !== null) {
+        $params['limit'] = $limit;
+    }
+
     if ($type === 'announcement') {
         return fetch_all(
             "SELECT id AS content_id, 'announcement' AS content_type, title, body,
                     image_path AS cover_image_path, NULL::varchar AS author_name, published_at
              FROM rc2000_admin.announcements
              WHERE status = :status
-             ORDER BY published_at DESC NULLS LAST, created_at DESC, id DESC
-             LIMIT :limit",
-            ['status' => 'published', 'limit' => $limit]
+             ORDER BY published_at DESC NULLS LAST, created_at DESC, id DESC" . $limitClause,
+            $params
         );
     }
 
     if (in_array($type, ['story', 'featured_story', 'article'], true)) {
-    $portalType = $type === 'article' ? 'article' : 'story';
-
-$items = fetch_all(
-    'SELECT id AS content_id,
-            type AS content_type,
-            title,
-            body,
-            cover_path AS cover_image_path,
-            author AS author_name,
-            published_at
-     FROM rc2000_admin.stories
-     WHERE type = :type
-       AND status = :status
-     ORDER BY published_at DESC NULLS LAST,
-              created_at DESC,
-              id DESC
-     LIMIT :limit',
-    [
-        'type' => $portalType,
-        'status' => 'published',
-        'limit' => $limit
-    ]
-);
-
-return $items;
+        return fetch_all(
+            'SELECT id AS content_id, type AS content_type, title, body,
+                    cover_path AS cover_image_path, author AS author_name, published_at
+             FROM rc2000_admin.stories
+             WHERE type = :type AND status = :status
+             ORDER BY published_at DESC NULLS LAST, created_at DESC, id DESC' . $limitClause,
+            $params + ['type' => $type === 'article' ? 'article' : 'story']
+        );
     }
 
     return fetch_all(
         'SELECT content_id, title, body, cover_image_path, author_name, published_at
          FROM content
          WHERE content_type = :type AND status = :status
-         ORDER BY published_at DESC NULLS LAST, created_at DESC
-         LIMIT :limit',
-        ['type' => $type, 'status' => 'published', 'limit' => $limit]
+         ORDER BY published_at DESC NULLS LAST, created_at DESC' . $limitClause,
+        $params + ['type' => $type]
     );
 }
 

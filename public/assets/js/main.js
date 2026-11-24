@@ -143,10 +143,27 @@
         var markReadButton = notificationRoot.querySelector('[data-notification-read]');
         var endpoint = notificationRoot.getAttribute('data-endpoint');
         var storageKey = 'rc2000-notifications-v1:' + notificationRoot.getAttribute('data-role') + ':' + notificationRoot.getAttribute('data-user-id');
+        var readItemsKey = storageKey + ':read-items';
         var lastSeen = null;
+        var readItems = new Set();
+        var requestNumber = 0;
 
         try { lastSeen = window.localStorage.getItem(storageKey); } catch (e) {}
         if (lastSeen && Number.isNaN(Date.parse(lastSeen))) lastSeen = null;
+        if (lastSeen && !lastSeen.endsWith('Z')) {
+            lastSeen = new Date(lastSeen).toISOString().replace('Z', '000Z');
+        }
+
+        function loadReadItems() {
+            try {
+                var saved = JSON.parse(window.localStorage.getItem(readItemsKey));
+                if (saved && saved.since === lastSeen && Array.isArray(saved.ids)) {
+                    readItems = new Set(saved.ids);
+                }
+            } catch (e) {}
+        }
+
+        loadReadItems();
 
         function relativeTime(value) {
             var date = new Date(value);
@@ -160,22 +177,41 @@
 
         function setLastSeen(value) {
             lastSeen = value;
+            readItems.clear();
             try { window.localStorage.setItem(storageKey, value); } catch (e) {}
         }
 
-        function renderNotifications(payload) {
-            var unread = lastSeen ? Number(payload.unread_count || 0) : 0;
+        function updateNotificationCount(payload) {
+            var unread = Math.max(0, Number(payload.unread_count || 0) - readItems.size);
             notificationCount.hidden = unread < 1;
             notificationCount.textContent = unread > 99 ? '99+' : String(unread);
             notificationButton.setAttribute('aria-label', unread ? 'Notifications, ' + unread + ' unread' : 'Notifications');
+        }
+
+        function renderNotifications(payload) {
+            updateNotificationCount(payload);
             notificationList.replaceChildren();
 
             (payload.items || []).forEach(function (item) {
                 var li = document.createElement('li');
                 var link = document.createElement('a');
-                var isUnread = lastSeen && Date.parse(item.created_at) > Date.parse(lastSeen);
+                var isUnread = item.created_at > lastSeen && !readItems.has(item.id);
                 link.className = 'notification-item' + (isUnread ? ' is-unread' : '');
                 link.href = item.url;
+                function markItemRead() {
+                    if (item.created_at <= lastSeen) return;
+                    loadReadItems();
+                    readItems.add(item.id);
+                    try {
+                        window.localStorage.setItem(readItemsKey, JSON.stringify({ since: lastSeen, ids: Array.from(readItems) }));
+                    } catch (e) {}
+                    link.classList.remove('is-unread');
+                    updateNotificationCount(payload);
+                }
+                link.addEventListener('click', markItemRead);
+                link.addEventListener('auxclick', function (event) {
+                    if (event.button === 1) markItemRead();
+                });
 
                 var title = document.createElement('span');
                 title.className = 'notification-item-title';
@@ -198,6 +234,7 @@
         }
 
         function loadNotifications(markRead) {
+            var requestId = ++requestNumber;
             var requestUrl = endpoint;
             if (lastSeen) requestUrl += '?since=' + encodeURIComponent(lastSeen);
             return fetch(requestUrl, {
@@ -211,13 +248,16 @@
                     return body.data;
                 });
             }).then(function (payload) {
-                if (!lastSeen) setLastSeen(payload.server_time);
-                else if (markRead) {
+                if (requestId !== requestNumber) return;
+                if (!lastSeen || markRead) {
                     setLastSeen(payload.server_time);
                     payload.unread_count = 0;
+                } else {
+                    loadReadItems();
                 }
                 renderNotifications(payload);
             }).catch(function () {
+                if (requestId !== requestNumber) return;
                 notificationStatus.textContent = 'Notifications are temporarily unavailable.';
                 notificationStatus.hidden = false;
             });

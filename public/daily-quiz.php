@@ -101,19 +101,36 @@ if (is_array($pending) && (int) ($pending['quiz_id'] ?? 0) === $quizId) {
 }
 
 $leaderboardTimezone = new DateTimeZone('Asia/Manila');
-$leaderboardWeekStart = (new DateTimeImmutable('now', $leaderboardTimezone))->modify('monday this week')->setTime(0, 0);
-$leaderboardWeekEnd = $leaderboardWeekStart->modify('+7 days');
+$currentWeekStart = (new DateTimeImmutable('now', $leaderboardTimezone))->modify('monday this week');
 $weeklyLeadersStmt = db()->prepare(
-    'SELECT s.username, SUM(s.score)::int AS score, COUNT(DISTINCT q.id)::int AS quiz_count
+    "WITH current_week AS (
+        SELECT CAST(? AS date) AS week_start
+    ), visible_week AS (
+        SELECT MAX(date_trunc('week', q.quiz_date::timestamp)::date) AS week_start
+          FROM rc2000_admin.daily_quizzes q
+          CROSS JOIN current_week c
+         WHERE (q.quiz_date < c.week_start OR (
+                    q.quiz_date < c.week_start + 7 AND EXISTS (
+                        SELECT 1 FROM rc2000_admin.quiz_leaderboard_posts p
+                        JOIN rc2000_admin.stories a ON a.id = p.story_id
+                        WHERE p.week_start = c.week_start AND a.status = 'published'
+                    )
+                ))
+           AND EXISTS (SELECT 1 FROM rc2000_admin.quiz_submissions s WHERE s.quiz_id = q.id)
+    )
+    SELECT w.week_start, s.username, SUM(s.score)::int AS score, COUNT(DISTINCT q.id)::int AS quiz_count
        FROM rc2000_admin.quiz_submissions s
        JOIN rc2000_admin.daily_quizzes q ON q.id = s.quiz_id
-      WHERE q.quiz_date >= ? AND q.quiz_date < ?
-      GROUP BY s.username
+       JOIN visible_week w ON q.quiz_date >= w.week_start AND q.quiz_date < w.week_start + 7
+      GROUP BY w.week_start, s.username
       ORDER BY SUM(s.score) DESC, COUNT(DISTINCT q.id) DESC, LOWER(s.username) ASC
-      LIMIT 10'
+      LIMIT 10"
 );
-$weeklyLeadersStmt->execute([$leaderboardWeekStart->format('Y-m-d'), $leaderboardWeekEnd->format('Y-m-d')]);
+$weeklyLeadersStmt->execute([$currentWeekStart->format('Y-m-d')]);
 $weeklyLeaders = $weeklyLeadersStmt->fetchAll();
+$leaderboardWeekStart = $weeklyLeaders
+    ? new DateTimeImmutable($weeklyLeaders[0]['week_start'], $leaderboardTimezone)
+    : null;
 page_start('Daily quiz', ['class' => 'daily-quiz-page']);
 ?>
 <main class="section quiz-page">
@@ -122,9 +139,9 @@ page_start('Daily quiz', ['class' => 'daily-quiz-page']);
   <?php if ($result): ?>
     <section class="quiz-result" aria-live="polite"><span class="eyebrow">Quiz complete · your score</span><div class="quiz-result-score"><?= (int) $result['score'] ?>/5</div><h2><?= !empty($result['joined']) ? 'Thanks for joining the leaderboard, ' . e((string) $result['username']) . '!' : 'Here is your result.' ?></h2><p>You answered <?= (int) $result['score'] ?> out of 5 questions correctly.</p><p>Quiz date: <?= e(date('M j, Y', strtotime((string) $quiz['quiz_date']))) ?></p></section>
     <?php if (!empty($result['joined'])): ?>
-      <p class="quiz-entry-confirmation"><span aria-hidden="true">✓</span> Your score has been added to today’s leaderboard.</p>
+      <p class="quiz-entry-confirmation"><span aria-hidden="true">✓</span> Your score was saved for the weekly leaderboard.</p>
     <?php elseif (is_array($pending)): ?>
-      <section class="quiz-entry-panel"><h2>Join today’s leaderboard <span>(optional)</span></h2><p>Your score is ready. Add a username and email if you’d like it listed.</p>
+      <section class="quiz-entry-panel"><h2>Join the weekly leaderboard <span>(optional)</span></h2><p>Your score is ready. Add a username and email if you’d like it listed.</p>
         <form method="post" class="quiz-entry" id="quiz-join-form"><?= csrf_field() ?><input type="hidden" name="action" value="join_leaderboard"><label>Unique username<input name="username" minlength="3" maxlength="40" pattern="[A-Za-z0-9_]+" required autocomplete="username"></label><label>Email address<input type="email" name="email" maxlength="150" required autocomplete="email"></label><p>One entry per email and username for today’s quiz.</p></form>
         <div class="quiz-leaderboard-actions"><button type="submit" form="quiz-join-form" class="button">Join leaderboard</button><form method="post" class="quiz-skip-form"><?= csrf_field() ?><input type="hidden" name="action" value="skip_leaderboard"><button type="submit" class="button">No thanks, skip</button></form></div>
       </section>
@@ -143,6 +160,7 @@ page_start('Daily quiz', ['class' => 'daily-quiz-page']);
       <div class="quiz-progress"><span data-quiz-progress></span></div>
     </form>
   <?php endif; ?>
+  <?php if ($leaderboardWeekStart): ?>
   <section class="quiz-leaderboard quiz-weekly-leaderboard" aria-labelledby="weekly-leaderboard-title">
     <header class="weekly-leaderboard-heading">
       <div>
@@ -155,7 +173,6 @@ page_start('Daily quiz', ['class' => 'daily-quiz-page']);
         <span>Week of <?= e($leaderboardWeekStart->format('M j, Y')) ?></span>
       </p>
     </header>
-    <?php if ($weeklyLeaders): ?>
       <div class="weekly-podium" aria-label="Top three participants">
         <?php foreach (array_slice($weeklyLeaders, 0, 3) as $index => $leader): $rank = $index + 1; ?>
           <article class="weekly-podium-card<?= $rank === 1 ? ' is-first-place' : '' ?>">
@@ -183,10 +200,10 @@ page_start('Daily quiz', ['class' => 'daily-quiz-page']);
           </table>
         </div>
       <?php endif; ?>
-    <?php else: ?>
-      <p class="weekly-leaderboard-empty">The leaderboard will update as participants complete this week’s quizzes.</p>
-    <?php endif; ?>
     <a class="button weekly-leaderboard-back" href="<?= e(app_url('public/explore.php')) ?>">Back to Explore</a>
   </section>
+  <?php else: ?>
+    <a class="button weekly-leaderboard-back" href="<?= e(app_url('public/explore.php')) ?>">Back to Explore</a>
+  <?php endif; ?>
 </main>
 <?php page_end(); ?>

@@ -7,25 +7,8 @@ $results = $query !== ''
     : [];
 
 $gallery = active_gallery(6);
-$articles = published_content('article', 8);
-$stories = published_content('story', 8);
-
-/*
-|--------------------------------------------------------------------------
-| Content URL helper
-|--------------------------------------------------------------------------
-| published_content() returns content_id, not id.
-*/
-
-$contentUrl = static function (array $item): string {
-    $id = (int) ($item['content_id'] ?? 0);
-
-    if ($id <= 0) {
-        return app_url('public/explore.php');
-    }
-
-    return app_url('public/content.php') . '?id=' . $id;
-};
+$articles = published_content('article', 3);
+$stories = published_content('story', 3);
 
 page_start('Explore');
 ?>
@@ -117,7 +100,7 @@ page_start('Explore');
 
                                 <a
                                     class="text-link"
-                                    href="<?= e($contentUrl($item)) ?>"
+                                    href="<?= e(app_url('public/content.php') . '?id=' . (int) $item['content_id']) ?>"
                                 >
                                     Read more →
                                 </a>
@@ -187,75 +170,15 @@ page_start('Explore');
                 <h1>Stories</h1>
                 <p>Discover stories shared by Reading Club 2000.</p>
             </div>
+            <a href="<?= e(app_url('public/reading.php') . '?type=story') ?>">Open stories →</a>
 
         </div>
 
-        <?php if (!empty($stories)): ?>
-
-            <div class="card-grid three">
-
-                <?php foreach ($stories as $index => $item): ?>
-
-                    <?php
-                    $title = $item['title'] ?? 'Untitled Story';
-                    $body = $item['body'] ?? '';
-                    $cover = $item['cover_image_path'] ?? '';
-                    ?>
-
-                    <article class="story-card">
-
-                        <?php if (
-                            $cover !== '' &&
-                            media_file_exists($cover)
-                        ): ?>
-
-                            <img
-                                src="<?= e(media_url($cover)) ?>"
-                                alt="<?= e($title) ?>"
-                                loading="lazy"
-                            >
-
-                        <?php else: ?>
-
-                            <div
-                                class="card-art art-<?= ($index % 4) + 1 ?>"
-                                aria-hidden="true"
-                            ></div>
-
-                        <?php endif; ?>
-
-                        <div class="story-card-content">
-
-                            <h3><?= e($title) ?></h3>
-
-                            <?php if (trim($body) !== ''): ?>
-
-                                <p>
-                                    <?= e(excerpt($body, 180)) ?>
-                                </p>
-
-                            <?php endif; ?>
-
-                            <a
-                                class="text-link"
-                                href="<?= e($contentUrl($item)) ?>"
-                            >
-                                Read story →
-                            </a>
-
-                        </div>
-
-                    </article>
-
-                <?php endforeach; ?>
-
-            </div>
-
-        <?php else: ?>
-
-            <p>No published stories are available yet.</p>
-
-        <?php endif; ?>
+        <?php
+        $items = $stories;
+        $contentType = 'story';
+        require __DIR__ . '/../includes/explore-reading-cards.php';
+        ?>
 
     </section>
 
@@ -271,75 +194,15 @@ page_start('Explore');
                 <h1>Articles</h1>
                 <p>Explore articles published by Reading Club 2000.</p>
             </div>
+            <a href="<?= e(app_url('public/reading.php') . '?type=article') ?>">Open articles →</a>
 
         </div>
 
-        <?php if (!empty($articles)): ?>
-
-            <div class="card-grid three">
-
-                <?php foreach ($articles as $index => $item): ?>
-
-                    <?php
-                    $title = $item['title'] ?? 'Untitled Article';
-                    $body = $item['body'] ?? '';
-                    $cover = $item['cover_image_path'] ?? '';
-                    ?>
-
-                    <article class="story-card">
-
-                        <?php if (
-                            $cover !== '' &&
-                            media_file_exists($cover)
-                        ): ?>
-
-                            <img
-                                src="<?= e(media_url($cover)) ?>"
-                                alt="<?= e($title) ?>"
-                                loading="lazy"
-                            >
-
-                        <?php else: ?>
-
-                            <div
-                                class="card-art art-<?= ($index % 4) + 1 ?>"
-                                aria-hidden="true"
-                            ></div>
-
-                        <?php endif; ?>
-
-                        <div class="story-card-content">
-
-                            <h3><?= e($title) ?></h3>
-
-                            <?php if (trim($body) !== ''): ?>
-
-                                <p>
-                                    <?= e(excerpt($body, 180)) ?>
-                                </p>
-
-                            <?php endif; ?>
-
-                            <a
-                                class="text-link"
-                                href="<?= e($contentUrl($item)) ?>"
-                            >
-                                Read article →
-                            </a>
-
-                        </div>
-
-                    </article>
-
-                <?php endforeach; ?>
-
-            </div>
-
-        <?php else: ?>
-
-            <p>No published articles are available yet.</p>
-
-        <?php endif; ?>
+        <?php
+        $items = $articles;
+        $contentType = 'article';
+        require __DIR__ . '/../includes/explore-reading-cards.php';
+        ?>
 
     </section>
 

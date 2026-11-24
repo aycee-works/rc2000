@@ -64,7 +64,8 @@ function portal_notification_item(array $row, string $role): array
         'title' => $title,
         'message' => $message,
         'url' => $href,
-        'created_at' => (new DateTimeImmutable((string) $row['created_at']))->format(DATE_ATOM),
+        'created_at' => (new DateTimeImmutable((string) $row['created_at']))
+            ->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:s.u\Z'),
     ];
 }
 
@@ -82,7 +83,7 @@ function portal_notifications(PDO $pdo, string $role, string $since): array
     $unreadCount = 0;
     if ($since !== '' && strlen($since) <= 50) {
         try {
-            $sinceTime = (new DateTimeImmutable($since))->format('Y-m-d H:i:sP');
+            $sinceTime = (new DateTimeImmutable($since))->format('Y-m-d H:i:s.uP');
             $count = $pdo->prepare('SELECT COUNT(*) FROM (' . $source . ') AS notification_events WHERE created_at > ?');
             $count->execute([$sinceTime]);
             $unreadCount = (int) $count->fetchColumn();
@@ -94,6 +95,6 @@ function portal_notifications(PDO $pdo, string $role, string $since): array
     return [
         'items' => $items,
         'unread_count' => $unreadCount,
-        'server_time' => (new DateTimeImmutable())->format(DATE_ATOM),
+        'server_time' => (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s.u\Z'),
     ];
 }
