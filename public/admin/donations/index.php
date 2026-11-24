@@ -51,7 +51,7 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
 ?>
 <header class="page-header">
     <h1 class="page-title">Manage Donations</h1>
-<p class="page-subtitle">Review Monetary Donation Submissions.</p>
+<p class="page-subtitle">Review general monetary and campaign donation reports.</p>
 </header>
 
 <?php if ($loadError): ?>

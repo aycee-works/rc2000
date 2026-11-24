@@ -15,9 +15,10 @@ $baseParams = [
     'tab'    => 'monetary',
     'q'      => $moneyFilters['q'],
     'status' => $moneyFilters['status'],
+    'category' => $moneyFilters['category'],
     'page'   => $moneyFilters['page'] > 1 ? $moneyFilters['page'] : '',
 ];
-$hasFilters = $moneyFilters['q'] !== '' || $moneyFilters['status'] !== '';
+$hasFilters = $moneyFilters['q'] !== '' || $moneyFilters['status'] !== '' || $moneyFilters['category'] !== '';
 $m = $moneySelected;
 ?>
 <section class="stat-grid stat-grid-3" aria-label="Monetary donation summary">
@@ -45,6 +46,11 @@ $m = $moneySelected;
             <option value="<?= e($key) ?>"<?= $moneyFilters['status'] === $key ? ' selected' : '' ?>><?= e($label) ?></option>
         <?php endforeach; ?>
     </select>
+    <select class="select filter-select" name="category" aria-label="Filter by donation category">
+        <option value="">Category: All</option>
+        <option value="general"<?= $moneyFilters['category'] === 'general' ? ' selected' : '' ?>>General monetary</option>
+        <option value="campaign"<?= $moneyFilters['category'] === 'campaign' ? ' selected' : '' ?>>Campaign donations</option>
+    </select>
     <button type="submit" class="btn btn-dark">Search</button>
     <?php if ($hasFilters): ?>
         <a class="filter-reset" href="<?= e(donations_url(['tab' => 'monetary'])) ?>">Clear</a>
@@ -57,12 +63,12 @@ $m = $moneySelected;
             <thead>
                 <tr>
                     <th>Ticket No.</th><th>Donor</th><th>Reported amount</th>
-                    <th>Method</th><th>Date</th><th>Status</th><th>Action</th>
+                    <th>Category</th><th>Method</th><th>Date</th><th>Status</th><th>Action</th>
                 </tr>
             </thead>
             <tbody>
             <?php if (!$moneyList['rows']): ?>
-                <tr><td colspan="7" class="table-empty">
+                <tr><td colspan="8" class="table-empty">
                     <?= $hasFilters ? 'No monetary donations match your search.' : 'No monetary donations have been reported yet.' ?>
                 </td></tr>
             <?php endif; ?>
@@ -74,6 +80,7 @@ $m = $moneySelected;
                     <td><?= e($row['reference_no']) ?></td>
                     <td><?= e($row['donor_name'] === '' ? 'Name not provided' : $row['donor_name']) ?></td>
                     <td><?= e(format_peso($row['reported_amount'])) ?></td>
+                    <td><?= $row['campaign_id'] !== null ? 'Campaign: ' . e($row['campaign_title'] ?? 'Campaign unavailable') : 'General monetary' ?></td>
                     <td><?= e($row['payment_method'] ?? '') ?></td>
                     <td><?= e(format_date_short($row['created_at'])) ?></td>
                     <td><?= status_badge($row['status'], 'money') ?></td>
@@ -133,6 +140,7 @@ $m = $moneySelected;
                 <dl class="detail-grid">
                     <?= detail_item('Ticket no.', e($m['reference_no'])) ?>
                     <?= detail_item('Reported amount', '<strong>' . e(format_peso($m['reported_amount'])) . '</strong>') ?>
+                    <?= detail_item('Category', $m['campaign_id'] !== null ? 'Campaign: ' . e($m['campaign_title'] ?? 'Campaign unavailable') : 'General monetary') ?>
                     <?= detail_item('Payment method', e($m['payment_method'] ?? '')) ?>
                     <?= detail_item('Transaction reference', e($m['transaction_ref'] ?? '')) ?>
                     <?= detail_item('Proof of payment', $proofHtml) ?>

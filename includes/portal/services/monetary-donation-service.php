@@ -27,9 +27,14 @@ function money_filters_from_request(): array
     if (!isset(MONEY_STATUSES[$status])) {
         $status = '';
     }
+    $category = get_str('category');
+    if (!in_array($category, ['general', 'campaign'], true)) {
+        $category = '';
+    }
     return [
         'q'      => mb_substr(get_str('q'), 0, 100),
         'status' => $status,
+        'category' => $category,
         'page'   => max(1, (int) ($_GET['page'] ?? 1)),
     ];
 }
@@ -68,6 +73,11 @@ function list_money_donations(PDO $pdo, array $filters, int $perPage = MONEY_PER
         $where[] = 'status = ?';
         $params[] = $filters['status'];
     }
+    if ($filters['category'] === 'general') {
+        $where[] = 'campaign_id IS NULL';
+    } elseif ($filters['category'] === 'campaign') {
+        $where[] = 'campaign_id IS NOT NULL';
+    }
     $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
     $count = $pdo->prepare("SELECT COUNT(*) FROM monetary_donations $whereSql");
@@ -79,8 +89,11 @@ function list_money_donations(PDO $pdo, array $filters, int $perPage = MONEY_PER
     $offset = ($page - 1) * $perPage;
 
     $stmt = $pdo->prepare(
-        "SELECT id, reference_no, donor_name, reported_amount, payment_method, status, created_at
-         FROM monetary_donations $whereSql
+        "SELECT id, reference_no, donor_name, reported_amount, payment_method,
+                status, created_at, campaign_id,
+                (SELECT title FROM campaigns WHERE campaigns.id = monetary_donations.campaign_id) AS campaign_title
+         FROM monetary_donations
+         $whereSql
          ORDER BY created_at DESC, id DESC
          LIMIT " . (int) $perPage . " OFFSET " . (int) $offset
     );
@@ -92,7 +105,8 @@ function list_money_donations(PDO $pdo, array $filters, int $perPage = MONEY_PER
 function get_money_donation(PDO $pdo, int $id): ?array
 {
     $stmt = $pdo->prepare(
-        'SELECT m.*, a.name AS verifier_name
+        'SELECT m.*, a.name AS verifier_name,
+                (SELECT title FROM campaigns WHERE campaigns.id = m.campaign_id) AS campaign_title
          FROM monetary_donations m
          LEFT JOIN admins a ON a.id = m.verified_by
          WHERE m.id = ?'

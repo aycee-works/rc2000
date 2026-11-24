@@ -162,11 +162,12 @@ if (is_post()) {
                 }
             }
         } elseif ($action==='review_campaign_donation') {
-            $id=(int)post_str('id');$decision=post_str('decision');$amount=post_str('verified_amount');$message=post_str('admin_message');
+            $id=(int)post_str('id');$reportCampaignId=(int)post_str('report_campaign');$decision=post_str('decision');$amount=post_str('verified_amount');$message=post_str('admin_message');
+            if($reportCampaignId<1)$errors[]='Choose a campaign.';
             if(!in_array($decision,['verified','not_verified'],true))$errors[]='Choose a valid decision.';
             if($decision==='verified'&&(!preg_match('/^\d{1,10}(\.\d{1,2})?$/',$amount)||(float)$amount<=0))$errors[]='Enter the amount confirmed by the admin.';
             if(mb_strlen($message)>2000)$errors[]='Message must be 2,000 characters or fewer.';
-            if(!$errors){$stmt=$pdo->prepare('SELECT d.*,c.title AS campaign_title FROM rc2000_admin.monetary_donations d LEFT JOIN rc2000_admin.campaigns c ON c.id=d.campaign_id WHERE d.id=?');$stmt->execute([$id]);$row=$stmt->fetch();if(!$row)$errors[]='Donation report not found.';else{$pdo->prepare('UPDATE rc2000_admin.monetary_donations SET status=?,verified_amount=?,verification_note=?,admin_message=?,verified_by=?,verified_at=now() WHERE id=?')->execute([$decision,$decision==='verified'?$amount:null,post_str('verification_note')?:null,$message?:null,(int)(current_admin()['id']??0)?:null,$id]);$row['status_label']=$decision==='verified'?'Donation verified':'Donation not verified';$emailStatus='not_configured';$emailedAt=null;if($message!==''){try{if(community_send_donation_email($row,$message)){$emailStatus='sent';$emailedAt=date('c');}else$emailStatus='not_configured';}catch(Throwable $e){error_log('Donation update email failed: '.$e->getMessage());$emailStatus='failed';}}$pdo->prepare('UPDATE rc2000_admin.monetary_donations SET email_status=?,emailed_at=? WHERE id=?')->execute([$emailStatus,$emailedAt,$id]);flash('success',$emailStatus==='sent'?'Donation reviewed and email sent.':'Donation review saved. Email status: '.$emailStatus.'.');redirect('admin/community.php#reports');}}
+            if(!$errors){$stmt=$pdo->prepare('SELECT d.*,c.title AS campaign_title FROM rc2000_admin.monetary_donations d JOIN rc2000_admin.campaigns c ON c.id=d.campaign_id WHERE d.id=? AND d.campaign_id=?');$stmt->execute([$id,$reportCampaignId]);$row=$stmt->fetch();if(!$row)$errors[]='Campaign donation report not found.';else{$pdo->prepare('UPDATE rc2000_admin.monetary_donations SET status=?,verified_amount=?,verification_note=?,admin_message=?,verified_by=?,verified_at=now() WHERE id=?')->execute([$decision,$decision==='verified'?$amount:null,post_str('verification_note')?:null,$message?:null,(int)(current_admin()['id']??0)?:null,$id]);$row['status_label']=$decision==='verified'?'Donation verified':'Donation not verified';$emailStatus='not_configured';$emailedAt=null;if($message!==''){try{if(community_send_donation_email($row,$message)){$emailStatus='sent';$emailedAt=date('c');}else$emailStatus='not_configured';}catch(Throwable $e){error_log('Donation update email failed: '.$e->getMessage());$emailStatus='failed';}}$pdo->prepare('UPDATE rc2000_admin.monetary_donations SET email_status=?,emailed_at=? WHERE id=?')->execute([$emailStatus,$emailedAt,$id]);flash('success',$emailStatus==='sent'?'Donation reviewed and email sent.':'Donation review saved. Email status: '.$emailStatus.'.');redirect('admin/community.php?report_campaign='.$reportCampaignId.'#reports');}}
         }
     } catch (Throwable $e) { if($pdo->inTransaction())$pdo->rollBack();error_log('Community admin action failed: '.$e->getMessage());$errors[]='The change could not be saved. Check that database/community_features.sql has been applied.'; }
     if ($errors && in_array($action, ['save_challenge', 'archive_challenge', 'save_quiz', 'publish_leaderboard', 'unpublish_leaderboard'], true)) {
@@ -184,13 +185,24 @@ if (is_post()) {
 
 $editId=(int)($_GET['campaign']??0);$editCampaign=null;if($editId){$s=$pdo->prepare('SELECT * FROM rc2000_admin.campaigns WHERE id=?');$s->execute([$editId]);$editCampaign=$s->fetch()?:null;}
 $campaigns=$pdo->query("SELECT c.*,COALESCE(SUM(d.verified_amount) FILTER(WHERE d.status='verified'),0) AS raised FROM rc2000_admin.campaigns c LEFT JOIN rc2000_admin.monetary_donations d ON d.campaign_id=c.id GROUP BY c.id ORDER BY c.is_featured DESC,c.created_at DESC")->fetchAll();
-$reports = $pdo->query(
+$reportCampaignId = (int) ($_GET['report_campaign'] ?? $editId);
+$campaignIds = array_map(static fn ($campaign) => (int) $campaign['id'], $campaigns);
+if (!in_array($reportCampaignId, $campaignIds, true)) {
+    $reportCampaignId = $campaignIds[0] ?? 0;
+}
+$reports = [];
+if ($reportCampaignId > 0) {
+    $reportStmt = $pdo->prepare(
     "SELECT d.id, d.reference_no, COALESCE(NULLIF(d.donor_name, ''), 'Name not provided') AS donor_name,
             d.donor_email, d.reported_amount, d.status, d.email_status, c.title AS campaign_title
      FROM rc2000_admin.monetary_donations d
-     LEFT JOIN rc2000_admin.campaigns c ON c.id = d.campaign_id
-     ORDER BY (d.status = 'pending') DESC, d.created_at DESC LIMIT 30"
-)->fetchAll();
+     JOIN rc2000_admin.campaigns c ON c.id = d.campaign_id
+     WHERE d.campaign_id = ?
+     ORDER BY (d.status = 'pending') DESC, d.created_at DESC"
+    );
+    $reportStmt->execute([$reportCampaignId]);
+    $reports = $reportStmt->fetchAll();
+}
 $pageTitle='Campaigns & community';$activeNav='community';$extraCss=['community.css'];require dirname(__DIR__,2).'/includes/portal/admin-header.php';
 ?>
 <header class="page-header"><h1 class="page-title">Manage Campaigns</h1><p class="page-subtitle">Manage campaign transparency and donation verification.</p></header>
@@ -199,7 +211,48 @@ $pageTitle='Campaigns & community';$activeNav='community';$extraCss=['community.
 <section class="panel" id="campaigns"><div class="panel-header"><h2 class="panel-title"><?= $editCampaign?'Edit campaign':'Create campaign' ?></h2></div><form class="panel-body community-form" method="post" enctype="multipart/form-data"><?=csrf_field()?><input type="hidden" name="action" value="save_campaign"><input type="hidden" name="id" value="<?= (int)($editCampaign['id']??0) ?>"><label>Campaign title<input name="title" maxlength="160" required value="<?=e($editCampaign['title']??'')?>"></label><label>Campaign goal (PHP)<input name="goal_amount" type="number" min="1" step="0.01" required value="<?=e($editCampaign['goal_amount']??'')?>"></label><label>Description and spending plan<textarea name="description" rows="4" maxlength="5000" required><?=e($editCampaign['description']??'')?></textarea></label><label>Campaign image (JPG, PNG, WebP)<input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label><label>Status<select name="status"><option value="open" <?=($editCampaign['status']??'open')==='open'?'selected':''?>>Open</option><option value="closed" <?=($editCampaign['status']??'')==='closed'?'selected':''?>>Closed</option></select></label><label class="check"><input type="checkbox" name="is_featured" value="1" <?=!empty($editCampaign['is_featured'])?'checked':''?>> Show campaign summary on homepage (only one can be featured)</label><button class="btn btn-maroon" type="submit">Save campaign</button></form>
 <div class="table-wrap"><table class="data-table"><thead><tr><th>Campaign</th><th>Progress</th><th>Status</th><th>Actions</th></tr></thead><tbody><?php foreach($campaigns as $c): ?><tr><td><strong><?=e($c['title'])?></strong><br><small>Goal <?=e(format_peso($c['goal_amount']))?></small></td><td><?=e(format_peso($c['raised']))?></td><td><?=e(ucfirst($c['status']))?><?=!empty($c['is_featured'])?' · Homepage':''?></td><td><a href="<?=e(url('admin/community.php?campaign='.(int)$c['id'].'#campaigns'))?>">Edit</a><form method="post" class="inline-form"><?=csrf_field()?><input type="hidden" name="action" value="toggle_campaign"><input type="hidden" name="id" value="<?=(int)$c['id']?>"><button class="link-button" type="submit"><?=$c['status']==='open'?'Close':'Reopen'?></button></form></td></tr><?php endforeach; if(!$campaigns): ?><tr><td colspan="4">No campaigns yet.</td></tr><?php endif; ?></tbody></table></div></section>
 
-<section class="panel" id="reports"><div class="panel-header"><h2 class="panel-title">Donation Reports</h2></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Tracking ID / donor</th><th>Campaign / amount</th><th>Status</th><th>Review & email</th></tr></thead><tbody><?php foreach($reports as $d): ?><tr><td><strong><?=e($d['reference_no'])?></strong><br><?=e($d['donor_name'])?><br><small><?=e($d['donor_email'])?></small></td><td><?=e($d['campaign_title']?:'Monetary donation')?><br><?=e(format_peso($d['reported_amount']))?></td><td><?=e(str_replace('_',' ',$d['status']))?><br><small>Email: <?=e($d['email_status'])?></small></td><td><details><summary>Review</summary><form method="post" class="community-form compact-form"><?=csrf_field()?><input type="hidden" name="action" value="review_campaign_donation"><input type="hidden" name="id" value="<?=(int)$d['id']?>"><label>Decision<select name="decision"><option value="verified">Verify donation</option><option value="not_verified">Not verified</option></select></label><label>Verified amount<input name="verified_amount" type="number" min="0.01" step="0.01" value="<?=e($d['reported_amount'])?>"></label><label>Verification note<input name="verification_note" maxlength="255"></label><label>Email message<textarea name="admin_message" rows="3" maxlength="2000" required></textarea></label><button class="btn btn-maroon" type="submit">Save & email donor</button><small>Message is saved even when email delivery is not configured.</small></form></details></td></tr><?php endforeach; if(!$reports): ?><tr><td colspan="4">No campaign donation reports yet.</td></tr><?php endif; ?></tbody></table></div></section>
+<section class="panel" id="reports">
+    <div class="panel-header"><h2 class="panel-title">Campaign Donation Reports</h2></div>
+    <?php if ($campaigns): ?>
+    <form method="get" action="<?= e(url('admin/community.php')) ?>" class="panel-body community-form">
+        <label>Campaign
+            <select name="report_campaign" onchange="this.form.submit()">
+                <?php foreach ($campaigns as $campaign): ?>
+                    <option value="<?= (int) $campaign['id'] ?>"<?= (int) $campaign['id'] === $reportCampaignId ? ' selected' : '' ?>><?= e($campaign['title']) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </label>
+        <button class="btn btn-maroon" type="submit">View reports</button>
+    </form>
+    <?php endif; ?>
+    <div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Tracking ID / donor</th><th>Campaign / amount</th><th>Status</th><th>Review & email</th></tr></thead>
+        <tbody>
+        <?php foreach ($reports as $d): ?>
+            <tr>
+                <td><strong><?= e($d['reference_no']) ?></strong><br><?= e($d['donor_name']) ?><br><small><?= e($d['donor_email']) ?></small></td>
+                <td><?= e($d['campaign_title']) ?><br><?= e(format_peso($d['reported_amount'])) ?></td>
+                <td><?= e(str_replace('_', ' ', $d['status'])) ?><br><small>Email: <?= e($d['email_status']) ?></small></td>
+                <td><details><summary>Review</summary>
+                    <form method="post" class="community-form compact-form">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="action" value="review_campaign_donation">
+                        <input type="hidden" name="report_campaign" value="<?= $reportCampaignId ?>">
+                        <input type="hidden" name="id" value="<?= (int) $d['id'] ?>">
+                        <label>Decision<select name="decision"><option value="verified">Verify donation</option><option value="not_verified">Not verified</option></select></label>
+                        <label>Verified amount<input name="verified_amount" type="number" min="0.01" step="0.01" value="<?= e($d['reported_amount']) ?>"></label>
+                        <label>Verification note<input name="verification_note" maxlength="255"></label>
+                        <label>Email message<textarea name="admin_message" rows="3" maxlength="2000" required></textarea></label>
+                        <button class="btn btn-maroon" type="submit">Save & email donor</button>
+                        <small>Message is saved even when email delivery is not configured.</small>
+                    </form>
+                </details></td>
+            </tr>
+        <?php endforeach; ?>
+        <?php if (!$reports): ?><tr><td colspan="4"><?= $campaigns ? 'No donation reports for this campaign yet.' : 'Create a campaign to see its donation reports.' ?></td></tr><?php endif; ?>
+        </tbody>
+    </table></div>
+</section>
 
 
 </div>
