@@ -64,7 +64,7 @@ if (!superadmin_password_meets_policy($password)) {
 try {
     $stmt = $pdo->prepare("INSERT INTO admins (name, email, password_hash, role) VALUES (?, ?, ?, 'super_admin')");
     $stmt->execute([$name, $email, password_hash($password, PASSWORD_DEFAULT)]);
-    echo "Done. Created the super admin account for {$email}.\nLog in at /superadmin/login.php\n";
+    echo "Done. Created the super admin account for {$email}.\nLog in at " . url('superadmin/login.php') . "\n";
 } catch (PDOException $e) {
     if ($e->getCode() === '23505') {
         exit("An account with that email already exists. Nothing was changed.\n");

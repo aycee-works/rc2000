@@ -60,6 +60,19 @@
         return m ? m.getAttribute('content') : '';
     };
 
+    RC.url = function (path) {
+        var portalBase = document.querySelector('meta[name="portal-base"]');
+        var portalName = document.querySelector('meta[name="portal-name"]');
+        path = path.replace(/^\//, '');
+        if (portalBase && portalName) {
+            var prefix = portalName.getAttribute('content');
+            if (path === prefix || path.indexOf(prefix + '/') === 0) {
+                return portalBase.getAttribute('content') + path.slice(prefix.length);
+            }
+        }
+        return RC.baseUrl() + '/' + path;
+    };
+
     /**
      * POST/GET to a JSON endpoint with the CSRF header attached.
      * Returns a Promise that resolves to the parsed JSON ({success, message, data}).
@@ -75,9 +88,12 @@
             headers['Content-Type'] = 'application/json';
             init.body = JSON.stringify(options.body);
         }
-        return fetch(RC.baseUrl() + '/' + path.replace(/^\//, ''), init).then(function (res) {
+        return fetch(RC.url(path), init).then(function (res) {
             if (res.status === 401) {
-                window.location.href = RC.baseUrl() + '/admin/login.php';
+                var portalBase = document.querySelector('meta[name="portal-base"]');
+                window.location.href = portalBase
+                    ? portalBase.getAttribute('content') + '/login.php'
+                    : RC.url('admin/login.php');
                 return Promise.reject(new Error('Not authenticated'));
             }
             return res.json().catch(function () {

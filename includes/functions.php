@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/../config/portal-routes.php';
+
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
@@ -61,7 +63,7 @@ function app_url(string $path = ''): string
     if ($base === '/') {
         $base = '';
     }
-    return $base . ($path === '' ? '/' : '/' . ltrim($path, '/'));
+    return $base . ($path === '' ? '/' : '/' . portal_path($path));
 }
 
 function facebook_page_url(): string

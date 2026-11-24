@@ -7,7 +7,7 @@
     'use strict';
 
     var API = 'admin/api/content.php';
-    var listUrl = RC.baseUrl() + '/admin/content/index.php';
+    var listUrl = RC.url('admin/content/index.php');
 
     // Keep the two content areas compact and allow activity links to open the right tab.
     var contentTabs = Array.prototype.slice.call(document.querySelectorAll('[data-content-tab]'));

@@ -2,10 +2,12 @@
 
 The attached admin and superadmin screens are installed in the existing `public/` tree:
 
-- Admin: `http://localhost/rc2000/admin/`
-- Superadmin: `http://localhost/rc2000/superadmin/`
-- Direct public-tree URLs also work under `/rc2000/public/admin/`.
+- Admin: `http://localhost/rc2000/entry-6e91b4c8/`
+- Superadmin: `http://localhost/rc2000/entry-a73d02f5/`
+- The former portal URLs and direct requests under `/rc2000/public/admin/` return 404.
 - The project root `http://localhost/rc2000/` loads the public home page.
+
+Hosted login URLs are `/entry-6e91b4c8/login.php` and `/entry-a73d02f5/login.php`. The public paths are defined in `config/portal-routes.php` and mirrored in `.htaccess`. PHP callers can continue passing logical paths such as `admin/dashboard.php` to `url()`; the helper translates them. The physical folders remain under `public/admin/`.
 
 The portals use shared code in `includes/portal/`, settings in `config/portal/`, and assets in `public/assets/`. Their database tables are installed into the separate PostgreSQL schema `rc2000_admin` inside the existing `rc2000_db` database. The public site's existing `public` schema and `database/schema.sql` are preserved.
 
@@ -22,11 +24,11 @@ The portals use shared code in `includes/portal/`, settings in `config/portal/`,
    C:\xampp\php\php.exe database\create-super-admin.php
    ```
 
-   Follow the prompts for the superadmin email and password. Then open `/rc2000/superadmin/` and use the admin management page to create regular admin accounts. Regular staff sign in at `/rc2000/admin/`.
+   Follow the prompts for the superadmin email and password. Then open `/rc2000/entry-a73d02f5/` and use the admin management page to create regular admin accounts. Regular staff sign in at `/rc2000/entry-6e91b4c8/`.
 
 The portal uses the same PostgreSQL connection as the public site. Follow the [localhost database setup](README-localhost.md#3-set-the-php-database-connection) to configure `config/db.local.php` or the `RC2000_DB_*` environment variables.
 
-The campaign and quiz experience requires the one-time `database/community_features.sql` migration. It adds the campaign, challenge, vote, quiz, and quiz score tables to `rc2000_admin` and extends monetary donation records with campaign and email status fields. Campaigns and donation reports are managed at `/rc2000/public/admin/community.php`; weekly challenges, daily quizzes, and leaderboard publishing are in Manage content at `/rc2000/public/admin/content/index.php`. Existing featured stories and articles remain in their current content system.
+The campaign and quiz experience requires the one-time `database/community_features.sql` migration. It adds the campaign, challenge, vote, quiz, and quiz score tables to `rc2000_admin` and extends monetary donation records with campaign and email status fields. Campaigns and donation reports are managed at `/rc2000/entry-6e91b4c8/community.php`; weekly challenges, daily quizzes, and leaderboard publishing are in Manage content at `/rc2000/entry-6e91b4c8/content/index.php`. Existing featured stories and articles remain in their current content system.
 
 
 ## Super Admin sign-in

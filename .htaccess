@@ -1,12 +1,17 @@
 Options -Indexes
 RewriteEngine On
 
-# Keep the site's project-root URLs working while admin code lives under public/.
-RewriteRule ^(?:public/)?admin/+super_admin(?:/|$) - [R=404,L,NC]
-RewriteRule ^(?:superadmin|staff-console)/?$ public/admin/super_admin/index.php [END,QSA]
-RewriteRule ^(?:superadmin|staff-console)/(.*)$ public/admin/super_admin/$1 [END,QSA]
-RewriteRule ^admin/?$ public/admin/index.php [L,QSA]
-RewriteRule ^admin/(.*)$ public/admin/$1 [L,QSA]
+# Retire recognizable portal URLs, including direct requests to physical folders.
+RewriteRule ^(?:public/)?(?:admin|superadmin|super_admin|staff-console)(?:/|$) - [R=404,END,NC]
+
+# Public portal paths. Keep the segments in sync with config/portal-routes.php.
+RewriteRule ^entry-6e91b4c8/+super_admin(?:/|$) - [R=404,END,NC]
+RewriteRule ^entry-6e91b4c8/?$ public/admin/index.php [END,QSA]
+RewriteRule ^entry-6e91b4c8/(archive|content|donations|feedback|inquiries)/?$ public/admin/$1/index.php [END,QSA]
+RewriteRule ^entry-6e91b4c8/((?:[^/]+/)*[^/]+\.php)$ public/admin/$1 [END,QSA]
+RewriteRule ^entry-a73d02f5/?$ public/admin/super_admin/index.php [END,QSA]
+RewriteRule ^entry-a73d02f5/admins/?$ public/admin/super_admin/admins/index.php [END,QSA]
+RewriteRule ^entry-a73d02f5/((?:[^/]+/)*[^/]+\.php)$ public/admin/super_admin/$1 [END,QSA]
 RewriteRule ^assets/(.*)$ public/assets/$1 [L]
 RewriteRule ^uploads/(.*)$ public/uploads/$1 [L]
 RewriteRule ^api/public/(.*)$ public/api/public/$1 [L,QSA]

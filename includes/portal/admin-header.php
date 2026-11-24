@@ -21,6 +21,8 @@ if (!headers_sent()) { header('Cache-Control: no-store'); }
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
     <meta name="app-base" content="<?= e(BASE_URL) ?>">
+    <meta name="portal-base" content="<?= e(url('admin')) ?>">
+    <meta name="portal-name" content="admin">
     <script>try{if(localStorage.getItem('rc2000-admin-theme')==='dark')document.documentElement.dataset.adminTheme='dark'}catch(e){}</script>
     <title><?= e($pageTitle) ?> | Reading Club 2000 Admin</title>
     <link rel="icon" href="<?= e(asset('images/logo.png')) ?>">

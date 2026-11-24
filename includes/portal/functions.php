@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__DIR__, 2) . '/config/portal-routes.php';
 /**
  * includes/functions.php
  * Small helpers used across the admin pages and APIs.
@@ -13,7 +14,7 @@ function e($value): string
 /** Build a URL inside this project, e.g. url('admin/dashboard.php'). */
 function url(string $path = ''): string
 {
-    return BASE_URL . '/' . ltrim($path, '/');
+    return BASE_URL . '/' . portal_path($path);
 }
 
 /** Build a URL for media that may be stored locally or on an external host. */

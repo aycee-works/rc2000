@@ -11,8 +11,10 @@
 
 function is_superadmin_request(): bool
 {
+    $scriptFile = str_replace('\\', '/', $_SERVER['SCRIPT_FILENAME'] ?? '');
     $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
-    return preg_match('#/(?:superadmin|staff-console|super_admin)(?:/|$)#', $scriptName) === 1;
+    return str_contains($scriptFile, '/public/admin/super_admin/')
+        || preg_match('#/(?:' . SUPERADMIN_PORTAL_PATH . '|super_admin)(?:/|$)#', $scriptName) === 1;
 }
 
 function enforce_superadmin_ip_allowlist(): void
