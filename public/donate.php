@@ -5,7 +5,10 @@ require_once __DIR__ . '/../includes/community.php';
 $tab = in_array($_GET['tab'] ?? '', ['money', 'campaign', 'howto', 'status', 'receipt'], true) ? (string) $_GET['tab'] : 'money';
 $donationReceipt = $_SESSION['donation_receipt'] ?? null;
 
-$methods = active_donation_methods();
+$methods = array_values(array_filter(
+    active_donation_methods(),
+    static fn ($method) => !preg_match('/\bchecks?\b/i', $method['method_name'] . ' ' . $method['payment_provider'])
+));
 $errors = [];
 $donationPrivacyNote = 'Your email is required to check your donation status and receive updates. Admins use your payment details to verify your donation. Any payment proof you upload may show your name.';
 $old = [
@@ -55,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!valid_email($old['donor_email']) || mb_strlen($old['donor_email']) > 150) $errors[] = 'Please enter a valid email address.';
         if (!valid_amount($old['amount_reported'])) $errors[] = 'Please enter a valid amount.';
         if (!valid_date_time($old['payment_date'])) $errors[] = 'Please enter the payment date.';
-        if (!required_text($old['transaction_reference'], 100)) $errors[] = 'Please enter a transaction reference or check number (100 characters maximum).';
+        if (!required_text($old['transaction_reference'], 100)) $errors[] = 'Please enter a transaction reference (100 characters maximum).';
         $contact = trim($old['contact_info']);
         if ($contact !== '' && !preg_match('/^[0-9+() \-]{7,30}$/', $contact)) $errors[] = 'Contact number may only contain digits, spaces, + ( ) and - (up to 30 characters).';
         $campaign = fetch_one("SELECT id, title FROM rc2000_admin.campaigns WHERE id = :id AND status = 'open'", ['id' => $campaignId]);
@@ -101,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = 'Please enter a valid amount.';
         }
         if (!required_text($old['transaction_reference'], 150)) {
-            $errors[] = 'Please enter a transaction reference or check number.';
+            $errors[] = 'Please enter a transaction reference.';
         }
         if (mb_strlen($old['transaction_reference']) > 100) {
             $errors[] = 'Transaction reference must be 100 characters or fewer.';
@@ -277,7 +280,6 @@ page_start('Donate');
         <div class="method-tabs" data-tabs>
             <button type="button" class="is-active" data-tab-target="qr">QR Codes</button>
             <button type="button" data-tab-target="bank">Bank Transfer</button>
-            <button type="button" data-tab-target="check">Check</button>
           </div>
 
         <div class="method-panels">
@@ -327,10 +329,6 @@ page_start('Donate');
               <p><strong>Account number</strong><br>Add the live account in donation_methods.</p>
             <?php endif; ?>
           </div>
-          <div hidden data-tab-panel="check">
-            <p>Make checks payable to <strong>Reading Club 2000</strong>.</p>
-            <p>Mail or drop off at 1454 Balagtas St., Barangay La Paz, 1204 Makati.</p>
-          </div>
         </div>
 
         <?php if (!$methods): ?>
@@ -356,7 +354,7 @@ page_start('Donate');
               <label>Payment date
                 <input type="datetime-local" name="payment_date" required value="<?= e($old['payment_date']) ?>">
               </label>
-              <label>Transaction / Check Number
+              <label>Transaction reference
                 <input name="transaction_reference" required maxlength="150" value="<?= e($old['transaction_reference']) ?>">
               </label>
             </div>
@@ -460,6 +458,11 @@ page_start('Donate');
           <article>
             <h2>Volunteer Your Time</h2>
             <p>You can also ask about helping with reading sessions, storytelling, or library activities. Let us know your interests and availability so we can coordinate.</p>
+          </article>
+          <article>
+            <h2>Check Donations</h2>
+            <p>Make checks payable to <strong>Reading Club 2000</strong>. Mail or drop them off at 1454 Balagtas St., Barangay La Paz, 1204 Makati.</p>
+            <p>Please contact us first to confirm the delivery details and arrange a suitable time.</p>
           </article>
         </div>
 
