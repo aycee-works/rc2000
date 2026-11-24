@@ -89,7 +89,7 @@ page_start('About', ['class' => 'about-page']);
         <span class="history-year">Today</span>
         <div>
           <h3>26 Years Later</h3>
-          <p>Mang Nanie says around 300 books pass through the library each day, free of charge. The library welcomes books, school supplies, food and clothing as donations and declines cash donations.</p>
+          <p>Mang Nanie says around 300 books pass through the library each day, free of charge. The library welcomes books, school supplies, food and clothing as donations.</p>
           <p>Volunteers offer lessons in music, sports, chess and guitar. Mang Nanie brings books to communities such as Happyland and the Pasig riverside. Children visit the library on their own, some from far away, and his eldest daughter now helps run it.</p>
           <p>The library still promotes education through reading and helps its neighbors. As Mang Nanie puts it, “no one has ever become poor in giving books.”</p>
         </div>
