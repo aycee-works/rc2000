@@ -1,8 +1,13 @@
 <?php
-require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/donor/bootstrap.php';
 require_once __DIR__ . '/../includes/community.php';
 
 $tab = in_array($_GET['tab'] ?? '', ['money', 'campaign', 'howto', 'status', 'receipt'], true) ? (string) $_GET['tab'] : 'money';
+$donorUser = current_donor_user();
+if (!$donorUser && in_array($tab, ['money', 'campaign'], true)) {
+    // Preserve the chosen donation type across sign-in and registration.
+    $_SESSION['donor_return_to'] = '/public/donate.php?tab=' . $tab;
+}
 $donationReceipt = $_SESSION['donation_receipt'] ?? null;
 
 $methods = array_values(array_filter(
@@ -26,8 +31,18 @@ $old = [
     'transaction_reference' => '',
     'payment_date' => date('Y-m-d\TH:i'),
 ];
+if ($donorUser) {
+    $old['donor_name'] = $donorUser['name'];
+    $old['donor_email'] = $donorUser['email'];
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $postedAction = (string) ($_POST['action'] ?? '');
+    if (!$donorUser && in_array($postedAction, ['campaign', 'monetary'], true)) {
+        $_SESSION['donor_return_to'] = '/public/donate.php?tab=' . $postedAction;
+        flash_set('donor_auth_notice', 'Sign in or create an account to submit a donation report.');
+        redirect('/public/login.php');
+    }
     if (!csrf_is_valid($_POST['csrf_token'] ?? null)) {
         $errors[] = 'Your session expired. Please try again.';
     }
@@ -40,11 +55,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($old as $key => $_) {
         $old[$key] = post_string($key);
     }
+    // Donation identity comes from the authenticated account, never from editable POST fields.
+    if ($donorUser) {
+        $old['donor_name'] = $donorUser['name'];
+        $old['donor_email'] = $donorUser['email'];
+    }
     // Honor the checkbox if someone submits an older copy of the form.
     if (($_POST['anonymous'] ?? null) === '1') {
         $old['donor_name'] = '';
     }
-    $donorName = $old['donor_name'];
+    $donorName = $donorUser ? mb_substr($donorUser['name'], 0, 120) : $old['donor_name'];
     if ($action !== 'status_from_receipt' || $tab !== 'receipt') {
         $tab = $action === 'campaign' ? 'campaign' : 'money';
     }
@@ -71,13 +91,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$errors) {
             try {
                 $methodName = mb_substr(trim($selectedMethod['method_name'] . ' · ' . $selectedMethod['payment_provider']), 0, 40);
-                $stmt = db()->prepare("INSERT INTO rc2000_admin.monetary_donations (reference_no, donor_name, donor_email, donor_contact, reported_amount, payment_method, transaction_ref, proof_path, campaign_id) VALUES ('MD-' || lpad(nextval('rc2000_admin.monetary_donation_seq')::text, 4, '0'), :name, :email, :contact, :amount, :method, :reference, :proof, :campaign) RETURNING reference_no");
-                $stmt->execute(['name' => $donorName, 'email' => strtolower(trim($old['donor_email'])), 'contact' => $contact ?: null, 'amount' => number_format((float) $old['amount_reported'], 2, '.', ''), 'method' => $methodName, 'reference' => $old['transaction_reference'], 'proof' => $proof, 'campaign' => $campaignId]);
+                $stmt = db()->prepare("INSERT INTO rc2000_admin.monetary_donations (reference_no, donor_user_id, donor_name, donor_email, donor_contact, reported_amount, payment_method, transaction_ref, proof_path, campaign_id) VALUES ('MD-' || lpad(nextval('rc2000_admin.monetary_donation_seq')::text, 4, '0'), :donor_user_id, :name, :email, :contact, :amount, :method, :reference, :proof, :campaign) RETURNING reference_no");
+                $stmt->execute(['donor_user_id' => (int) $donorUser['id'], 'name' => $donorName, 'email' => strtolower(trim($donorUser['email'])), 'contact' => $contact ?: null, 'amount' => number_format((float) $old['amount_reported'], 2, '.', ''), 'method' => $methodName, 'reference' => $old['transaction_reference'], 'proof' => $proof, 'campaign' => $campaignId]);
                 $trackingId = (string) $stmt->fetchColumn();
                 $_SESSION['donation_receipt'] = [
                     'reference' => $trackingId,
                     'name' => $donorName,
-                    'email' => strtolower(trim($old['donor_email'])),
+                    'email' => strtolower(trim($donorUser['email'])),
                     'amount' => number_format((float) $old['amount_reported'], 2, '.', ''),
                     'method' => $methodName,
                     'transaction_reference' => $old['transaction_reference'],
@@ -142,15 +162,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $pdo->beginTransaction();
                     $portal = $pdo->prepare(
                         "INSERT INTO rc2000_admin.monetary_donations
-                            (reference_no, donor_name, donor_email, donor_contact, reported_amount, payment_method, transaction_ref, proof_path)
+                            (reference_no, donor_user_id, donor_name, donor_email, donor_contact, reported_amount, payment_method, transaction_ref, proof_path)
                          VALUES
-                            ('MD-' || lpad(nextval('rc2000_admin.monetary_donation_seq')::text, 4, '0'), :donor_name, :donor_email, :donor_contact, :reported_amount, :payment_method, :transaction_ref, :proof_path)
+                            ('MD-' || lpad(nextval('rc2000_admin.monetary_donation_seq')::text, 4, '0'), :donor_user_id, :donor_name, :donor_email, :donor_contact, :reported_amount, :payment_method, :transaction_ref, :proof_path)
                          RETURNING reference_no"
                     );
                     $contact = trim($old['contact_info']);
                     $portal->execute([
                         'donor_name' => $donorName,
-                        'donor_email' => strtolower(trim($old['donor_email'])),
+                        'donor_user_id' => (int) $donorUser['id'],
+                        'donor_email' => strtolower(trim($donorUser['email'])),
                         'donor_contact' => preg_match('/^[0-9+() \\-]{7,30}$/', $contact) ? $contact : null,
                         'reported_amount' => number_format((float) $old['amount_reported'], 2, '.', ''),
                         'payment_method' => $method,
@@ -162,7 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['donation_receipt'] = [
                         'reference' => $trackingId,
                         'name' => $donorName,
-                        'email' => strtolower(trim($old['donor_email'])),
+                        'email' => strtolower(trim($donorUser['email'])),
                         'amount' => number_format((float) $old['amount_reported'], 2, '.', ''),
                         'method' => (string) $method,
                         'transaction_reference' => $old['transaction_reference'],
@@ -272,6 +293,16 @@ page_start('Donate');
           <a class="button" href="<?= e(app_url('public/donate.php?tab=money')) ?>">Make a donation report</a>
         <?php endif; ?>
       </section>
+    <?php elseif (!$donorUser && in_array($tab, ['money', 'campaign'], true)): ?>
+      <section class="form-card donor-required-card">
+        <span class="eyebrow">Donor account required</span>
+        <h1>Sign in to donate</h1>
+        <p class="lede">Please sign in or create a donor account before submitting a monetary or campaign donation report. Your donation history will be linked to your account.</p>
+        <div class="donor-required-actions">
+          <a class="button" href="<?= e(app_url('public/login.php')) ?>">Sign in</a>
+          <a class="button button-secondary" href="<?= e(app_url('public/register.php')) ?>">Create an account</a>
+        </div>
+      </section>
     <?php elseif ($tab === 'money'): ?>
       <section class="form-card">
         <h1>Monetary Donation</h1>
@@ -339,11 +370,11 @@ page_start('Donate');
             <input type="hidden" name="action" value="monetary">
             <p class="field-note" id="donation-report-privacy"><?= e($donationPrivacyNote) ?></p>
             <div class="form-grid">
-              <label>Name (Optional)
-                <input name="donor_name" maxlength="120" value="<?= e($old['donor_name']) ?>">
+              <label>Donating as
+                <input value="<?= e($donorUser['name']) ?>" readonly>
               </label>
-              <label>Email
-                <input type="email" name="donor_email" required maxlength="150" aria-describedby="donation-report-privacy" value="<?= e($old['donor_email']) ?>">
+              <label>Account email
+                <input type="email" value="<?= e($donorUser['email']) ?>" readonly aria-describedby="donation-report-privacy">
               </label>
               <label>Contact Info (Optional)
                 <input name="contact_info" maxlength="255" value="<?= e($old['contact_info']) ?>">
@@ -410,11 +441,11 @@ page_start('Donate');
           </label>
           <p class="field-note" id="donation-report-privacy"><?= e($donationPrivacyNote) ?></p>
           <div class="form-grid">
-            <label>Name (optional)
-              <input name="donor_name" maxlength="120" value="<?= e($old['donor_name']) ?>">
+            <label>Donating as
+              <input value="<?= e($donorUser['name']) ?>" readonly>
             </label>
-            <label>Email
-              <input type="email" name="donor_email" required maxlength="150" aria-describedby="donation-report-privacy" value="<?= e($old['donor_email']) ?>">
+            <label>Account email
+              <input type="email" value="<?= e($donorUser['email']) ?>" readonly aria-describedby="donation-report-privacy">
             </label>
             <label>Contact info
               <input name="contact_info" maxlength="30" value="<?= e($old['contact_info']) ?>">

@@ -18,7 +18,7 @@ const AUDIT_ACTIVITY_LABELS = [
     'verified' => 'Verified', 'not_verified' => 'Not verified',
     'published' => 'Published', 'archived' => 'Archived',
     'resolved' => 'Resolved', 'closed' => 'Closed',
-    'deactivated' => 'Deactivated', 'reactivated' => 'Reactivated', 'signed_in' => 'Signed in', 'signed_out' => 'Signed out',
+    'deactivated' => 'Deactivated', 'reactivated' => 'Reactivated', 'exported' => 'Exported', 'signed_in' => 'Signed in', 'signed_out' => 'Signed out',
 ];
 
 const AUDIT_MODULE_LABELS = [
@@ -30,6 +30,7 @@ const AUDIT_ENTITY_NOUNS = [
     'monetary_donation' => 'monetary donation', 'inquiry' => 'inquiry',
     'gallery' => 'gallery image', 'story' => 'story', 'announcement' => 'announcement',
     'trivia' => 'trivia entry', 'admin' => 'admin account',
+    'donor_user' => 'donor account', 'donor_data_request' => 'donor data request',
 ];
 
 /** SQL that adds activity_key and module_key to each log row. Used as a sub-query. */
@@ -55,6 +56,10 @@ SELECT l.id, l.admin_id, l.action, l.entity_type, l.entity_id, l.details, l.crea
          WHEN l.action = 'inquiry_close'      THEN 'closed'
          WHEN l.action = 'admin_deactivated'  THEN 'deactivated'
          WHEN l.action = 'admin_reactivated'  THEN 'reactivated'
+         WHEN l.action = 'donor_account_deactivated' THEN 'deactivated'
+         WHEN l.action = 'donor_account_reactivated' THEN 'reactivated'
+         WHEN l.action = 'donor_account_removed' THEN 'deleted'
+         WHEN l.action = 'donor_account_exported' THEN 'exported'
          ELSE 'edited'
        END AS activity_key,
        CASE
@@ -62,7 +67,7 @@ SELECT l.id, l.admin_id, l.action, l.entity_type, l.entity_id, l.details, l.crea
          WHEN l.entity_type ~ '_donation$' THEN 'donations'
          WHEN l.entity_type = 'inquiry' THEN 'inquiries'
          WHEN l.entity_type IN ('gallery', 'story', 'announcement', 'trivia') THEN 'content'
-         WHEN l.entity_type = 'admin' OR l.action ~ '^admin_' THEN 'accounts'
+         WHEN l.entity_type IN ('admin', 'donor_user', 'donor_data_request') OR l.action ~ '^(admin|donor_account|donor_data_request)' THEN 'accounts'
          ELSE 'other'
        END AS module_key
 FROM activity_logs l
@@ -81,7 +86,7 @@ function audit_describe(array $row): string
         'created' => 'Created', 'edited' => 'Updated', 'deleted' => 'Deleted', 'approved' => 'Approved',
         'rejected' => 'Rejected', 'verified' => 'Verified', 'not_verified' => 'Marked not verified',
         'published' => 'Published', 'archived' => 'Archived', 'resolved' => 'Resolved',
-        'closed' => 'Closed', 'deactivated' => 'Deactivated', 'reactivated' => 'Reactivated',
+        'closed' => 'Closed', 'deactivated' => 'Deactivated', 'reactivated' => 'Reactivated', 'exported' => 'Exported',
     ];
     $noun = AUDIT_ENTITY_NOUNS[$row['entity_type'] ?? ''] ?? 'record';
     $text = ($verbs[$key] ?? 'Updated') . ' ' . $noun;

@@ -30,3 +30,4 @@
     border-radius: var(--radius);
 }
 .response-meta { margin-top: 4px; font-size: 11px; color: var(--color-muted); }
+.inquiry-new-message { color: var(--color-maroon); font-size: 10px; font-weight: 700; }

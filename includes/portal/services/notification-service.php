@@ -11,6 +11,13 @@ function portal_notification_source_sql(string $role): string
 SELECT 'inquiry'::text AS kind, id AS source_id, reference_no, subject AS summary, created_at
 FROM inquiries
 UNION ALL
+SELECT 'donor_inquiry_reply'::text, i.id, i.reference_no, i.subject,
+       MAX(m.created_at) AS created_at
+FROM donor_inquiry_messages m
+JOIN inquiries i ON i.id = m.inquiry_id
+WHERE m.read_by_admin_at IS NULL
+GROUP BY i.id, i.reference_no, i.subject
+UNION ALL
 SELECT 'monetary_donation'::text, id, reference_no, payment_method, created_at
 FROM monetary_donations
 SQL;
@@ -30,6 +37,7 @@ function portal_notification_item(array $row, string $role): array
         $kind = $row['kind'];
         $title = [
             'inquiry' => 'New inquiry received',
+            'donor_inquiry_reply' => 'New donor inquiry reply',
             'monetary_donation' => 'New monetary donation',
         ][$kind] ?? 'New submission';
         $summary = trim((string) ($row['summary'] ?? ''));
@@ -38,7 +46,7 @@ function portal_notification_item(array $row, string $role): array
             $message .= ' · ' . $summary;
         }
         $href = match ($kind) {
-            'inquiry' => url('admin/inquiries/index.php?id=' . $id),
+            'inquiry', 'donor_inquiry_reply' => url('admin/inquiries/index.php?id=' . $id),
             default => url('admin/donations/index.php?tab=monetary&id=' . $id),
         };
     } else {

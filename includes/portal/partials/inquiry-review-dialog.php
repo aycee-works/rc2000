@@ -6,10 +6,11 @@
  */
 $status = $selected['status'];
 $isClosed = $status === 'closed';
+$hasAdminResponse = (bool) array_filter($responses, fn($r) => ($r['sender_type'] ?? 'admin') === 'admin');
 ?>
 <dialog class="dialog dialog-review" id="review-dialog" aria-labelledby="review-title" data-autoopen>
     <form id="inquiry-form" class="review-form" novalidate
-          data-has-response="<?= $responses ? '1' : '0' ?>" data-status="<?= e($status) ?>">
+          data-has-response="<?= $hasAdminResponse ? '1' : '0' ?>" data-status="<?= e($status) ?>">
         <?= csrf_field() ?>
         <input type="hidden" name="id" value="<?= (int) $selected['id'] ?>">
         <input type="hidden" name="version" value="<?= e($selected['updated_at']) ?>">
@@ -55,7 +56,7 @@ $isClosed = $status === 'closed';
                             <div class="response-body"><?= nl2br(e($r['body'])) ?></div>
                             <div class="response-meta">
                                 <?= e(format_datetime($r['created_at'])) ?><?= $r['admin_name'] ? ' · ' . e($r['admin_name']) : '' ?>
-                                · <?= e(inquiry_email_label($r['email_status'])) ?>
+                                <?php if (($r['sender_type'] ?? 'admin') === 'donor'): ?>· Sent from donor account<?php else: ?>· <?= e(inquiry_email_label($r['email_status'])) ?><?php endif; ?>
                             </div>
                         </li>
                     <?php endforeach; ?>

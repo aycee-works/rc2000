@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/donor/bootstrap.php';
+$donorUser = current_donor_user();
 
 $view = $_GET['view'] ?? 'submit';
 if (!in_array($view, ['submit', 'status', 'receipt'], true)) {
@@ -21,6 +22,13 @@ $old = [
     'message' => '',
     'ticket_number' => '',
 ];
+if ($donorUser) {
+    $nameParts = preg_split('/\s+/u', trim($donorUser['name']), 2) ?: [];
+    $old['first_name'] = $nameParts[0] ?? $donorUser['name'];
+    $old['last_name'] = $nameParts[1] ?? '';
+    $old['sender_name'] = $donorUser['name'];
+    $old['sender_email'] = $donorUser['email'];
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && $view === 'status') {
     $prefillReference = flash_get('inquiry_status_reference');
@@ -46,15 +54,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($old as $key => $_) {
         $old[$key] = post_string($key);
     }
+    if ($donorUser) {
+        $nameParts = preg_split('/\s+/u', trim($donorUser['name']), 2) ?: [];
+        $old['first_name'] = $nameParts[0] ?? $donorUser['name'];
+        $old['last_name'] = $nameParts[1] ?? '';
+        $old['sender_name'] = $donorUser['name'];
+        $old['sender_email'] = $donorUser['email'];
+    }
 
     if ($action === 'submit') {
         $view = 'submit';
-        $fullName = preg_replace('/\s+/u', ' ', trim($old['first_name'] . ' ' . $old['last_name'])) ?? '';
+        $fullName = $donorUser
+            ? mb_substr($donorUser['name'], 0, 150)
+            : (preg_replace('/\s+/u', ' ', trim($old['first_name'] . ' ' . $old['last_name'])) ?? '');
         $categories = inquiry_categories();
         if (!isset($categories[$old['category']])) {
             $errors[] = 'Please select a category.';
         }
-        if (!required_text($old['first_name'], 150) || !required_text($old['last_name'], 150)) {
+        if (!$donorUser && (!required_text($old['first_name'], 150) || !required_text($old['last_name'], 150))) {
             $errors[] = 'Please enter your first and last names.';
         } elseif (!required_text($fullName, 150)) {
             $errors[] = 'Your first and last names must total 150 characters or fewer.';
@@ -80,9 +97,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             try {
                 $stmt = db()->prepare(
-                    "INSERT INTO rc2000_admin.inquiries (reference_no, name, email, subject, category, message)
+                    "INSERT INTO rc2000_admin.inquiries (reference_no, name, email, subject, category, message, donor_user_id)
                      VALUES ('INQ-' || lpad(nextval('rc2000_admin.inquiry_seq')::text, 4, '0'),
-                             :name, :email, :subject, :category, :message)
+                             :name, :email, :subject, :category, :message, :donor_user_id)
                      RETURNING reference_no"
                 );
                 $stmt->execute([
@@ -91,6 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'subject' => $old['subject'],
                     'category' => $category,
                     'message' => $message,
+                    'donor_user_id' => $donorUser ? (int) $donorUser['id'] : null,
                 ]);
                 $ticket = (string) $stmt->fetchColumn();
                 $_SESSION['inquiry_receipt'] = [
@@ -171,6 +189,7 @@ page_start('Inquiry');
   <div class="subnav">
     <a href="<?= e(app_url('public/inquiry.php?view=submit')) ?>" class="<?= $view === 'submit' ? 'is-active' : '' ?>">Submit an Inquiry</a>
     <a href="<?= e(app_url('public/inquiry.php?view=status')) ?>" class="<?= $view === 'status' ? 'is-active' : '' ?>">Check Status</a>
+    <?php if ($donorUser): ?><a href="<?= e(app_url('public/my-inquiries.php')) ?>">My conversations</a><?php endif; ?>
   </div>
 
   <?php render_alerts($errors); ?>
@@ -231,7 +250,7 @@ page_start('Inquiry');
             <?php endforeach; ?>
           </select>
         </label>
-        <div class="form-grid">
+        <?php if (!$donorUser): ?><div class="form-grid">
           <label>First name
             <input name="first_name" autocomplete="given-name" required maxlength="150" value="<?= e($old['first_name']) ?>">
           </label>
@@ -241,7 +260,7 @@ page_start('Inquiry');
         </div>
         <label>Email
           <input type="email" name="sender_email" required maxlength="255" value="<?= e($old['sender_email']) ?>">
-        </label>
+        </label><?php else: ?><p class="inquiry-account-identity">Sending as <strong><?= e($donorUser['name']) ?></strong> · <?= e($donorUser['email']) ?></p><?php endif; ?>
         <label>Phone (optional)
           <input name="phone" maxlength="30" value="<?= e($old['phone']) ?>">
         </label>

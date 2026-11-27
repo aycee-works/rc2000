@@ -82,10 +82,10 @@ function get_pending_donations(PDO $pdo, int $limit = 5): array
 function get_pending_inquiries(PDO $pdo, int $limit = 5): array
 {
     $stmt = $pdo->query(
-        "SELECT id, reference_no, subject, category, status, created_at
+        "SELECT id, reference_no, subject, category, status, created_at, updated_at
          FROM inquiries
          WHERE status IN ('open', 'in_progress')
-         ORDER BY created_at DESC, id DESC
+         ORDER BY updated_at DESC, id DESC
          LIMIT " . (int) $limit
     );
     $rows = $stmt->fetchAll();

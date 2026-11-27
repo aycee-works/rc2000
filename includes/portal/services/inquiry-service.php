@@ -96,9 +96,11 @@ function list_inquiries(PDO $pdo, array $filters, int $perPage = INQUIRY_PER_PAG
     $offset = ($page - 1) * $perPage;
 
     $stmt = $pdo->prepare(
-        "SELECT id, reference_no, subject, name, category, status, created_at
+        "SELECT id, reference_no, subject, name, category, status, created_at, updated_at,
+                EXISTS (SELECT 1 FROM rc2000_admin.donor_inquiry_messages m
+                        WHERE m.inquiry_id = inquiries.id AND m.read_by_admin_at IS NULL) AS donor_unread
          FROM inquiries $whereSql
-         ORDER BY created_at DESC, id DESC
+         ORDER BY updated_at DESC, id DESC
          LIMIT " . (int) $perPage . " OFFSET " . (int) $offset
     );
     $stmt->execute($params);
@@ -118,13 +120,19 @@ function get_inquiry(PDO $pdo, int $id): ?array
 function get_inquiry_responses(PDO $pdo, int $inquiryId): array
 {
     $stmt = $pdo->prepare(
-        'SELECT r.id, r.body, r.email_status, r.created_at, a.name AS admin_name
-         FROM inquiry_responses r
-         LEFT JOIN admins a ON a.id = r.admin_id
-         WHERE r.inquiry_id = ?
-         ORDER BY r.created_at ASC, r.id ASC'
+        "SELECT * FROM (
+            SELECT r.id, r.body, r.email_status, r.created_at, a.name AS admin_name, 'admin'::text AS sender_type
+            FROM rc2000_admin.inquiry_responses r
+            LEFT JOIN rc2000_admin.admins a ON a.id = r.admin_id
+            WHERE r.inquiry_id = ?
+            UNION ALL
+            SELECT m.id, m.body, 'not_applicable'::text AS email_status, m.created_at,
+                   'Donor'::text AS admin_name, 'donor'::text AS sender_type
+            FROM rc2000_admin.donor_inquiry_messages m
+            WHERE m.inquiry_id = ?
+         ) thread ORDER BY created_at ASC, id ASC"
     );
-    $stmt->execute([$inquiryId]);
+    $stmt->execute([$inquiryId, $inquiryId]);
     return $stmt->fetchAll();
 }
 

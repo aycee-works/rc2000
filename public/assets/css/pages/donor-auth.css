@@ -1,0 +1,75 @@
+.donor-auth-page { min-height: 100vh; background: #f6f1e4; }
+.donor-brandbar { min-height: 72px; display: flex; align-items: center; padding: 12px clamp(18px, 4vw, 54px); background: #7a1626; }
+.donor-brand { display: inline-flex; align-items: center; gap: 13px; color: #fffaf0; text-decoration: none; font: 600 1.35rem 'Playfair Display', Georgia, serif; }
+.donor-brand img { width: 42px; height: 42px; object-fit: contain; }
+.donor-auth-layout { position: relative; display: grid; grid-template-columns: 1fr 1fr; width: min(1180px, calc(100% - 48px)); min-height: min(760px, calc(100vh - 112px)); margin: 28px auto; overflow: hidden; border: 1px solid #e7dfcf; border-radius: 13px; background: #fffdf8; box-shadow: 0 18px 52px rgb(36 28 20 / 12%); }
+.donor-auth-form-panel { grid-row: 1; align-self: center; width: min(100%, 580px); margin: 0 auto; padding: clamp(30px, 4.2vw, 58px); z-index: 1; transition: opacity .24s ease, visibility .24s ease; }
+.donor-auth-login-panel { grid-column: 2; }
+.donor-auth-register-panel { grid-column: 1; opacity: 0; visibility: hidden; transition-delay: 0s; }
+.donor-auth-login-panel { opacity: 1; visibility: visible; transition-delay: .24s; }
+.donor-auth-layout.is-register-mode .donor-auth-login-panel { opacity: 0; visibility: hidden; transition-delay: 0s; }
+.donor-auth-layout.is-register-mode .donor-auth-register-panel { opacity: 1; visibility: visible; transition-delay: .28s; }
+.donor-auth-form-panel .eyebrow { margin: 0 0 9px; color: #8c6428; font-size: .79rem; font-weight: 800; letter-spacing: .14em; text-align: left; text-transform: uppercase; }
+.donor-auth-form-panel h1 { margin: 0 0 10px; color: #1e2a4a; font-size: clamp(2.25rem, 4vw, 3.25rem); white-space: normal; }
+.donor-auth-intro { margin: 0 0 24px; color: #485865; text-align: left; }
+.donor-auth-message { margin: 0 0 18px; padding: 12px 14px; border: 1px solid; border-radius: 6px; font-size: .93rem; }
+.donor-auth-error { border-color: #e3b5aa; background: #fff1ed; color: #7c1f1f; }
+.donor-auth-notice { border-color: #b5d8be; background: #eff8f0; color: #24533d; }
+.donor-auth-form { display: grid; gap: 9px; }
+.donor-auth-form label { margin-top: 6px; color: #1e2a4a; font-size: .92rem; font-weight: 700; }
+.donor-auth-form input { width: 100%; min-height: 48px; padding: 11px 13px; border: 1px solid #aeb6bd; border-radius: 6px; outline: none; background: #fff; color: #1e2a4a; font: inherit; }
+.donor-auth-form input:focus { border-color: #7a1626; box-shadow: 0 0 0 3px rgb(122 22 38 / 15%); }
+.donor-password-wrap { position: relative; }
+.donor-password-wrap input { padding-right: 66px; }
+.donor-password-toggle { position: absolute; top: 50%; right: 10px; transform: translateY(-50%); padding: 5px; border: 0; background: transparent; color: #7a1626; font: inherit; font-size: .82rem; font-weight: 700; cursor: pointer; }
+.donor-password-hint { margin-top: -4px; color: #687782; font-size: .79rem; }
+.donor-auth-submit { min-height: 50px; margin-top: 14px; padding: 11px 18px; border: 0; border-radius: 7px; background: #7a1626; color: #fffaf0; font: inherit; font-size: 1rem; font-weight: 800; cursor: pointer; transition: background .15s ease, transform .15s ease; }
+.donor-auth-submit:hover { transform: translateY(-1px); background: #69091a; }
+.donor-auth-submit:focus-visible, .donor-password-toggle:focus-visible, .donor-auth-form a:focus-visible, .donor-story-button:focus-visible { outline: 3px solid #c89a45; outline-offset: 3px; }
+.donor-auth-help, .donor-auth-switch { color: #485865; font-size: .9rem; text-align: center; }
+.donor-auth-help { margin: 17px 0 0; }
+.donor-auth-switch { margin: 23px 0 0; padding: 15px 12px; border-radius: 7px; background: #f0efdf; }
+.donor-auth-help a, .donor-auth-switch a { color: #7a1626; font-weight: 800; }
+.donor-auth-home { display: block; margin-top: 22px; color: #536573; font-size: .86rem; text-align: center; text-decoration: none; }
+.donor-auth-home:hover { color: #7a1626; text-decoration: underline; }
+
+/* The image panel slides between the two halves like a classic auth overlay. */
+.donor-auth-story { position: absolute; inset: 0 auto 0 0; z-index: 3; display: flex; align-items: flex-end; width: 50%; min-height: 100%; padding: clamp(28px, 4vw, 52px); overflow: hidden; background: linear-gradient(180deg, rgb(20 22 24 / 3%) 20%, rgb(15 20 24 / 76%) 100%), url('../../images/circlephoto.jpg') center 40% / cover no-repeat; color: #fffaf0; transform: translateX(0); transition: transform .68s cubic-bezier(.65, 0, .25, 1); }
+.donor-auth-layout.is-register-mode .donor-auth-story { transform: translateX(100%); }
+.donor-auth-story-copy { width: 100%; max-width: 450px; color: #fffaf0; transition: opacity .2s ease, transform .3s ease; }
+.donor-auth-kicker { display: block; margin-bottom: 12px; color: #f4df9f; font-size: .88rem; font-weight: 700; letter-spacing: .04em; }
+.donor-auth-story h2 { margin: 0 0 18px; color: #fffaf0; font-size: clamp(2rem, 3.3vw, 3.5rem); line-height: 1.08; }
+.donor-auth-story p { margin: 14px 0 8px; color: #fffaf0; text-align: left; }
+.donor-story-register-copy { display: none; opacity: 0; transform: translateY(10px); }
+.donor-auth-layout.is-register-mode .donor-story-login-copy { display: none; }
+.donor-auth-layout.is-register-mode .donor-story-register-copy { display: block; opacity: 1; transform: translateY(0); transition-delay: .36s; }
+.donor-story-button { display: inline-flex; align-items: center; justify-content: center; min-width: 142px; min-height: 44px; padding: 9px 18px; border: 1px solid rgb(255 250 240 / 86%); border-radius: 6px; background: rgb(255 250 240 / 8%); color: #fffaf0; font-weight: 800; text-decoration: none; backdrop-filter: blur(3px); }
+.donor-story-button:hover { background: #fffaf0; color: #7a1626; }
+
+.donor-nav-actions { display: inline-flex; align-items: center; gap: 7px; }
+.donor-nav-actions a, .donor-nav-actions button { display: inline-flex; align-items: center; min-height: 38px; padding: 7px 11px; border: 1px solid var(--line); border-radius: 5px; background: transparent; color: var(--ink); font: inherit; font-size: .88rem; font-weight: 700; text-decoration: none; cursor: pointer; }
+.donor-nav-actions .donor-nav-register { border-color: #7a1626; background: #7a1626; color: #fffaf0; }
+.donor-nav-actions form { margin: 0; }
+.donor-nav-greeting { color: var(--ink); font-size: .86rem; }
+
+@media (max-width: 760px) {
+  .donor-auth-layout { display: block; width: min(560px, calc(100% - 28px)); min-height: 760px; margin: 14px auto 26px; padding-top: 190px; }
+  .donor-auth-layout.is-register-mode { min-height: 870px; }
+  .donor-auth-story { inset: 0 0 auto; width: 100%; height: 190px; min-height: 0; padding: 20px 24px; background-position: center 36%; transform: none !important; }
+  .donor-auth-story h2 { max-width: 390px; margin-bottom: 9px; font-size: 1.8rem; }
+  .donor-auth-story .donor-auth-kicker { margin-bottom: 6px; font-size: .76rem; }
+  .donor-auth-story p { display: none; }
+  .donor-story-button { position: absolute; right: 20px; bottom: 18px; min-width: 100px; min-height: 38px; padding: 6px 12px; }
+  .donor-auth-form-panel { position: absolute; inset: 190px 0 0; width: 100%; padding: 28px clamp(20px, 6vw, 38px); }
+  .donor-auth-form-panel h1 { font-size: 2.3rem; }
+}
+@media (max-width: 420px) {
+  .donor-brandbar { min-height: 62px; }
+  .donor-brand { font-size: 1.12rem; }
+  .donor-brand img { width: 36px; height: 36px; }
+  .donor-auth-layout { width: calc(100% - 18px); margin-top: 9px; }
+  .donor-auth-form-panel { padding: 25px 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .donor-auth-story, .donor-auth-form-panel, .donor-auth-story-copy { transition-duration: .01ms !important; }
+}

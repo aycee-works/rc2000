@@ -37,6 +37,8 @@ try {
     }
     if ($selected) {
         $responses = get_inquiry_responses($pdo, (int) $selected['id']);
+        $pdo->prepare('UPDATE rc2000_admin.donor_inquiry_messages SET read_by_admin_at = COALESCE(read_by_admin_at, NOW()) WHERE inquiry_id = ?')
+            ->execute([(int) $selected['id']]);
     }
 } catch (Throwable $e) {
     error_log('Inquiries load failed: ' . $e->getMessage());
@@ -104,7 +106,7 @@ require dirname(__DIR__, 3) . '/includes/portal/admin-header.php';
             ?>
                 <tr<?= $isSelected ? ' class="is-selected"' : '' ?>>
                     <td><?= e($row['reference_no']) ?></td>
-                    <td class="cell-truncate" title="<?= e($row['subject']) ?>"><?= e($row['subject']) ?></td>
+                    <td class="cell-truncate" title="<?= e($row['subject']) ?>"><?= e($row['subject']) ?><?= !empty($row['donor_unread']) ? '<br><small class="inquiry-new-message">New donor reply</small>' : '' ?></td>
                     <td><?= e($row['name']) ?></td>
                     <td><?= e($row['category']) ?></td>
                     <td><?= e(format_date_short($row['created_at'])) ?></td>

@@ -12,6 +12,10 @@ $bodyClass = trim('site ' . (string) ($GLOBALS['pageClass'] ?? ''));
   <title><?= e($title) ?></title>
   <script>try{if(localStorage.getItem('rc2000-theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}</script>
   <link rel="stylesheet" href="<?= e(app_url('public/assets/css/style.css?v=71')) ?>">
+  <link rel="stylesheet" href="<?= e(app_url('public/assets/css/pages/donor-auth.css?v=1')) ?>">
+  <?php if (($GLOBALS['pageClass'] ?? '') === 'donor-dashboard'): ?>
+  <link rel="stylesheet" href="<?= e(app_url('public/assets/css/pages/donor-dashboard.css?v=1')) ?>">
+  <?php endif; ?>
 </head>
 <body class="<?= e($bodyClass) ?>">
 <?php require __DIR__ . '/navbar.php'; ?>
