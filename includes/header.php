@@ -14,7 +14,7 @@ $bodyClass = trim('site ' . (string) ($GLOBALS['pageClass'] ?? ''));
   <link rel="stylesheet" href="<?= e(app_url('public/assets/css/style.css?v=72')) ?>">
   <link rel="stylesheet" href="<?= e(app_url('public/assets/css/pages/donor-auth.css?v=1')) ?>">
   <?php if (($GLOBALS['pageClass'] ?? '') === 'donor-dashboard'): ?>
-  <link rel="stylesheet" href="<?= e(app_url('public/assets/css/pages/donor-dashboard.css?v=5')) ?>">
+  <link rel="stylesheet" href="<?= e(app_url('public/assets/css/pages/donor-dashboard.css?v=6')) ?>">
   <?php endif; ?>
 </head>
 <body class="<?= e($bodyClass) ?>">
