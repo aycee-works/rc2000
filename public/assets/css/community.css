@@ -16,5 +16,22 @@
 .community-admin-grid details summary { color:var(--maroon,#7a0019); cursor:pointer; font-weight:700; }
 .compact-form { min-width:250px; padding:12px 0; }
 .compact-form .btn { white-space:normal; }
+.campaign-admin-summary { margin:0 16px 18px; padding:18px; border:1px solid var(--line,#dce2e8); border-radius:10px; background:var(--surface-soft,#faf7ef); }
+.campaign-admin-summary-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
+.campaign-admin-summary-heading h3 { margin:3px 0 12px; color:var(--ink,#10243f); font-family:Georgia,serif; font-size:1.2rem; }
+.campaign-admin-status { flex:0 0 auto; padding:5px 10px; border-radius:99px; background:#edf2f7; color:#334155; font-size:.78rem; font-weight:700; }
+.campaign-admin-status.is-open { background:#e5f5e9; color:#17663a; }
+.campaign-admin-status.is-complete,.campaign-admin-status.is-closed { background:#fce9e9; color:#8b1e2d; }
+.campaign-admin-progress-label { display:flex; align-items:baseline; gap:7px; color:var(--muted,#667085); font-size:.82rem; }
+.campaign-admin-progress-label strong:first-child { color:var(--ink,#10243f); font-size:1rem; }
+.campaign-admin-progress-label strong:last-child { margin-left:auto; color:var(--ink,#10243f); }
+.campaign-admin-progress { height:9px; margin:8px 0 16px; overflow:hidden; border-radius:99px; background:var(--line,#dce2e8); }
+.campaign-admin-progress span { display:block; height:100%; border-radius:inherit; background:#5b7b58; }
+.campaign-admin-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(115px,1fr)); gap:9px; }
+.campaign-admin-stats article { min-width:0; padding:10px 12px; border:1px solid var(--line,#dce2e8); border-radius:8px; background:var(--surface,#fff); }
+.campaign-admin-stats span,.campaign-admin-stats strong { display:block; }
+.campaign-admin-stats span { color:var(--muted,#667085); font-size:.74rem; }
+.campaign-admin-stats strong { margin-top:4px; color:var(--ink,#10243f); font-size:1rem; overflow-wrap:anywhere; }
+.campaign-admin-summary > .field-note { margin:12px 0 0; }
 @media(max-width:1000px) { .community-admin-grid { grid-template-columns:1fr; } }
 @media(max-width:600px) { .community-inline-fields { grid-template-columns:1fr; } }

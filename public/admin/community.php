@@ -53,10 +53,31 @@ if (is_post()) {
                 } else {
                     $pdo->prepare('INSERT INTO rc2000_admin.campaigns(title,description,goal_amount,status,is_featured,image_path,created_by) VALUES(?,?,?,?,?,?,?)')->execute([$title,$description,$goal,$status,$featuredDb,$imagePath,current_admin()['id']??null]);
                 }
+                if ($id > 0) {
+                    $funding = $pdo->prepare("SELECT COALESCE(SUM(verified_amount), 0) FROM rc2000_admin.monetary_donations WHERE campaign_id = ? AND status = 'verified'");
+                    $funding->execute([$id]);
+                    if ((float) $funding->fetchColumn() >= (float) $goal) {
+                        $pdo->prepare("UPDATE rc2000_admin.campaigns SET status = 'closed' WHERE id = ?")->execute([$id]);
+                    }
+                }
                 $pdo->commit(); flash('success','Campaign saved.'); redirect('admin/community.php#campaigns');
             }
         } elseif ($action==='toggle_campaign') {
-            $pdo->prepare("UPDATE rc2000_admin.campaigns SET status=CASE WHEN status='open' THEN 'closed' ELSE 'open' END WHERE id=?")->execute([(int)post_str('id')]); flash('success','Campaign status updated.'); redirect('admin/community.php#campaigns');
+            $toggleId = (int) post_str('id');
+            $toggleStmt = $pdo->prepare("UPDATE rc2000_admin.campaigns c
+                SET status = CASE
+                    WHEN c.status = 'open' THEN 'closed'
+                    WHEN COALESCE((SELECT SUM(d.verified_amount) FROM rc2000_admin.monetary_donations d
+                                   WHERE d.campaign_id = c.id AND d.status = 'verified'), 0) >= c.goal_amount THEN 'closed'
+                    ELSE 'open'
+                END
+                WHERE c.id = ? RETURNING status");
+            $toggleStmt->execute([$toggleId]);
+            $newStatus = $toggleStmt->fetchColumn();
+            if ($newStatus === 'closed') flash('success', 'Campaign closed.');
+            elseif ($newStatus === 'open') flash('success', 'Campaign reopened.');
+            else flash('error', 'Campaign could not be found.');
+            redirect('admin/community.php#campaigns');
         } elseif ($action==='save_challenge') {
             $id=(int)post_str('id'); $title=post_str('title'); $prompt=post_str('prompt'); $start=post_str('starts_at'); $end=post_str('ends_at');
             if($title===''||mb_strlen($title)>160)$errors[]='Challenge title is required (160 characters maximum).';
@@ -167,7 +188,57 @@ if (is_post()) {
             if(!in_array($decision,['verified','not_verified'],true))$errors[]='Choose a valid decision.';
             if($decision==='verified'&&(!preg_match('/^\d{1,10}(\.\d{1,2})?$/',$amount)||(float)$amount<=0))$errors[]='Enter the amount confirmed by the admin.';
             if(mb_strlen($message)>2000)$errors[]='Message must be 2,000 characters or fewer.';
-            if(!$errors){$stmt=$pdo->prepare('SELECT d.*,c.title AS campaign_title FROM rc2000_admin.monetary_donations d JOIN rc2000_admin.campaigns c ON c.id=d.campaign_id WHERE d.id=? AND d.campaign_id=?');$stmt->execute([$id,$reportCampaignId]);$row=$stmt->fetch();if(!$row)$errors[]='Campaign donation report not found.';else{$pdo->prepare('UPDATE rc2000_admin.monetary_donations SET status=?,verified_amount=?,verification_note=?,admin_message=?,verified_by=?,verified_at=now() WHERE id=?')->execute([$decision,$decision==='verified'?$amount:null,post_str('verification_note')?:null,$message?:null,(int)(current_admin()['id']??0)?:null,$id]);$row['status_label']=$decision==='verified'?'Donation verified':'Donation not verified';$emailStatus='not_configured';$emailedAt=null;if($message!==''){try{if(community_send_donation_email($row,$message)){$emailStatus='sent';$emailedAt=date('c');}else$emailStatus='not_configured';}catch(Throwable $e){error_log('Donation update email failed: '.$e->getMessage());$emailStatus='failed';}}$pdo->prepare('UPDATE rc2000_admin.monetary_donations SET email_status=?,emailed_at=? WHERE id=?')->execute([$emailStatus,$emailedAt,$id]);flash('success',$emailStatus==='sent'?'Donation reviewed and email sent.':'Donation review saved. Email status: '.$emailStatus.'.');redirect('admin/community.php?report_campaign='.$reportCampaignId.'#reports');}}
+            if (!$errors) {
+                $pdo->beginTransaction();
+                $stmt = $pdo->prepare('SELECT d.*, c.title AS campaign_title, c.goal_amount
+                    FROM rc2000_admin.monetary_donations d
+                    JOIN rc2000_admin.campaigns c ON c.id = d.campaign_id
+                    WHERE d.id = ? AND d.campaign_id = ?
+                    FOR UPDATE OF d, c');
+                $stmt->execute([$id, $reportCampaignId]);
+                $row = $stmt->fetch();
+                if (!$row) {
+                    $pdo->rollBack();
+                    $errors[] = 'Campaign donation report not found.';
+                } else {
+                    $pdo->prepare('UPDATE rc2000_admin.monetary_donations
+                        SET status = ?, verified_amount = ?, verification_note = ?, admin_message = ?, verified_by = ?, verified_at = NOW()
+                        WHERE id = ?')
+                        ->execute([$decision, $decision === 'verified' ? $amount : null, post_str('verification_note') ?: null, $message ?: null, (int) (current_admin()['id'] ?? 0) ?: null, $id]);
+
+                    $raisedStmt = $pdo->prepare("SELECT COALESCE(SUM(verified_amount), 0)
+                        FROM rc2000_admin.monetary_donations
+                        WHERE campaign_id = ? AND status = 'verified'");
+                    $raisedStmt->execute([$reportCampaignId]);
+                    $raisedTotal = (float) $raisedStmt->fetchColumn();
+                    if ($raisedTotal >= (float) $row['goal_amount']) {
+                        $pdo->prepare("UPDATE rc2000_admin.campaigns SET status = 'closed' WHERE id = ?")
+                            ->execute([$reportCampaignId]);
+                    }
+                    $pdo->commit();
+
+                    $row['status_label'] = $decision === 'verified' ? 'Donation verified' : 'Donation not verified';
+                    $emailStatus = 'not_configured';
+                    $emailedAt = null;
+                    if ($message !== '') {
+                        try {
+                            if (community_send_donation_email($row, $message)) {
+                                $emailStatus = 'sent';
+                                $emailedAt = date('c');
+                            }
+                        } catch (Throwable $e) {
+                            error_log('Donation update email failed: ' . $e->getMessage());
+                            $emailStatus = 'failed';
+                        }
+                    }
+                    $pdo->prepare('UPDATE rc2000_admin.monetary_donations SET email_status = ?, emailed_at = ? WHERE id = ?')
+                        ->execute([$emailStatus, $emailedAt, $id]);
+                    flash('success', $raisedTotal >= (float) $row['goal_amount']
+                        ? 'Donation reviewed and campaign goal reached. The campaign is now closed.'
+                        : 'Donation review saved. Email status: ' . $emailStatus . '.');
+                    redirect('admin/community.php?report_campaign=' . $reportCampaignId . '#reports');
+                }
+            }
         }
     } catch (Throwable $e) { if($pdo->inTransaction())$pdo->rollBack();error_log('Community admin action failed: '.$e->getMessage());$errors[]='The change could not be saved. Check that database/community_features.sql has been applied.'; }
     if ($errors && in_array($action, ['save_challenge', 'archive_challenge', 'save_quiz', 'publish_leaderboard', 'unpublish_leaderboard'], true)) {
@@ -184,11 +255,25 @@ if (is_post()) {
 }
 
 $editId=(int)($_GET['campaign']??0);$editCampaign=null;if($editId){$s=$pdo->prepare('SELECT * FROM rc2000_admin.campaigns WHERE id=?');$s->execute([$editId]);$editCampaign=$s->fetch()?:null;}
-$campaigns=$pdo->query("SELECT c.*,COALESCE(SUM(d.verified_amount) FILTER(WHERE d.status='verified'),0) AS raised FROM rc2000_admin.campaigns c LEFT JOIN rc2000_admin.monetary_donations d ON d.campaign_id=c.id GROUP BY c.id ORDER BY c.is_featured DESC,c.created_at DESC")->fetchAll();
+$campaigns = $pdo->query("SELECT c.*,
+    COALESCE((SELECT SUM(d.verified_amount) FROM rc2000_admin.monetary_donations d WHERE d.campaign_id = c.id AND d.status = 'verified'), 0) AS raised,
+    (SELECT COUNT(*) FROM rc2000_admin.monetary_donations d WHERE d.campaign_id = c.id AND d.status = 'verified') AS verified_reports,
+    (SELECT COUNT(*) FROM rc2000_admin.monetary_donations d WHERE d.campaign_id = c.id AND d.status = 'pending') AS pending_reports,
+    (SELECT COUNT(*) FROM rc2000_admin.monetary_donations d WHERE d.campaign_id = c.id AND d.status = 'not_verified') AS rejected_reports,
+    (SELECT COUNT(*) FROM rc2000_admin.monetary_donations d WHERE d.campaign_id = c.id) AS total_reports
+    FROM rc2000_admin.campaigns c
+    ORDER BY c.is_featured DESC, c.created_at DESC")->fetchAll();
 $reportCampaignId = (int) ($_GET['report_campaign'] ?? $editId);
 $campaignIds = array_map(static fn ($campaign) => (int) $campaign['id'], $campaigns);
 if (!in_array($reportCampaignId, $campaignIds, true)) {
     $reportCampaignId = $campaignIds[0] ?? 0;
+}
+$selectedCampaign = null;
+foreach ($campaigns as $campaign) {
+    if ((int) $campaign['id'] === $reportCampaignId) {
+        $selectedCampaign = $campaign;
+        break;
+    }
 }
 $reports = [];
 if ($reportCampaignId > 0) {
@@ -209,7 +294,7 @@ $pageTitle='Campaigns & community';$activeNav='community';$extraCss=['community.
 <?php if($errors): ?><div class="flash flash-error" role="alert"><?php foreach($errors as $error): ?><p><?=e($error)?></p><?php endforeach; ?></div><?php endif; ?>
 <div class="community-admin-grid">
 <section class="panel" id="campaigns"><div class="panel-header"><h2 class="panel-title"><?= $editCampaign?'Edit campaign':'Create campaign' ?></h2></div><form class="panel-body community-form" method="post" enctype="multipart/form-data"><?=csrf_field()?><input type="hidden" name="action" value="save_campaign"><input type="hidden" name="id" value="<?= (int)($editCampaign['id']??0) ?>"><label>Campaign title<input name="title" maxlength="160" required value="<?=e($editCampaign['title']??'')?>"></label><label>Campaign goal (PHP)<input name="goal_amount" type="number" min="1" step="0.01" required value="<?=e($editCampaign['goal_amount']??'')?>"></label><label>Description and spending plan<textarea name="description" rows="4" maxlength="5000" required><?=e($editCampaign['description']??'')?></textarea></label><label>Campaign image (JPG, PNG, WebP)<input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label><label>Status<select name="status"><option value="open" <?=($editCampaign['status']??'open')==='open'?'selected':''?>>Open</option><option value="closed" <?=($editCampaign['status']??'')==='closed'?'selected':''?>>Closed</option></select></label><label class="check"><input type="checkbox" name="is_featured" value="1" <?=!empty($editCampaign['is_featured'])?'checked':''?>> Show campaign summary on homepage (only one can be featured)</label><button class="btn btn-maroon" type="submit">Save campaign</button></form>
-<div class="table-wrap"><table class="data-table"><thead><tr><th>Campaign</th><th>Progress</th><th>Status</th><th>Actions</th></tr></thead><tbody><?php foreach($campaigns as $c): ?><tr><td><strong><?=e($c['title'])?></strong><br><small>Goal <?=e(format_peso($c['goal_amount']))?></small></td><td><?=e(format_peso($c['raised']))?></td><td><?=e(ucfirst($c['status']))?><?=!empty($c['is_featured'])?' · Homepage':''?></td><td><a href="<?=e(url('admin/community.php?campaign='.(int)$c['id'].'#campaigns'))?>">Edit</a><form method="post" class="inline-form"><?=csrf_field()?><input type="hidden" name="action" value="toggle_campaign"><input type="hidden" name="id" value="<?=(int)$c['id']?>"><button class="link-button" type="submit"><?=$c['status']==='open'?'Close':'Reopen'?></button></form></td></tr><?php endforeach; if(!$campaigns): ?><tr><td colspan="4">No campaigns yet.</td></tr><?php endif; ?></tbody></table></div></section>
+<div class="table-wrap"><table class="data-table"><thead><tr><th>Campaign</th><th>Progress</th><th>Status</th><th>Actions</th></tr></thead><tbody><?php foreach($campaigns as $c): $goal=(float)$c['goal_amount']; $raised=(float)$c['raised']; $goalReached=$goal>0&&$raised>=$goal; ?><tr><td><strong><?=e($c['title'])?></strong><br><small>Goal <?=e(format_peso($goal))?></small></td><td><?=e(format_peso($raised))?> <small>(<?= $goalReached ? '100' : ($goal > 0 ? min(100, (int) round($raised / $goal * 100)) : 0) ?>%)</small></td><td><?= $goalReached ? 'Goal reached · Closed' : e(ucfirst($c['status'])) ?><?=!empty($c['is_featured'])?' · Homepage':''?></td><td><a href="<?=e(url('admin/community.php?campaign='.(int)$c['id'].'#campaigns'))?>">Edit</a><?php if (!$goalReached): ?><form method="post" class="inline-form"><?=csrf_field()?><input type="hidden" name="action" value="toggle_campaign"><input type="hidden" name="id" value="<?=(int)$c['id']?>"><button class="link-button" type="submit"><?=$c['status']==='open'?'Close':'Reopen'?></button></form><?php endif; ?></td></tr><?php endforeach; if(!$campaigns): ?><tr><td colspan="4">No campaigns yet.</td></tr><?php endif; ?></tbody></table></div></section>
 
 <section class="panel" id="reports">
     <div class="panel-header"><h2 class="panel-title">Campaign Donation Reports</h2></div>
@@ -224,6 +309,29 @@ $pageTitle='Campaigns & community';$activeNav='community';$extraCss=['community.
         </label>
         <button class="btn btn-maroon" type="submit">View reports</button>
     </form>
+    <?php endif; ?>
+    <?php if ($selectedCampaign):
+        $campaignGoal = (float) $selectedCampaign['goal_amount'];
+        $campaignRaised = (float) $selectedCampaign['raised'];
+        $campaignProgress = $campaignGoal > 0 ? min(100, (int) round($campaignRaised / $campaignGoal * 100)) : 0;
+        $campaignComplete = $campaignGoal > 0 && $campaignRaised >= $campaignGoal;
+    ?>
+    <div class="campaign-admin-summary">
+        <div class="campaign-admin-summary-heading">
+            <div><span class="field-note">Campaign snapshot</span><h3><?= e($selectedCampaign['title']) ?></h3></div>
+            <span class="campaign-admin-status <?= $campaignComplete ? 'is-complete' : ($selectedCampaign['status'] === 'open' ? 'is-open' : 'is-closed') ?>"><?= $campaignComplete ? 'Goal reached' : e(ucfirst($selectedCampaign['status'])) ?></span>
+        </div>
+        <div class="campaign-admin-progress-label"><strong><?= e(format_peso($campaignRaised)) ?></strong><span>of <?= e(format_peso($campaignGoal)) ?></span><strong><?= $campaignProgress ?>%</strong></div>
+        <div class="campaign-admin-progress" role="progressbar" aria-valuenow="<?= $campaignProgress ?>" aria-valuemin="0" aria-valuemax="100" aria-label="Campaign funding progress"><span style="width: <?= $campaignProgress ?>%"></span></div>
+        <div class="campaign-admin-stats">
+            <article><span>Remaining to goal</span><strong><?= e(format_peso(max(0, $campaignGoal - $campaignRaised))) ?></strong></article>
+            <article><span>Verified reports</span><strong><?= (int) $selectedCampaign['verified_reports'] ?></strong></article>
+            <article><span>Pending review</span><strong><?= (int) $selectedCampaign['pending_reports'] ?></strong></article>
+            <article><span>Not verified</span><strong><?= (int) $selectedCampaign['rejected_reports'] ?></strong></article>
+            <article><span>All reports</span><strong><?= (int) $selectedCampaign['total_reports'] ?></strong></article>
+        </div>
+        <p class="field-note">Funds raised count verified amounts only. Pending reports are shown separately and do not count toward the goal.</p>
+    </div>
     <?php endif; ?>
     <div class="table-wrap"><table class="data-table">
         <thead><tr><th>Tracking ID / donor</th><th>Campaign / amount</th><th>Status</th><th>Review & email</th></tr></thead>

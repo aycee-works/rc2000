@@ -46,10 +46,36 @@ function send_donor_password_reset(PDO $pdo, int $donorId): bool
     $mail->setFrom((string) ($config['mail_from_email'] ?? $mail->Username), (string) ($config['mail_from_name'] ?? 'Reading Club 2000'));
     $mail->addAddress((string) $donor['email'], (string) $donor['name']);
     $resetPath = 'public/reset-password.php?token=' . rawurlencode($token);
-    $resetUrl = function_exists('app_url') ? app_url($resetPath) : url($resetPath);
+    $relativeResetUrl = function_exists('app_url') ? app_url($resetPath) : url($resetPath);
+
+    // Email links must be absolute. Prefer an explicitly configured canonical
+    // origin, then recognize Render's public hostname, then use the current
+    // request origin for local development.
+    $appOrigin = rtrim(trim((string) ($config['app_url'] ?? '')), '/');
+    if ($appOrigin === '') {
+        $requestHost = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+        if ($requestHost === 'rc2000.onrender.com') {
+            $appOrigin = 'https://rc2000.onrender.com';
+        } elseif ($requestHost !== '') {
+            $isHttps = (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off')
+                || (strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https');
+            $appOrigin = ($isHttps ? 'https://' : 'http://') . $requestHost;
+        } else {
+            // Safe fallback for reset requests not initiated by an HTTP request.
+            $appOrigin = 'https://rc2000.onrender.com';
+        }
+    }
+    $resetUrl = $appOrigin . '/' . ltrim($relativeResetUrl, '/');
     $mail->Subject = 'Reset your Reading Club 2000 donor password';
-    $mail->isHTML(false);
-    $mail->Body = "Hello {$donor['name']},\n\nUse the link below to reset your donor account password. This link expires in 30 minutes and can only be used once.\n\n{$resetUrl}\n\nIf you did not request this, you can ignore this email.";
+    $mail->isHTML(true);
+    $safeName = htmlspecialchars((string) $donor['name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $safeResetUrl = htmlspecialchars($resetUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $mail->Body = '<p>Hello ' . $safeName . ',</p>'
+        . '<p>Use the link below to reset your donor account password. This link expires in 30 minutes and can only be used once.</p>'
+        . '<p><a href="' . $safeResetUrl . '">Reset your password</a></p>'
+        . '<p>If the button does not work, copy and paste this full URL into your browser:<br>' . $safeResetUrl . '</p>'
+        . '<p>If you did not request this, you can ignore this email.</p>';
+    $mail->AltBody = "Hello {$donor['name']},\n\nUse the link below to reset your donor account password. This link expires in 30 minutes and can only be used once.\n\n{$resetUrl}\n\nIf you did not request this, you can ignore this email.";
     try {
         $mail->send();
     } catch (Throwable $e) {

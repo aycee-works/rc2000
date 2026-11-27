@@ -81,8 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!required_text($old['transaction_reference'], 100)) $errors[] = 'Please enter a transaction reference (100 characters maximum).';
         $contact = trim($old['contact_info']);
         if ($contact !== '' && !preg_match('/^[0-9+() \-]{7,30}$/', $contact)) $errors[] = 'Contact number may only contain digits, spaces, + ( ) and - (up to 30 characters).';
-        $campaign = fetch_one("SELECT id, title FROM rc2000_admin.campaigns WHERE id = :id AND status = 'open'", ['id' => $campaignId]);
-        if (!$campaign) $errors[] = 'Please choose an open campaign.';
+        $campaign = null;
         $methodId = (int) $old['donation_method_id'];
         $selectedMethod = null;
         foreach ($methods as $method) if ((int) $method['donation_method_id'] === $methodId) $selectedMethod = $method;
@@ -90,10 +89,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $proof = store_upload('proof_of_payment', 'proofs', $errors, false);
         if (!$errors) {
             try {
+                $pdo = db();
+                $pdo->beginTransaction();
+                $campaignStmt = $pdo->prepare('SELECT id, title, goal_amount, status FROM rc2000_admin.campaigns WHERE id = ? FOR UPDATE');
+                $campaignStmt->execute([$campaignId]);
+                $campaign = $campaignStmt->fetch();
+                if (!$campaign || $campaign['status'] !== 'open') {
+                    $pdo->rollBack();
+                    $errors[] = 'This campaign is closed and is no longer accepting donation reports.';
+                } else {
+                    $raisedStmt = $pdo->prepare("SELECT COALESCE(SUM(verified_amount), 0) FROM rc2000_admin.monetary_donations WHERE campaign_id = ? AND status = 'verified'");
+                    $raisedStmt->execute([$campaignId]);
+                    if ((float) $raisedStmt->fetchColumn() >= (float) $campaign['goal_amount']) {
+                        $pdo->prepare("UPDATE rc2000_admin.campaigns SET status = 'closed' WHERE id = ?")->execute([$campaignId]);
+                        $pdo->commit();
+                        $errors[] = 'This campaign has reached its funding goal and is no longer accepting donation reports.';
+                    }
+                }
+                if (!$errors) {
                 $methodName = mb_substr(trim($selectedMethod['method_name'] . ' · ' . $selectedMethod['payment_provider']), 0, 40);
-                $stmt = db()->prepare("INSERT INTO rc2000_admin.monetary_donations (reference_no, donor_user_id, donor_name, donor_email, donor_contact, reported_amount, payment_method, transaction_ref, proof_path, campaign_id) VALUES ('MD-' || lpad(nextval('rc2000_admin.monetary_donation_seq')::text, 4, '0'), :donor_user_id, :name, :email, :contact, :amount, :method, :reference, :proof, :campaign) RETURNING reference_no");
+                $stmt = $pdo->prepare("INSERT INTO rc2000_admin.monetary_donations (reference_no, donor_user_id, donor_name, donor_email, donor_contact, reported_amount, payment_method, transaction_ref, proof_path, campaign_id) VALUES ('MD-' || lpad(nextval('rc2000_admin.monetary_donation_seq')::text, 4, '0'), :donor_user_id, :name, :email, :contact, :amount, :method, :reference, :proof, :campaign) RETURNING reference_no");
                 $stmt->execute(['donor_user_id' => (int) $donorUser['id'], 'name' => $donorName, 'email' => strtolower(trim($donorUser['email'])), 'contact' => $contact ?: null, 'amount' => number_format((float) $old['amount_reported'], 2, '.', ''), 'method' => $methodName, 'reference' => $old['transaction_reference'], 'proof' => $proof, 'campaign' => $campaignId]);
                 $trackingId = (string) $stmt->fetchColumn();
+                $pdo->commit();
                 $_SESSION['donation_receipt'] = [
                     'reference' => $trackingId,
                     'name' => $donorName,
@@ -106,7 +124,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'submitted_at' => date('c'),
                 ];
                 redirect('/public/donate.php?tab=receipt');
+                }
             } catch (Throwable $error) {
+                if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack();
                 error_log('Campaign donation report failed: ' . $error->getMessage());
                 $errors[] = 'We could not save your campaign donation report yet. Please try again.';
             }
@@ -210,7 +230,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$campaigns = fetch_all("SELECT id, title, description, goal_amount FROM rc2000_admin.campaigns WHERE status = 'open' ORDER BY is_featured DESC, created_at DESC");
+$campaigns = fetch_all("SELECT c.id, c.title, c.description, c.goal_amount
+    FROM rc2000_admin.campaigns c
+    WHERE c.status = 'open'
+      AND COALESCE((SELECT SUM(d.verified_amount) FROM rc2000_admin.monetary_donations d
+                    WHERE d.campaign_id = c.id AND d.status = 'verified'), 0) < c.goal_amount
+    ORDER BY c.is_featured DESC, c.created_at DESC");
 $statusRecord = null;
 $statusMessage = '';
 $statusReference = '';
@@ -405,16 +430,17 @@ page_start('Donate');
       <?php $featured = featured_campaign(); ?>
       <section class="form-card campaign-donation-page">
         <span class="eyebrow"></span><h1>Make a Campaign Donation Report</h1>
-        <?php if ($featured): $campaignGoal=(float)$featured['goal_amount']; $campaignRaised=(float)$featured['raised']; $campaignPct=$campaignGoal ? min(100,(int)round($campaignRaised/$campaignGoal*100)) : 0; ?>
+        <?php if ($featured): $campaignGoal=(float)$featured['goal_amount']; $campaignRaised=(float)$featured['raised']; $campaignPct=$campaignGoal ? min(100,(int)round($campaignRaised/$campaignGoal*100)) : 0; $campaignComplete=$campaignGoal>0&&$campaignRaised>=$campaignGoal; ?>
           <article class="campaign-donation-summary">
             <h2><?= e($featured['title']) ?></h2>
             <p><?= nl2br(e($featured['description'])) ?></p>
             <div class="campaign-stats"><strong>₱<?= e(number_format($campaignRaised, 2)) ?> raised</strong> of ₱<?= e(number_format($campaignGoal, 2)) ?> goal</div>
             <div class="campaign-progress" aria-hidden="true"><span style="width:<?= $campaignPct ?>%"></span></div>
             <strong><?= $campaignPct ?>% funded</strong>
+            <?php if ($campaignComplete): ?><p class="campaign-goal-notice" role="status">This campaign has reached its funding goal and is no longer accepting donation reports.</p><?php elseif ($featured['status'] !== 'open'): ?><p class="campaign-goal-notice" role="status">This campaign is closed and is no longer accepting donation reports.</p><?php endif; ?>
           </article>
         <?php endif; ?>
-        <?php if (!$campaigns): ?><p>No open campaigns are accepting reports right now.</p><?php elseif (!$methods): ?><p>Donation methods are not configured yet.</p><?php else: ?>
+        <?php if (!$campaigns): ?><p><?= $featured && $campaignComplete ? 'There are no other campaigns accepting reports right now.' : 'No open campaigns are accepting reports right now.' ?></p><?php elseif (!$methods): ?><p>Donation methods are not configured yet.</p><?php else: ?>
         <p class="lede">This form records a payment you have already sent. It does not process payments. Your report stays pending until an admin verifies it.</p>
         <form method="post" enctype="multipart/form-data">
           <?= csrf_field() ?>

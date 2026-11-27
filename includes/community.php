@@ -7,13 +7,14 @@ function featured_campaign(): ?array
 {
     try {
         return fetch_one(
-            "SELECT c.id, c.title, c.description, c.goal_amount, c.image_path,
+            "SELECT c.id, c.title, c.description, c.goal_amount, c.image_path, c.status,
                     COALESCE(SUM(d.verified_amount) FILTER (WHERE d.status = 'verified'), 0) AS raised,
                     COUNT(DISTINCT d.donor_email) FILTER (WHERE d.status = 'verified') AS donor_count
              FROM rc2000_admin.campaigns c
              LEFT JOIN rc2000_admin.monetary_donations d ON d.campaign_id = c.id
-             WHERE c.status = 'open' AND c.is_featured = TRUE
-             GROUP BY c.id LIMIT 1"
+             WHERE c.is_featured = TRUE
+             GROUP BY c.id
+             LIMIT 1"
         );
     } catch (Throwable $e) {
         error_log('Featured campaign unavailable: ' . $e->getMessage());

@@ -13,6 +13,7 @@ $mailEnabledEnv = getenv('RC2000_MAIL_ENABLED');
 $config = [
     'app_env'    => 'development',          // 'development' or 'production'
     'base_url'   => '/rc2000',              // URL path of this project (no trailing slash)
+    'app_url'    => getenv('RC2000_APP_URL') ?: '', // Canonical origin for absolute email links, e.g. https://rc2000.onrender.com
     'timezone'   => 'Asia/Manila',
     'db_host'    => '127.0.0.1',
     'db_port'    => 5432,
