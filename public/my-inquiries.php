@@ -16,14 +16,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     if (!csrf_is_valid($_POST['csrf_token'] ?? null)) { $error = 'Your session expired. Refresh the page and try again.'; }
     else {
         try {
-            if (post_str('action') === 'new') {
-                $ref = create_my_inquiry(db(), $donor, post_str('category'), post_str('subject'), post_str('message'));
+            if (post_string('action') === 'new') {
+                $ref = create_my_inquiry(db(), $donor, post_string('category'), post_string('subject'), post_string('message'));
                 flash_set('donor_inquiry_notice', 'Your inquiry was sent. Reference: ' . $ref);
                 redirect('/public/my-inquiries.php');
             }
-            if (post_str('action') === 'reply') {
-                $selectedId = max(0, (int) post_str('inquiry_id'));
-                reply_to_my_inquiry(db(), (int) $donor['id'], $selectedId, post_str('message'));
+            if (post_string('action') === 'reply') {
+                $selectedId = max(0, (int) post_string('inquiry_id'));
+                reply_to_my_inquiry(db(), (int) $donor['id'], $selectedId, post_string('message'));
                 flash_set('donor_inquiry_notice', 'Your reply was added to the conversation.');
                 redirect('/public/my-inquiries.php?id=' . $selectedId);
             }
