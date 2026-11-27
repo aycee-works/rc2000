@@ -4,6 +4,7 @@ declare(strict_types=1);
 $isRegisterMode = $authMode === 'register';
 $loginUrl = app_url('public/login.php');
 $registerUrl = app_url('public/register.php');
+$latestBirthDate = (new DateTimeImmutable('today'))->modify('-18 years')->format('Y-m-d');
 ?>
 <!doctype html>
 <html lang="en">
@@ -67,9 +68,16 @@ $registerUrl = app_url('public/register.php');
         <label for="register-name">Full name</label>
         <input id="register-name" name="name" type="text" maxlength="200" autocomplete="name"
                value="<?= e($authName) ?>" required<?= $isRegisterMode ? ' autofocus' : '' ?>>
+        <label for="register-date-of-birth">Date of birth</label>
+        <input id="register-date-of-birth" name="date_of_birth" type="date" max="<?= e($latestBirthDate) ?>"
+               autocomplete="bday" value="<?= e($isRegisterMode ? $authDateOfBirth : '') ?>" required>
+        <small class="donor-password-hint">You must be 18 or older to create an account.</small>
         <label for="register-email">Email</label>
         <input id="register-email" name="email" type="email" maxlength="250" autocomplete="email"
+               pattern="(?=[A-Za-z0-9._]*[A-Za-z])[A-Za-z0-9]+([._][A-Za-z0-9]+)*@[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)+"
+               title="Use an address like name@gmail.com. Before @, include at least one letter; letters and numbers may be separated by dots or underscores."
                value="<?= e($isRegisterMode ? $authEmail : '') ?>" required>
+        <small class="donor-password-hint">Example: name@gmail.com or first.last_club@gmail.com. Before @, include at least one letter; dots and underscores are allowed between letters or numbers.</small>
         <label for="register-password">Password</label>
         <div class="donor-password-wrap">
           <input id="register-password" name="password" type="password" minlength="12" maxlength="72" autocomplete="new-password" required>

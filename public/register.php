@@ -8,11 +8,13 @@ if (current_donor_user()) {
 $authError = null;
 $authName = '';
 $authEmail = '';
+$authDateOfBirth = '';
 $authNotice = null;
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $authName = post_string('name');
     $authEmail = post_string('email');
+    $authDateOfBirth = post_string('date_of_birth');
     $password = (string) ($_POST['password'] ?? '');
     $confirmation = (string) ($_POST['password_confirmation'] ?? '');
 
@@ -22,7 +24,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $authError = 'The passwords do not match.';
     } else {
         try {
-            create_donor_account($authName, $authEmail, $password);
+            create_donor_account($authName, $authEmail, $password, $authDateOfBirth);
             flash_set('donor_auth_notice', 'Your account is ready. Sign in to continue.');
             redirect('/public/login.php');
         } catch (InvalidArgumentException $e) {

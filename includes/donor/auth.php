@@ -25,7 +25,7 @@ function current_donor_user(): ?array
 }
 
 /** Create a donor account and return its ID. */
-function create_donor_account(string $name, string $email, string $password): int
+function create_donor_account(string $name, string $email, string $password, string $dateOfBirth): int
 {
     $name = trim(preg_replace('/\s+/u', ' ', $name) ?? $name);
     $email = mb_strtolower(trim($email));
@@ -33,22 +33,37 @@ function create_donor_account(string $name, string $email, string $password): in
     if (!required_text($name, 200)) {
         throw new InvalidArgumentException('Enter your name (up to 200 characters).');
     }
-    if (!valid_email($email) || mb_strlen($email) > 250) {
-        throw new InvalidArgumentException('Enter a valid email address.');
+    $commonEmailFormat = '/^(?=[A-Za-z0-9._]*[A-Za-z])[A-Za-z0-9]+(?:[._][A-Za-z0-9]+)*@[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)+$/';
+    if (!valid_email($email) || !preg_match($commonEmailFormat, $email) || mb_strlen($email) > 250) {
+        throw new InvalidArgumentException('Enter an email like name@gmail.com. Before @, include at least one letter; letters and numbers may be separated by dots or underscores.');
+    }
+    $date = DateTimeImmutable::createFromFormat('!Y-m-d', $dateOfBirth);
+    $dateErrors = DateTimeImmutable::getLastErrors();
+    if (!$date || ($dateErrors !== false && ($dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0))
+        || $date->format('Y-m-d') !== $dateOfBirth) {
+        throw new InvalidArgumentException('Enter a valid date of birth.');
+    }
+    $today = new DateTimeImmutable('today');
+    if ($date > $today) {
+        throw new InvalidArgumentException('Date of birth cannot be in the future.');
+    }
+    if ($date->diff($today)->y < 18) {
+        throw new InvalidArgumentException('You must be at least 18 years old to create an account. If you are under 18, please ask a parent or guardian to manage the account.');
     }
     if (strlen($password) < 12 || strlen($password) > 72) {
         throw new InvalidArgumentException('Choose a password between 12 and 72 bytes long.');
     }
 
     $stmt = db()->prepare(
-        'INSERT INTO rc2000_admin.donor_users (name, email, password_hash)
-         VALUES (:name, :email, :password_hash)
+        'INSERT INTO rc2000_admin.donor_users (name, email, password_hash, date_of_birth)
+         VALUES (:name, :email, :password_hash, :date_of_birth)
          RETURNING id'
     );
     $stmt->execute([
         'name' => $name,
         'email' => $email,
         'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+        'date_of_birth' => $date->format('Y-m-d'),
     ]);
 
     return (int) $stmt->fetchColumn();
