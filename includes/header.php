@@ -11,10 +11,10 @@ $bodyClass = trim('site ' . (string) ($GLOBALS['pageClass'] ?? ''));
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= e($title) ?></title>
   <script>try{if(localStorage.getItem('rc2000-theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}</script>
-  <link rel="stylesheet" href="<?= e(app_url('public/assets/css/style.css?v=71')) ?>">
+  <link rel="stylesheet" href="<?= e(app_url('public/assets/css/style.css?v=72')) ?>">
   <link rel="stylesheet" href="<?= e(app_url('public/assets/css/pages/donor-auth.css?v=1')) ?>">
   <?php if (($GLOBALS['pageClass'] ?? '') === 'donor-dashboard'): ?>
-  <link rel="stylesheet" href="<?= e(app_url('public/assets/css/pages/donor-dashboard.css?v=1')) ?>">
+  <link rel="stylesheet" href="<?= e(app_url('public/assets/css/pages/donor-dashboard.css?v=5')) ?>">
   <?php endif; ?>
 </head>
 <body class="<?= e($bodyClass) ?>">

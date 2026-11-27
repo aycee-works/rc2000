@@ -22,7 +22,10 @@
   <div class="nav-actions">
     <div class="donor-nav-actions">
       <?php if ($navDonor): ?>
-        <a class="donor-nav-greeting" href="<?= e(app_url('public/dashboard.php')) ?>">Hi, <?= e($navDonor['name']) ?> · My account</a>
+        <a class="donor-nav-profile" href="<?= e(app_url('public/dashboard.php')) ?>" aria-label="Open your donor dashboard" title="My account">
+          <img class="donor-nav-profile-light" src="<?= e(app_url('public/assets/images/icons/profile-light.png')) ?>" alt="" aria-hidden="true" width="22" height="22">
+          <img class="donor-nav-profile-dark" src="<?= e(app_url('public/assets/images/icons/profile-dark.png')) ?>" alt="" aria-hidden="true" width="22" height="22">
+        </a>
         <form method="post" action="<?= e(app_url('public/logout.php')) ?>">
           <?= csrf_field() ?>
           <button type="submit">Sign out</button>
