@@ -11,6 +11,7 @@ require_once __DIR__ . '/../../config/portal/constants.php';
 require_once __DIR__ . '/../../config/portal/app.php';
 require_once __DIR__ . '/../../config/portal/database.php';
 require_once __DIR__ . '/functions.php';
+require_once dirname(__DIR__) . '/validators.php';
 require_once __DIR__ . '/csrf.php';
 require_once __DIR__ . '/flash-messages.php';
 require_once __DIR__ . '/auth.php';
