@@ -18,6 +18,9 @@ body:has(.inquiry-page) .form-card form > button,
 body:has(.inquiry-page) .form-card form > .alert { grid-column: 1 / -1; }
 body:has(.inquiry-page) .form-card form > .form-grid { grid-column: 1 / -1; }
 body:has(.inquiry-page) .form-card label { min-width: 0; font-size: .82rem; font-weight: 600; }
+body:has(.inquiry-page) .form-card form > .inquiry-account-identity { grid-column: 1 / -1; display: flex; align-items: baseline; flex-wrap: wrap; gap: 3px 9px; margin: 0; color: var(--muted); font-size: .9rem; line-height: 1.5; text-align: left; }
+body:has(.inquiry-page) .form-card form > .inquiry-account-identity strong { color: var(--ink); }
+body:has(.inquiry-page) .form-card form > .inquiry-account-identity .inquiry-account-email { overflow-wrap: anywhere; }
 body:has(.inquiry-page) .form-card input,
 body:has(.inquiry-page) .form-card select,
 body:has(.inquiry-page) .form-card textarea { border-radius: 4px; background: var(--inquiry-field-background); }

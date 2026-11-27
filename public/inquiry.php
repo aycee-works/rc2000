@@ -260,7 +260,7 @@ page_start('Inquiry');
         </div>
         <label>Email
           <input type="email" name="sender_email" required maxlength="255" value="<?= e($old['sender_email']) ?>">
-        </label><?php else: ?><p class="inquiry-account-identity">Sending as <strong><?= e($donorUser['name']) ?></strong> · <?= e($donorUser['email']) ?></p><?php endif; ?>
+        </label><?php else: ?><p class="inquiry-account-identity"><span>Sending as</span><strong><?= e($donorUser['name']) ?></strong><span class="inquiry-account-email"><?= e($donorUser['email']) ?></span></p><?php endif; ?>
         <label>Phone (optional)
           <input name="phone" maxlength="30" value="<?= e($old['phone']) ?>">
         </label>
